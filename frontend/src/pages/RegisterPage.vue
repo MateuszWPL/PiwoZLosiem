@@ -9,4 +9,9 @@
 <script setup>
 import UserForm from '../components/UserForm.vue'
 import FormHeading from '../components/FormHeading.vue'
+import Splide from '@splidejs/splide';
+
+  document.addEventListener( 'DOMContentLoaded', function () {
+    new Splide( '.splide' ).mount();
+  } );
 </script>
