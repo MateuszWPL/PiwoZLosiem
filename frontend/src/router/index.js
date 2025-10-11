@@ -15,6 +15,20 @@ const routes = [
   { path: '/', name: 'MainPage', component: MainPage },
   { path: '/rejestracja', name: 'Rejestracja', component: RegisterPage },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
+  { path: '/logowanie', name: 'Logowanie', component: LoginPage, meta: { requiresGuest: true } },
+  {
+    path: '/resetowanie-hasla',
+    name: 'ResetowanieHasla',
+    component: ForgottenPasswordPage,
+    meta: { requiresGuest: true },
+  },
+  {
+    path: '/rejestracja-uzupelnienie',
+    name: 'RejestracjaUzupelnienie ',
+    component: RegisterPageComplete,
+  },
+  { path: '/powitanie', name: 'Powitanie', component: Welcome },
+  { path: '/ranking', name: 'Ranking', component: Ranking },
 ]
 
 const router = createRouter({
