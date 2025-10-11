@@ -1,6 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import RegisterPage from '../pages/RegisterPage.vue'
 import Dashboard from '@/pages/Dashboard.vue'
+
+import Welcome from '@/pages/Welcome.vue'
+
+import Ranking from '@/pages/Ranking.vue'
+
 import LoginPage from '@/pages/LoginPage.vue'
 import MainPage from '@/pages/MainPage.vue'
 import ForgottenPasswordPage from '@/pages/ForgottenPasswordPage.vue'
@@ -10,14 +15,6 @@ const routes = [
   { path: '/', name: 'MainPage', component: MainPage },
   { path: '/rejestracja', name: 'Rejestracja', component: RegisterPage },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
-  { path: '/logowanie', name: 'Logowanie', component: LoginPage },
-  { path: '/resetowanie-hasla', name: 'ZapomnianeHaslo', component: ForgottenPasswordPage },
-  {
-    path: '/rejestracja-uzupelnienie',
-    name: 'RejestracjaUzupełnienie',
-    component: RegisterPageComplete,
-    meta: { requiresGuest: true },
-  },
 ]
 
 const router = createRouter({
