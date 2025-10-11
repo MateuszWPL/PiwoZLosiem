@@ -321,7 +321,10 @@
           </p>
         </a>
       </ul>
-      <a href="#" class="h-fit flex items-center gap-4 py-3 group mt-auto">
+      <a
+        @click.prevent="logout"
+        class="h-fit flex cursor-pointer items-center gap-4 py-3 group mt-auto"
+      >
         <svg
           class="group-hover:scale-110 transition-all duration-300 group-hover:stroke-primaryOrange"
           xmlns="http://www.w3.org/2000/svg"
@@ -367,5 +370,13 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 const menuOpen = ref(false)
+
+const logout = () => {
+  localStorage.removeItem('token')
+  router.push('/logowanie')
+}
 </script>
