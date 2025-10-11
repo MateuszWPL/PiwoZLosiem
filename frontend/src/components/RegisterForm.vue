@@ -3,10 +3,7 @@
     class="rounded-[12px] border border-2 solid border-secondaryGreen flex items-center flex-col p-6 max-w-[500px] w-full bg-gradient-to-t to-primaryGreen from-secondaryGreen"
   >
     <FormHeading title="Dołącz do nas" underTitle="Stwórz konto i zacznij przygodę" />
-    <form
-      class="flex flex-col gap-3 w-full mt-6 w-full max-w-[500px]"
-      @submit.prevent="$emit('submit')"
-    >
+    <form class="flex flex-col gap-3 w-full mt-6 w-full max-w-[500px]" @submit.prevent="submit">
       <label class="text-sm font-medium">Email</label>
       <input
         v-model="email"
@@ -25,6 +22,7 @@
         type="password"
         class="border border-secondaryGreen rounded-lg p-2 bg-tertiaryGreen"
       />
+      <p v-if="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</p>
 
       <button
         type="submit"
@@ -90,11 +88,41 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
 import FormHeading from '../components/FormHeading.vue'
 
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
+const router = useRouter()
+const errorMessage = ref('')
+
+const submit = async () => {
+  errorMessage.value = ''
+
+  if (password.value !== confirmPassword.value) {
+    errorMessage.value = 'Hasła nie są takie same'
+    return
+  }
+
+  try {
+    const res = await axios.post('http://localhost:5000/api/auth/register', {
+      email: email.value,
+      password: password.value,
+    })
+
+    localStorage.setItem('token', res.data.token)
+
+    if (!res.data.isProfileComplete) {
+      router.push('/rejestracja-uzupelnienie')
+    } else {
+      router.push('/dashboard')
+    }
+  } catch (error) {
+    errorMessage.value = error.response?.data?.message || 'Wystąpił błąd przy rejestracji'
+  }
+}
 </script>
 
 <style scoped>
