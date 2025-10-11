@@ -1,5 +1,5 @@
 <template>
-  <div class="xl:flex bg-gradient-to-b from-primaryGreen/0 to-primaryGreen/50 h-dvh">
+  <div class="xl:flex bg-gradient-to-b pt-20 xl:pt-0 from-primaryGreen/0 to-primaryGreen/50 h-dvh">
     <Navbar />
     <div class="px-5 xl:w-full">
       <div class="max-w-screen-xl mx-auto">

@@ -1,6 +1,6 @@
 <template>
   <header
-    class="p-6 h-dvh flex flex-col xl:min-w-[260px] xl:max-w-[260px] w-full bg-gradient-to-b from-green-900/20 to-green-900/80 xl:h-screen duration-300 transition-all"
+    class="p-6 h-dvh flex flex-col xl:min-w-[260px] xl:max-w-[260px] w-full bg-black bg-gradient-to-b from-green-900/30 to-green-900/80 xl:h-screen duration-300 transition-all fixed top-0 left-0 z-50 xl:relative"
   >
     <div class="flex justify-between">
       <div class="xl:w-full xl:flex xl:justify-end">
@@ -72,7 +72,7 @@
       ]"
     >
       <ul class="flex flex-col xl:mt-4">
-        <a href="#" class="flex items-center gap-4 py-3 group">
+        <RouterLink to="/dashboard" class="flex items-center gap-4 py-3 group">
           <svg
             class="group-hover:scale-110 transition-all duration-300 group-hover:stroke-primaryOrange"
             xmlns="http://www.w3.org/2000/svg"
@@ -103,8 +103,8 @@
           >
             Dashboard
           </p>
-        </a>
-        <a href="#" class="flex items-center gap-4 py-3 group">
+        </RouterLink>
+        <RouterLink to="/mapa" class="flex items-center gap-4 py-3 group">
           <svg
             class="group-hover:scale-110 transition-all duration-300 group-hover:stroke-primaryOrange"
             xmlns="http://www.w3.org/2000/svg"
@@ -143,8 +143,8 @@
           >
             Mapa
           </p>
-        </a>
-        <a href="#" class="flex items-center gap-4 py-3 group">
+        </RouterLink>
+        <RouterLink to="/chat" class="flex items-center gap-4 py-3 group">
           <svg
             class="group-hover:scale-110 transition-all duration-300 group-hover:stroke-primaryOrange"
             xmlns="http://www.w3.org/2000/svg"
@@ -167,8 +167,8 @@
           >
             Chat
           </p>
-        </a>
-        <a href="#" class="flex items-center gap-4 py-3 group">
+        </RouterLink>
+        <RouterLink to="/rankingi" class="flex items-center gap-4 py-3 group">
           <svg
             class="group-hover:scale-110 transition-all duration-300 group-hover:stroke-primaryOrange"
             xmlns="http://www.w3.org/2000/svg"
@@ -231,8 +231,8 @@
           >
             Rankingi
           </p>
-        </a>
-        <a href="#" class="flex items-center gap-4 py-3 group">
+        </RouterLink>
+        <RouterLink to="/moje-piwa" class="flex items-center gap-4 py-3 group">
           <svg
             class="group-hover:scale-110 transition-all duration-300 group-hover:stroke-primaryOrange"
             xmlns="http://www.w3.org/2000/svg"
@@ -287,8 +287,8 @@
           >
             Moje piwa
           </p>
-        </a>
-        <a href="#" class="flex items-center gap-4 py-3 group">
+        </RouterLink>
+        <RouterLink to="/profil" class="flex items-center gap-4 py-3 group">
           <svg
             class="group-hover:scale-110 transition-all duration-300 group-hover:stroke-primaryOrange"
             xmlns="http://www.w3.org/2000/svg"
@@ -319,7 +319,7 @@
           >
             Mój profil
           </p>
-        </a>
+        </RouterLink>
       </ul>
       <a
         @click.prevent="logout"
@@ -370,7 +370,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 
 const router = useRouter()
 const menuOpen = ref(false)
@@ -380,3 +380,13 @@ const logout = () => {
   router.push('/logowanie')
 }
 </script>
+
+<style scoped>
+.router-link-exact-active svg path {
+  stroke: #d35226;
+}
+.router-link-exact-active p {
+  color: #d35226;
+  transform: translateX(4px);
+}
+</style>
