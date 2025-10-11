@@ -7,15 +7,10 @@
 </template>
 
 <script setup>
-<<<<<<< HEAD
 import RegisterForm from '../components/RegisterForm.vue'
-=======
-import UserForm from '../components/UserForm.vue'
-import FormHeading from '../components/FormHeading.vue'
-import Splide from '@splidejs/splide';
+import Splide from '@splidejs/splide'
 
-  document.addEventListener( 'DOMContentLoaded', function () {
-    new Splide( '.splide' ).mount();
-  } );
->>>>>>> main
+document.addEventListener('DOMContentLoaded', function () {
+  new Splide('.splide').mount()
+})
 </script>
