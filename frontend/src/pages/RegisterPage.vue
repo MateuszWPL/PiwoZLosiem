@@ -8,9 +8,4 @@
 
 <script setup>
 import RegisterForm from '../components/RegisterForm.vue'
-import Splide from '@splidejs/splide'
-
-document.addEventListener('DOMContentLoaded', function () {
-  new Splide('.splide').mount()
-})
 </script>
