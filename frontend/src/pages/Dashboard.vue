@@ -3,8 +3,5 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-const menuOpen = ref(false)
-
 import Navbar from '@/components/Navbar.vue'
 </script>
