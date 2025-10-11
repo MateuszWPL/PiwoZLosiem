@@ -5,9 +5,22 @@
       src="../assets/LosieLogo.png"
       alt="Logo"
     />
-    <p class="text-[30px] font-semibold">Dołącz do nas</p>
-    <p class="text-sm text-secondaryGold mt-4">Stwórz konto i zacznij przygodę</p>
+    <p class="text-[30px] text-white font-semibold">{{ title }}</p>
+    <p class="text-sm text-secondaryGold mt-2">{{ underTitle }}</p>
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { defineProps } from 'vue'
+const props = defineProps({
+  underTitle: {
+    type: String,
+    required: true,
+  },
+  title: {
+    type: String,
+    required: false,
+    default: 'Dołącz do nas',
+  },
+})
+</script>
