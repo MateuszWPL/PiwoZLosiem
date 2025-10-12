@@ -333,40 +333,66 @@ const addBeer = async () => {
       },
     )
 
-    alert('Piwo dodane pomyślnie!')
+    // Zamknij modal i wyczyść formularz
     showModal.value = false
     beerAmount.value = ''
     beerType.value = ''
     beerPlace.value = ''
+
+    // Odśwież dane bez przeładowania strony
+    await fetchBeers()
   } catch (err) {
     console.error(err)
-    alert('Błąd podczas dodawania piwa')
   }
 }
 
 //Funkcja do liczenia piwka
 
-const beerStats = ref({
-  today: 0,
-  week: 0,
-  month: 0,
-  total: 0,
-})
+const beerStats = computed(() => {
+  const now = new Date()
+  const today = now.getDate()
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(now.getDate() - 7)
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(now.getDate() - 30)
 
-const getBeerStats = async () => {
-  try {
-    const token = localStorage.getItem('token')
-    const res = await axios.get('/beers/stats', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    beerStats.value = res.data
-  } catch (err) {
-    console.error(err)
+  let todayCount = 0
+  let weekCount = 0
+  let monthCount = 0
+  let totalCount = 0
+
+  beers.value.forEach((beer) => {
+    const date = new Date(beer.createdAt)
+    const amount = beer.amount || 0
+
+    totalCount += amount
+
+    // Dziś
+    if (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === today
+    ) {
+      todayCount += amount
+    }
+
+    // Ostatnie 7 dni (łącznie z dzisiaj)
+    if (date >= sevenDaysAgo && date <= now) {
+      weekCount += amount
+    }
+
+    // Ostatnie 30 dni (łącznie z dzisiaj)
+    if (date >= thirtyDaysAgo && date <= now) {
+      monthCount += amount
+    }
+  })
+
+  return {
+    today: todayCount,
+    week: weekCount,
+    month: monthCount,
+    total: totalCount,
   }
-}
-
-onMounted(() => {
-  getBeerStats()
 })
 
 //Funkcja do pobierania wszystkich piw i wyswietlania ich w historii
@@ -389,17 +415,23 @@ onMounted(fetchBeers)
 
 const filteredBeers = computed(() => {
   const now = new Date()
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(now.getDate() - 7)
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(now.getDate() - 30)
+
   return beers.value.filter((beer) => {
     const date = new Date(beer.createdAt)
+
     if (activeTab.value === 'week') {
-      const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay())
-      return date >= startOfWeek
+      return date >= sevenDaysAgo && date <= now
     }
+
     if (activeTab.value === 'month') {
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      return date >= startOfMonth
+      return date >= thirtyDaysAgo && date <= now
     }
-    return true
+
+    return true // all
   })
 })
 </script>
