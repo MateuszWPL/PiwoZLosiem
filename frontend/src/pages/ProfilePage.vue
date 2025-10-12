@@ -1,9 +1,9 @@
 <!-- src/pages/ProfilePage.vue -->
 <template>
-  <div class="xl:flex bg-gradient-to-b pt-20 xl:pt-0 from-primaryGreen/0 to-primaryGreen/50 h-dvh">
+  <div class="xl:flex bg-gradient-to-b pt-20 xl:pt-0 from-primaryGreen/0 to-primaryGreen/50 min-h-screen">
     <Navbar />
 
-    <div class="px-5 xl:w-full pt-10 xl:pt-10">
+    <div class="px-5 xl:w-full pt-10 xl:pt-10 pb-16">
       <div class="max-w-screen-xl mx-auto">
 
         <!-- Sekcja użytkownika -->
@@ -13,19 +13,25 @@
               <!-- duże avatar SVG -->
               <div v-html="svgBeer" class="w-10 h-10"></div>
             </div>
-            <div>
-              <h2 class="text-white text-2xl font-semibold">Michał Kowalski, 29</h2>
-              <p class="text-secondaryGold text-sm mt-1 flex items-center gap-2">
-                <span>📍Poznań</span>
-              </p>
-              <p class="text-secondaryGold text-sm mt-2">Miłośnik kraftów i dobrych pubów. Zawsze chętny na odkrywanie nowych smaków!</p>
+            <div class="space-y-1">
+                <h2 class="text-white text-2xl font-semibold">Michał Kowalski, 29</h2>
+                <p class="text-secondaryGold text-sm flex items-center gap-2">
+                    <span class="w-4 h-4 text-secondaryGold">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="17" viewBox="0 0 16 17" fill="none">
+                            <path d="M13.3327 7.16683C13.3327 10.4955 9.64001 13.9622 8.40001 15.0328C8.2845 15.1197 8.14388 15.1667 7.99935 15.1667C7.85482 15.1667 7.7142 15.1197 7.59868 15.0328C6.35868 13.9622 2.66602 10.4955 2.66602 7.16683C2.66602 5.75234 3.22792 4.39579 4.22811 3.39559C5.22831 2.3954 6.58486 1.8335 7.99935 1.8335C9.41384 1.8335 10.7704 2.3954 11.7706 3.39559C12.7708 4.39579 13.3327 5.75234 13.3327 7.16683Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M8 9.16675C9.10457 9.16675 10 8.27132 10 7.16675C10 6.06218 9.10457 5.16675 8 5.16675C6.89543 5.16675 6 6.06218 6 7.16675C6 8.27132 6.89543 9.16675 8 9.16675Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    <span>Poznań</span>
+                </p>
+                <p class="text-secondaryGold text-sm">Miłośnik kraftów i dobrych pubów. Zawsze chętny na odkrywanie nowych smaków!</p>
             </div>
           </div>
           <div class="flex flex-col xl:items-end mt-4 xl:mt-0 gap-4">
             <div class="flex items-center gap-2">
-              <div class="py-2 px-4 bg-primaryOrange rounded-full">
-                <p class="text-white text-sm font-semibold">🍺 wolny na piwo</p>
-              </div>
+                <div class="py-2 px-6 bg-primaryOrange rounded-[10px] flex items-center justify-center">
+                    <p class="text-white text-sm font-semibold">🍺 Wolny na piwo</p>
+                </div>
             </div>
             <button class="bg-primaryGreen text-white py-2 px-6 rounded-[10px] font-semibold shadow-md hover:bg-primaryGreen/80 transition duration-300">
               Edytuj profil
@@ -34,27 +40,40 @@
         </div>
 
         <!-- Statystyki -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
-          <div v-for="stat in stats" :key="stat.label" class="bg-tertiaryGreen/50 rounded-[10px] p-6 flex flex-col items-center gap-2 shadow-md">
+        <div class="mt-8">
+        <h4 class="text-white text-[22px] font-semibold mb-3">Statystyki</h4>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 items-stretch">
+            <div
+            v-for="stat in stats"
+            :key="stat.label"
+            class="bg-tertiaryGreen/50 rounded-[10px] p-6 flex flex-col items-center justify-center gap-2 shadow-md h-full min-h-[140px]"
+            >
             <div v-html="stat.icon" class="w-9 h-8"></div>
             <p class="text-white text-2xl font-semibold">{{ stat.value }}</p>
             <p class="text-secondaryGold text-sm">{{ stat.label }}</p>
-          </div>
+            </div>
         </div>
+        </div>
+
 
         <!-- Odznaki -->
-        <div class="mt-10">
-          <h4 class="text-white text-[24px] font-semibold mb-6">Odznaki</h4>
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div v-for="badge in badges" :key="badge.name" class="bg-tertiaryGreen/50 rounded-[10px] p-6 text-center shadow-md">
-              <p class="text-primaryOrange text-2xl mb-2">🍺</p>
-              <p class="text-white font-semibold">{{ badge.name }}</p>
+        <div class="mt-8">
+        <h4 class="text-white text-[22px] font-semibold mb-3">Odznaki</h4>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 items-stretch">
+            <div
+            v-for="badge in badges"
+            :key="badge.name"
+            class="bg-tertiaryGreen/50 rounded-[10px] p-6 flex flex-col items-center justify-center gap-2 shadow-md h-full min-h-[140px]"
+            >
+            <div v-html="badge.icon" class="w-9 h-8"></div>
+            <p class="text-white text-sm font-semibold text-center">{{ badge.name }}</p>
             </div>
-          </div>
+        </div>
         </div>
 
+
         <!-- Akcje -->
-        <div class="flex flex-col md:flex-row gap-6 mt-10">
+        <div class="flex flex-col md:flex-row gap-6 mt-20">
           <button class="bg-primaryOrange text-white font-semibold py-4 px-6 rounded-[10px] w-full md:w-1/2 shadow-md shadow-primaryOrange/50 hover:shadow-primaryOrange/70 transition duration-300">
             🏆 Zobacz ranking
           </button>
@@ -105,6 +124,36 @@ const svgBadge = `
 </svg>
 `
 
+const svgMedal = `
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="32" fill="none" viewBox="0 0 36 32">
+  <circle cx="18" cy="12" r="6" stroke="#D35226" stroke-width="2"/>
+  <path d="M12 20L10 30L18 26L26 30L24 20" stroke="#D35226" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+`
+
+const svgStar = `
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="32" fill="none" viewBox="0 0 36 32">
+  <path d="M18 2L21.09 11.26L31 12.27L23.5 18.97L25.82 28L18 23L10.18 28L12.5 18.97L5 12.27L14.91 11.26L18 2Z"
+        stroke="#C8A654" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+`
+
+const svgTrophy = `
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="32" fill="none" viewBox="0 0 36 32">
+  <path d="M24 4H12V8C12 9.06087 12.4214 10.0783 13.1716 10.8284C13.9217 11.5786 14.9391 12 16 12H20C21.0609 12 22.0783 11.5786 22.8284 10.8284C23.5786 10.0783 24 9.06087 24 8V4Z" stroke="#C8A654" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M12 4H8C8 4 6 12 12 12" stroke="#C8A654" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M24 4H28C28 4 30 12 24 12" stroke="#C8A654" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M16 12V16H20V12" stroke="#C8A654" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M16 16H20C21.0609 16 22.0783 16.4214 22.8284 17.1716C23.5786 17.9217 24 18.9391 24 20V28H12V20C12 18.9391 12.4214 17.9217 13.1716 17.1716C13.9217 16.4214 14.9391 16 16 16Z" stroke="#C8A654" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+`
+
+const svgShield = `
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="32" fill="none" viewBox="0 0 36 32">
+  <path d="M9 4H27V16C27 20.4183 22.9706 24 18 28C13.0294 24 9 20.4183 9 16V4Z" stroke="#D35226" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+`
+
 /* dane do wyświetlenia */
 const stats = [
   { label: 'Piwa', value: 47, icon: svgBeer },
@@ -114,10 +163,10 @@ const stats = [
 ]
 
 const badges = [
-  { name: 'Pierwsze piwo' },
-  { name: 'Weekendowy wojownik' },
-  { name: 'Mistrz browarów' },
-  { name: '5 z rzędu' }
+  { name: 'Pierwsze piwo', icon: svgBeer },
+  { name: 'Weekendowy wojownik', icon: svgStar },
+  { name: 'Mistrz browarów', icon: svgTrophy },
+  { name: '5 z rzędu', icon: svgShield }
 ]
 </script>
 
