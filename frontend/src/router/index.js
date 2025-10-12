@@ -8,6 +8,8 @@ import MainPage from '@/pages/MainPage.vue'
 import ForgottenPasswordPage from '@/pages/ForgottenPasswordPage.vue'
 import RegisterPageComplete from '@/pages/RegisterPage-Complete.vue'
 import MyBeers from '@/pages/MyBeers.vue'
+import Chat from '@/pages/Chat.vue'
+import ChatRoom from '@/pages/ChatRoom.vue'
 
 const routes = [
   { path: '/', name: 'MainPage', component: MainPage },
@@ -28,6 +30,8 @@ const routes = [
   { path: '/powitanie', name: 'Powitanie', component: Welcome },
   { path: '/ranking', name: 'Ranking', component: Ranking },
   { path: '/moje-piwa', name: 'MojePiwa', component: MyBeers },
+  { path: '/chat', name: 'Chat', component: Chat },
+  { path: '/chat/:id', name: 'ChatRoom', component: ChatRoom },
 ]
 
 const router = createRouter({
