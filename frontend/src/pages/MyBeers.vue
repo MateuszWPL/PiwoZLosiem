@@ -309,7 +309,9 @@ import Navbar from '@/components/Navbar.vue'
 import axios from '@/api/api.js'
 import BeerHistory from '@/components/BeerHistory.vue'
 import { ref, onMounted, computed } from 'vue'
+import { useNotifications } from '@/composables/useNotifications'
 
+const { addNotification } = useNotifications()
 const beerAmount = ref('')
 const beerType = ref('')
 const beerPlace = ref('')
@@ -332,6 +334,7 @@ const addBeer = async () => {
         },
       },
     )
+    addNotification('beer_added', 'Dodałeś nowe piwo 🍺')
 
     // Zamknij modal i wyczyść formularz
     showModal.value = false
