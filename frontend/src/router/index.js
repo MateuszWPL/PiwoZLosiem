@@ -8,6 +8,7 @@ import MainPage from '@/pages/MainPage.vue'
 import ForgottenPasswordPage from '@/pages/ForgottenPasswordPage.vue'
 import RegisterPageComplete from '@/pages/RegisterPage-Complete.vue'
 import MyBeers from '@/pages/MyBeers.vue'
+import ProfilePage from '@/pages/ProfilePage.vue'
 
 const routes = [
   { path: '/', name: 'MainPage', component: MainPage },
@@ -28,6 +29,7 @@ const routes = [
   { path: '/powitanie', name: 'Powitanie', component: Welcome },
   { path: '/ranking', name: 'Ranking', component: Ranking },
   { path: '/moje-piwa', name: 'MojePiwa', component: MyBeers },
+  { path: '/profil', name: 'Profil', component: ProfilePage },
 ]
 
 const router = createRouter({
