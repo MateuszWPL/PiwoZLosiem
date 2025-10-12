@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex items-center justify-between p-4 rounded-lg bg-neutral-900/50 border border-neutral-700 hover:border-amber-600/50 transition-all"
+    class="flex items-center justify-between p-4 rounded-lg bg-neutral-900/50 border border-neutral-700 hover:border-amber-600/50 transition-all mt-2"
   >
     <div class="flex items-center gap-4">
       <div class="w-12 h-12 rounded-full bg-amber-600/20 flex items-center justify-center">
@@ -50,15 +50,37 @@
         </svg>
       </div>
       <div>
-        <p class="font-semibold">Dom</p>
-        <p class="text-sm text-gray-400">09.10.2025 • 19:15</p>
+        <p class="font-semibold">{{ place }}</p>
+        <p class="text-sm text-gray-400">{{ formattedDate }}</p>
       </div>
     </div>
     <div class="text-right">
-      <p class="text-2xl font-bold text-amber-500">2</p>
-      <p class="text-xs text-gray-400">Lager</p>
+      <p class="text-2xl font-bold text-amber-500">{{ amount }}</p>
+      <p class="text-xs text-gray-400">{{ type }}</p>
     </div>
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  amount: Number,
+  type: String,
+  place: String,
+  createdAt: String,
+})
+
+const formattedDate = computed(() => {
+  if (!props.createdAt) return ''
+  const dateObj = new Date(props.createdAt)
+
+  const day = String(dateObj.getDate()).padStart(2, '0')
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0')
+  const year = dateObj.getFullYear()
+  const hours = String(dateObj.getHours()).padStart(2, '0')
+  const minutes = String(dateObj.getMinutes()).padStart(2, '0')
+
+  return `${day}.${month}.${year} • ${hours}:${minutes}`
+})
+</script>
