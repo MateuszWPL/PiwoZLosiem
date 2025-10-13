@@ -4,6 +4,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import beerRoutes from "./routes/beerRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 import { initializeSocket } from "./services/socket.js"; 
 import { createServer } from 'http';
 import Conversation from "./models/Conversation.js";
@@ -43,3 +45,5 @@ mongoose
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/beers", beerRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/chat/messages", messageRoutes);
