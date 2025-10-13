@@ -79,7 +79,6 @@ export const completeProfile = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 export const requestPasswordReset = async (req, res) => {
   const { email } = req.body;
 
@@ -115,13 +114,10 @@ export const resetPassword = async (req, res) => {
     });
 
     if (!user) {
-      return res
-        .status(400)
-        .json({ message: "Token nieprawidłowy lub wygasł" });
+      return res.status(400).json({ message: "Token nieprawidłowy lub wygasł" });
     }
 
     const salt = await bcrypt.genSalt(10);
-
     user.password = await bcrypt.hash(newPassword, salt);
     user.resetToken = undefined;
     user.resetTokenExpiry = undefined;
@@ -131,5 +127,17 @@ export const resetPassword = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Błąd podczas resetu hasła" });
+  }
+};
+
+export const getUserStatus = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).select("username isOnline lastSeen");
+    if (!user) {
+      return res.status(404).json({ error: "Nie znaleziono użytkownika" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: "Błąd serwera" });
   }
 };
