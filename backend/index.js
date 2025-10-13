@@ -4,6 +4,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import beerRoutes from "./routes/beerRoutes.js";
+import { initSocket } from "./services/socket.js"; 
+import { createServer } from 'http';
 
 // Load environment variables
 dotenv.config();
@@ -13,12 +15,15 @@ app.use(express.json());
 
 // Connect to MongoDB
 mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ Połączono z bazą:", mongoose.connection.name))
   .catch((err) => console.error("❌ Błąd połączenia:", err));
+
+const server = createServer(app);
+server.listen(5000);
+
+// Inicjalizacja Socket.io
+initSocket(server);
 
 // Routes
 app.use("/api/auth", authRoutes);
