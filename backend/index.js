@@ -11,7 +11,7 @@ import authRoutes from "./routes/authRoutes.js";
 import beerRoutes from "./routes/beerRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
-import { initializeSocket } from "./services/socket.js"; 
+import { initializeSocket } from "./socket/index.js"; 
 import { createServer } from 'http';
 import rankingRoutes from "./routes/rankingRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
