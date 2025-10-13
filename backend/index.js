@@ -9,6 +9,8 @@ import { fileURLToPath } from 'url';
 
 import authRoutes from "./routes/authRoutes.js";
 import beerRoutes from "./routes/beerRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 import { initializeSocket } from "./services/socket.js"; 
 import { createServer } from 'http';
 import rankingRoutes from "./routes/rankingRoutes.js";
@@ -89,3 +91,5 @@ io.on("connection", (socket) => {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`🚀 Serwer z Socket.IO działa na porcie ${PORT}`));
 
+app.use("/api/chat", chatRoutes);
+app.use("/api/chat/messages", messageRoutes);

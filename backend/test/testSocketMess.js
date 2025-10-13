@@ -2,8 +2,7 @@ import { io } from "socket.io-client";
 import readline from "readline";
 
 // 🔐 Token JWT użytkownika
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZWQxZmJlMjhhOTkyM2IyNTAxODUxNCIsImlhdCI6MTc2MDM3MTU2NCwiZXhwIjoxNzYwOTc2MzY0fQ.lvbgKYSIqLd0-wlMgnG4_GYJbYtm9BrKLnZgjK3mCO0";
-
+const token = process.argv[2];
 // 🆔 ID rozmowy (na razie wpisane na sztywno)
 const conversationId = "68ed3dbd855188c0d67c94b9";
 
