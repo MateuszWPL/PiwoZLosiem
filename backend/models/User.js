@@ -16,7 +16,9 @@ const userSchema = new mongoose.Schema({
   achievements: [ { type: mongoose.Schema.Types.ObjectId, ref: "Achievement", }, ],
   resetToken: { type: String },
   resetTokenExpiry: { type: Date },
-});
+  isOnline: { type: Boolean, default: false },
+  lastSeen: { type: Date, default: null },
+} , { timestamps: true });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 export default User;
