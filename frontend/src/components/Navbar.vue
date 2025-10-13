@@ -1,7 +1,8 @@
 <template>
-  <header
-    class="p-6 h-dvh flex flex-col xl:min-w-[260px] xl:max-w-[260px] w-full bg-black bg-gradient-to-b from-green-900/30 to-green-900/80 xl:h-screen duration-300 transition-all fixed top-0 left-0 z-50 xl:relative"
-  >
+ <header
+  class="p-6 flex flex-col xl:min-w-[260px] xl:max-w-[260px] w-full bg-black bg-gradient-to-b from-green-900/30 to-green-900/80 xl:min-h-screen duration-300 transition-all fixed top-0 left-0 z-50 xl:relative"
+>
+
     <div class="flex justify-between">
       <div class="xl:w-full xl:flex xl:justify-end">
         <a
