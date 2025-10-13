@@ -11,7 +11,7 @@ import authRoutes from "./routes/authRoutes.js";
 import beerRoutes from "./routes/beerRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
-import { initializeSocket } from "./socket/index.js"; 
+import { initSocket } from "./socket/index.js"; 
 import { createServer } from 'http';
 import Conversation from "./models/Conversation.js";
 import rankingRoutes from "./routes/rankingRoutes.js";
@@ -40,7 +40,7 @@ mongoose
 
     // 🔌 Inicjalizacja Socket.io
     const server = createServer(app);
-    initializeSocket(server);
+    initSocket(server);
     server.listen(5000, () => console.log("🚀 Serwer działa na porcie 5000"));
   })
   .catch((err) => console.error("❌ Błąd połączenia:", err));
