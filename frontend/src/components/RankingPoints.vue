@@ -69,7 +69,7 @@
     <!-- uztkownicy -->
     <div class="flex flex-col">
       <span class="text-white font-semibold text-[20px] leading-normal">{{ name }}</span>
-      <span class="text-secondaryGold font-semibold text-3 leading-4">{{ city }}</span>
+      <span class="text-secondaryGold font-semibold text-sm leading-4">{{ city }}</span>
     </div>
 
     <!-- pkt rankingowe -->
