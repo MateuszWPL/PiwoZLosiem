@@ -168,7 +168,7 @@
             Chat
           </p>
         </RouterLink>
-        <RouterLink to="/rankingi" class="flex items-center gap-4 py-3 group">
+        <RouterLink to="/ranking" class="flex items-center gap-4 py-3 group">
           <svg
             class="group-hover:scale-110 transition-all duration-300 group-hover:stroke-primaryOrange"
             xmlns="http://www.w3.org/2000/svg"
