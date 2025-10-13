@@ -9,12 +9,13 @@ import { fileURLToPath } from 'url';
 
 import authRoutes from "./routes/authRoutes.js";
 import beerRoutes from "./routes/beerRoutes.js";
-import { initSocket } from "./services/socket.js"; 
+import { initializeSocket } from "./services/socket.js"; 
 import { createServer } from 'http';
 import rankingRoutes from "./routes/rankingRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import achievementRoutes from "./routes/achievementRoutes.js";
 import friendsRoutes from "./routes/friendsRoutes.js";
+import Conversation from "./models/Conversation.js";
 
 dotenv.config();
 const app = express();
@@ -33,14 +34,28 @@ app.use(express.json());
 
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ Połączono z bazą:", mongoose.connection.name))
+  .then(async () => {
+    console.log("✅ Połączono z bazą:", mongoose.connection.name);
+
+    // 🔍 Wypisz rozmowy
+    const conversations = await Conversation.find({});
+    console.log("📦 Wszystkie rozmowy w bazie:");
+    conversations.forEach((conv) => {
+      console.log(`- ID: ${conv._id}, uczestnicy: ${conv.participants.join(", ")}`);
+    });
+
+    // 🆕 Utwórz nową rozmowę testową
+    const newConversation = await Conversation.create({
+      participants: ["68ed1fbe28a9923b25018514"],
+    });
+    console.log("🆕 Nowa rozmowa:", newConversation._id);
+
+    // 🔌 Inicjalizacja Socket.io
+    const server = createServer(app);
+    initializeSocket(server);
+    server.listen(5000, () => console.log("🚀 Serwer działa na porcie 5000"));
+  })
   .catch((err) => console.error("❌ Błąd połączenia:", err));
-
-const server = createServer(app);
-server.listen(5000);
-
-// Inicjalizacja Socket.io
-initSocket(server);
 
 // Routes
 app.use("/api/auth", authRoutes);
