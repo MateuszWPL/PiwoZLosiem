@@ -9,6 +9,8 @@ import { fileURLToPath } from 'url';
 
 import authRoutes from "./routes/authRoutes.js";
 import beerRoutes from "./routes/beerRoutes.js";
+import { initSocket } from "./services/socket.js"; 
+import { createServer } from 'http';
 import rankingRoutes from "./routes/rankingRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import achievementRoutes from "./routes/achievementRoutes.js";
@@ -30,13 +32,17 @@ app.use(cors());
 app.use(express.json());
 
 mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ Połączono z bazą:", mongoose.connection.name))
   .catch((err) => console.error("❌ Błąd połączenia:", err));
 
+const server = createServer(app);
+server.listen(5000);
+
+// Inicjalizacja Socket.io
+initSocket(server);
+
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/beers", beerRoutes);
 app.use("/api", rankingRoutes);
