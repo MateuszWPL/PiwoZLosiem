@@ -86,8 +86,7 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const currentIndex = ref(0)
 
-// Pełne ścieżki SVG są tutaj dla uproszczenia
-// W większych projektach lepiej byłoby importować je jako komponenty lub z pliku JSON
+
 const svgLocationIcon = `
   <path
     d="M33.3334 16.6666C33.3334 24.9883 24.1017 33.6549 21.0017 36.3316C20.713 36.5487 20.3614 36.6662 20.0001 36.6662C19.6388 36.6662 19.2872 36.5487 18.9984 36.3316C15.8984 33.6549 6.66675 24.9883 6.66675 16.6666C6.66675 13.1304 8.07151 9.73898 10.572 7.23849C13.0725 4.73801 16.4639 3.33325 20.0001 3.33325C23.5363 3.33325 26.9277 4.73801 29.4282 7.23849C31.9287 9.73898 33.3334 13.1304 33.3334 16.6666Z"
@@ -169,7 +168,7 @@ const slides = ref([
 ])
 const totalSlides = slides.value.length
 
-// --- Logika nawigacji ---
+
 const nextSlide = () => {
   if (currentIndex.value < totalSlides - 1) {
     currentIndex.value++
@@ -183,21 +182,18 @@ const prevSlide = () => {
 const skip = () => router.push('/logowanie')
 const finish = () => router.push('/rejestracja')
 
-// --- Logika animacji (CSS Classes) ---
 const getSlideClasses = (index) => {
   if (index === currentIndex.value) {
-    // Aktywny slajd
+
     return 'opacity-100 transform-none'
   } else if (index === currentIndex.value - 1) {
-    // Poprzedni slajd
+
     return 'opacity-0 -translate-x-full'
   } else {
-    // Następny (lub dalszy) slajd
     return 'opacity-0 translate-x-full'
   }
 }
 
-// --- Logika przeciągania (Swipe) ---
 const isDragging = ref(false)
 const startX = ref(0)
 const deltaX = ref(0)
@@ -207,7 +203,7 @@ const getClientX = (e) => (e.type.includes('touch') ? e.touches[0].clientX : e.c
 const startDrag = (e) => {
   isDragging.value = true
   startX.value = getClientX(e)
-  deltaX.value = 0 // Resetuj przesunięcie
+  deltaX.value = 0 
 }
 
 const onDrag = (e) => {
@@ -218,11 +214,11 @@ const onDrag = (e) => {
 const endDrag = () => {
   if (!isDragging.value) return
 
-  // Zmień slajd, jeśli przeciągnięcie było wystarczająco duże (np. > 50px)
+
   if (deltaX.value < -50) {
-    nextSlide() // Przesuń w lewo
+    nextSlide() 
   } else if (deltaX.value > 50) {
-    prevSlide() // Przesuń w prawo
+    prevSlide()
   }
 
   isDragging.value = false
