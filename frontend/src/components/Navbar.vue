@@ -5,37 +5,7 @@
 
     <div class="flex justify-between">
       <div class="xl:w-full xl:flex xl:justify-end">
-        <a
-          href="#"
-          class="border group block border-secondaryGold solid rounded-xl p-3 relative w-fit hover:bg-secondaryGold/20 transition-all duration-300"
-        >
-          <div
-            class="absolute bg-red-900 -top-2 -right-2 w-4 h-4 rounded-full items-center justify-center flex group-hover:scale-110 transition-all duration-300"
-          >
-            <p class="text-[12px] leading-none">3</p>
-          </div>
-          <svg
-            class="min-w-4 max-w-4 w-4 min-h-4 max-h-4 h-4 group-hover:scale-110 transition-all duration-300"
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-          >
-            <path
-              d="M4 5.3335C4 4.27263 4.42143 3.25521 5.17157 2.50507C5.92172 1.75492 6.93913 1.3335 8 1.3335C9.06087 1.3335 10.0783 1.75492 10.8284 2.50507C11.5786 3.25521 12 4.27263 12 5.3335C12 10.0002 14 11.3335 14 11.3335H2C2 11.3335 4 10.0002 4 5.3335Z"
-              stroke="#A89E8A"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path
-              d="M6.86719 14C6.97878 14.203 7.14282 14.3722 7.34218 14.4901C7.54154 14.608 7.76891 14.6702 8.00052 14.6702C8.23213 14.6702 8.4595 14.608 8.65886 14.4901C8.85822 14.3722 9.02227 14.203 9.13385 14"
-              stroke="#A89E8A"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </a>
+        <NotificationDropdown />
       </div>
       <div class="flex justify-start xl:hidden">
         <button
@@ -61,8 +31,6 @@
         </button>
       </div>
     </div>
-    <!-- Menu -->
-
     <div
       :class="[
         'flex flex-col transition-all duration-500',
@@ -372,6 +340,7 @@
 <script setup>
 import { ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
+import NotificationDropdown from './NotificationDropdown.vue'
 
 const router = useRouter()
 const menuOpen = ref(false)
