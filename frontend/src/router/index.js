@@ -10,6 +10,7 @@ import RegisterPageComplete from '@/pages/RegisterPage-Complete.vue'
 import MyBeers from '@/pages/MyBeers.vue'
 import Chat from '@/pages/Chat.vue'
 import ChatRoom from '@/pages/ChatRoom.vue'
+import DiscoverView from '@/pages/DiscoverView.vue'
 
 const routes = [
   { path: '/', name: 'MainPage', component: MainPage },
@@ -33,6 +34,7 @@ const routes = [
   { path: '/chat/:id', name: 'ChatRoom', component: ChatRoom },
   { path: '/ranking', name: 'Ranking', component: Ranking, meta: { requiresAuth: true } },
   { path: '/moje-piwa', name: 'MojePiwa', component: MyBeers, meta: { requiresAuth: true } },
+  { path: '/odkrywaj', name: 'Odkrywaj', component: DiscoverView, meta: { requiresAuth: true } }
 ]
 
 const router = createRouter({
