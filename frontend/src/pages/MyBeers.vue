@@ -1,6 +1,6 @@
 <template>
   <div
-    class="xl:flex bg-gradient-to-b pt-20 xl:pt-0 from-primaryGreen/0 to-primaryGreen/50 h-dvh flex-stretch min-h-screen"
+    class="xl:flex bg-gradient-to-b from-primaryGreen/0 to-primaryGreen/50 pt-20 xl:pt-0 h-dvh flex-stretch min-h-screen"
   >
     <Navbar />
     <div class="p-5 w-full h-full">
@@ -8,7 +8,7 @@
         <div class="">
           <div class="flex items-center justify-between items-center">
             <div>
-              <h1 class="text-3xl text-white font-serif mb-2 mt-5">Moje Piwa</h1>
+              <h1 class="text-3xl text-white mb-2 mt-5">Moje Piwa</h1>
               <p class="text-secondaryGold mb-4">Śledź swoje osiągnięcia piwne</p>
             </div>
 
@@ -244,7 +244,7 @@
             class="bg-secondaryGreen/50 backdrop-blur-sm border border-neutral-700 rounded-2xl animate-slide-up"
           >
             <div class="p-6 border-b border-neutral-700">
-              <h2 class="font-serif text-xl">Historia</h2>
+              <h2 class="text-xl">Historia</h2>
             </div>
             <div class="p-6 space-y-3">
               <div>
