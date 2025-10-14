@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import beerRoutes from "./routes/beerRoutes.js";
 import rankingRoutes from "./routes/rankingRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -25,6 +26,8 @@ mongoose
 app.use("/api/auth", authRoutes);
 app.use("/api/beers", beerRoutes);
 app.use("/api", rankingRoutes);
+app.use("/api/users", userRoutes);
+
 
 // Start the server on port 5000
 app.listen(5000, () => console.log("Serwer działa na porcie 5000"));
