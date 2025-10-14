@@ -12,7 +12,7 @@ import MyBeers from '@/pages/MyBeers.vue'
 const routes = [
   { path: '/', name: 'MainPage', component: MainPage },
   { path: '/rejestracja', name: 'Rejestracja', component: RegisterPage },
-  { path: '/dashboard', name: 'Dashboard', component: Dashboard },
+  { path: '/dashboard', name: 'Dashboard', component: Dashboard, meta: { requiresAuth: true } },
   { path: '/logowanie', name: 'Logowanie', component: LoginPage, meta: { requiresGuest: true } },
   {
     path: '/resetowanie-hasla',
@@ -22,12 +22,13 @@ const routes = [
   },
   {
     path: '/rejestracja-uzupelnienie',
-    name: 'RejestracjaUzupelnienie ',
+    name: 'RejestracjaUzupelnienie',
     component: RegisterPageComplete,
+    meta: { requiresAuth: true },
   },
   { path: '/powitanie', name: 'Powitanie', component: Welcome },
-  { path: '/ranking', name: 'Ranking', component: Ranking },
-  { path: '/moje-piwa', name: 'MojePiwa', component: MyBeers },
+  { path: '/ranking', name: 'Ranking', component: Ranking, meta: { requiresAuth: true } },
+  { path: '/moje-piwa', name: 'MojePiwa', component: MyBeers, meta: { requiresAuth: true } },
 ]
 
 const router = createRouter({
@@ -37,8 +38,15 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
+
+  // Strony dla gości tylko, jeśli zalogowany -> przekierowanie
   if (to.meta.requiresGuest && token) {
     return next('/dashboard')
+  }
+
+  // Strony chronione – wymagana autoryzacja
+  if (to.meta.requiresAuth && !token) {
+    return next('/logowanie')
   }
 
   next()
