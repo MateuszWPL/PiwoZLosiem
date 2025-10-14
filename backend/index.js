@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import beerRoutes from "./routes/beerRoutes.js";
+import rankingRoutes from "./routes/rankingRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -23,6 +24,7 @@ mongoose
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/beers", beerRoutes);
+app.use("/api", rankingRoutes);
 
 // Start the server on port 5000
 app.listen(5000, () => console.log("Serwer działa na porcie 5000"));
