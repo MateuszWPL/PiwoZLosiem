@@ -15,14 +15,13 @@
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
-// 1. Pobierz instancję routera
 const router = useRouter()
 
-// 2. Użyj hooka onMounted, który uruchomi się, gdy komponent zostanie załadowany
+
 onMounted(() => {
-  // 3. Ustaw timer na 5000 milisekund (5 sekund)
+
   setTimeout(() => {
-    // 4. Po upływie czasu, przekieruj użytkownika na stronę /powitanie
+
     router.push('/powitanie')
   }, 5000)
 })

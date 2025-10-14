@@ -86,14 +86,13 @@ const displayDistance = computed(() => {
   return `${(distanceInMeters.value / 1000).toFixed(1)} km`;
 });
 
-// Zaktualizowany watch dla suwaka, aby lepiej oddalał mapę
 watch(distanceInMeters, (newDistance) => {
   if (newDistance <= 500) zoom.value = 16;
   else if (newDistance <= 1000) zoom.value = 15;
   else if (newDistance <= 2000) zoom.value = 14;
   else if (newDistance <= 5000) zoom.value = 13;
   else if (newDistance <= 8000) zoom.value = 12;
-  else zoom.value = 11; // Bardziej oddalony widok dla 10km
+  else zoom.value = 11;
 });
 
 const filteredUsers = computed(() => {
@@ -135,8 +134,6 @@ async function fetchCurrentUser() {
         Authorization: `Bearer ${token}`
       }
     });
-    // --- KROK DEBUGOWANIA ---
-    // Poniższa linia wyświetli w konsoli, jak wygląda obiekt użytkownika
     console.log("Pobrane dane zalogowanego użytkownika:", response.data); 
     user.value = response.data;
   } catch (error) {
@@ -160,8 +157,6 @@ onMounted(async () => {
   await fetchCurrentUser();
 
   socket.on('updateUserList', (users) => {
-    // --- KROK DEBUGOWANIA ---
-    // Ta linia pokaże w konsoli, jak wygląda lista użytkowników od serwera
     console.log("Otrzymano listę użytkowników z serwera:", users);
     onlineUsers.value = users.filter(u => u.id !== socket.id);
   });
@@ -172,7 +167,7 @@ onMounted(async () => {
       currentUserPosition.value = { lat: latitude, lng: longitude };
       geolocationError.value = false;
       
-      if (user.value && user.value.name) { // Dodatkowe sprawdzenie
+      if (user.value && user.value.name) {
         socket.emit('updateLocation', {
           lat: latitude,
           lng: longitude,
@@ -196,18 +191,11 @@ onUnmounted(() => {
 </script>
 
 <style>
-/* Używamy globalnych stylów (bez 'scoped') lub :deep(), 
-  ponieważ Leaflet renderuje ikony i tooltipy poza zakresem komponentu.
-*/
-
-/* Styl dla pomarańczowej pinezki z literą */
 .custom-marker-icon {
-  background-color: #f97316; /* Pomarańczowy */
+  background-color: #f97316;
   border-radius: 50%;
   border: 2px solid white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-  
-  /* Wyśrodkowanie litery */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -220,7 +208,6 @@ onUnmounted(() => {
   font-family: sans-serif;
 }
 
-/* Styl dla czarnego tooltipu z białym tekstem */
 .custom-tooltip {
   background-color: rgba(0, 0, 0, 0.8);
   border: none;
@@ -229,10 +216,9 @@ onUnmounted(() => {
   padding: 6px 10px;
   font-size: 14px;
   box-shadow: none;
-  white-space: nowrap; /* Zapobiega łamaniu linii */
+  white-space: nowrap;
 }
 
-/* Opcjonalnie: strzałka tooltipu */
 .leaflet-tooltip-top.custom-tooltip::before,
 .leaflet-tooltip-bottom.custom-tooltip::before {
   border-top-color: rgba(0, 0, 0, 0.8);
@@ -241,13 +227,12 @@ onUnmounted(() => {
 </style>
 
 <style scoped>
-/* Te style pozostają 'scoped', bo dotyczą tylko tego komponentu */
 .map-placeholder {
   height: 700px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #333; /* Ciemniejsze tło dla trybu satelitarnego */
+  background-color: #333; 
   border-radius: 8px;
   color: #ccc;
 }
@@ -255,6 +240,5 @@ onUnmounted(() => {
   background-color: #442222;
   color: #ff8888;
 }
-/* Twoje pozostałe style */
 </style>
 
