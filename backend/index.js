@@ -8,6 +8,7 @@ import { Server } from "socket.io";
 import authRoutes from "./routes/authRoutes.js";
 import beerRoutes from "./routes/beerRoutes.js";
 import rankingRoutes from "./routes/rankingRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -34,6 +35,8 @@ mongoose
 app.use("/api/auth", authRoutes);
 app.use("/api/beers", beerRoutes);
 app.use("/api", rankingRoutes);
+app.use("/api/users", userRoutes);
+
 
 let onlineUsers = {};
 
