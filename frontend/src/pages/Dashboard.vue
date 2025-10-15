@@ -16,10 +16,17 @@
               <p>Twój status</p>
               <div class="flex items-center gap-2">
                 <div class="py-2 px-4 bg-primaryOrange rounded-full w-fit">
-                  <p class="text-white"> {{ status }}</p>
+                  <p class="text-white"> {{ statusLabel }}</p>
                 </div>
-                <button class="text-white bg-primaryGreen py-2 px-3 rounded-full" @click="changeStatus">Zmień</button>
+                <button class="text-white bg-primaryGreen py-2 px-3 rounded-full" @click="isStatusPopupVisible = true">Zmień</button>
               </div>
+              <ChangeStatusPopup 
+                :visible="isStatusPopupVisible" 
+                :statuses="availableStatuses" 
+                :current-status="statusLabel"
+                @close="isStatusPopupVisible = false" 
+                @select="updateStatus"
+              />
             </div>
             <div class="grid template-columns-1 gap-6 md:grid-cols-3">
               <div
@@ -413,16 +420,22 @@
 
 <script setup>
 import Navbar from '@/components/Navbar.vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axios from '@/api/api.js'
 import { useNotifications } from '@/composables/useNotifications'
+import StatusPopup from '@/components/ChangeStatusPopup.vue'
+import ChangeStatusPopup from '@/components/ChangeStatusPopup.vue'
+
 
 const { addNotification } = useNotifications()
 const status = ref('')
 const name = ref('')
+const isStatusPopupVisible = ref(false)
+
 
 const token = localStorage.getItem('token')
 
+/*
 const changeStatus = async () => {
   const newStatus = prompt('Podaj nowy status:')
   if (!newStatus) return
@@ -438,7 +451,7 @@ const changeStatus = async () => {
   } catch (err) {
     console.error(err)
   }
-}
+}*/
 
 const fetchUserData = async () => {
   const token = localStorage.getItem('token')
@@ -450,6 +463,34 @@ const fetchUserData = async () => {
     name.value = data.name
   } catch (err) {
     console.error(err)
+  }
+}
+
+const availableStatuses = ref([
+  { label: '🍺 Wolny na piwo', value: 'available'},
+  { label: '❌ Zajęty', value: 'busy' },
+  { label: '⚪ Offline', value: 'offline' },
+])
+
+const statusLabel = computed(() => {
+  const current = availableStatuses.value.find(s => s.value === status.value)
+  return current ? current.label : status.value 
+})
+
+const updateStatus = async (newStatusValue) => {
+  isStatusPopupVisible.value = false 
+
+  const token = localStorage.getItem('token')
+  try {
+    const { data } = await axios.post(
+      '/users/status',
+      { status: newStatusValue }, 
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    status.value = data.status
+    addNotification('status_changed', `Status zaktualizowany na ${statusLabel.value}`)
+  } catch (err) {
+    console.error('Błąd podczas aktualizacji statusu:', err)
   }
 }
 
