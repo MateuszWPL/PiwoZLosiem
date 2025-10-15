@@ -11,15 +11,15 @@ export const getStatus = async (req, res) => {
 }
 
 export const setStatus = async (req, res) => {
-  const { newStatus } = req.body
-  if (!newStatus || typeof newStatus !== 'string') {
+  const { status } = req.body
+  if (!status || typeof status !== 'string') {
     return res.status(400).json({ error: 'Nieprawidłowy status' })
   }
 
   try {
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { status: newStatus.trim() },
+      { status: status.trim() },
       { new: true }
     )
     if (!user) return res.status(404).json({ error: 'Użytkownik nie znaleziony' })
