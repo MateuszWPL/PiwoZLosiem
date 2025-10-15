@@ -9,11 +9,14 @@ import ForgottenPasswordPage from '@/pages/ForgottenPasswordPage.vue'
 import RegisterPageComplete from '@/pages/RegisterPage-Complete.vue'
 import MyBeers from '@/pages/MyBeers.vue'
 import ProfilePage from '@/pages/ProfilePage.vue'
+import Chat from '@/pages/Chat.vue'
+import ChatRoom from '@/pages/ChatRoom.vue'
+import DiscoverView from '@/pages/DiscoverView.vue'
 
 const routes = [
   { path: '/', name: 'MainPage', component: MainPage },
   { path: '/rejestracja', name: 'Rejestracja', component: RegisterPage },
-  { path: '/dashboard', name: 'Dashboard', component: Dashboard },
+  { path: '/dashboard', name: 'Dashboard', component: Dashboard, meta: { requiresAuth: true } },
   { path: '/logowanie', name: 'Logowanie', component: LoginPage, meta: { requiresGuest: true } },
   {
     path: '/resetowanie-hasla',
@@ -23,13 +26,18 @@ const routes = [
   },
   {
     path: '/rejestracja-uzupelnienie',
-    name: 'RejestracjaUzupelnienie ',
+    name: 'RejestracjaUzupelnienie',
     component: RegisterPageComplete,
+    meta: { requiresAuth: true },
   },
   { path: '/powitanie', name: 'Powitanie', component: Welcome },
-  { path: '/ranking', name: 'Ranking', component: Ranking },
   { path: '/moje-piwa', name: 'MojePiwa', component: MyBeers },
   { path: '/profil', name: 'Profil', component: ProfilePage },
+  { path: '/chat', name: 'Chat', component: Chat },
+  { path: '/chat/:id', name: 'ChatRoom', component: ChatRoom },
+  { path: '/ranking', name: 'Ranking', component: Ranking, meta: { requiresAuth: true } },
+  { path: '/moje-piwa', name: 'MojePiwa', component: MyBeers, meta: { requiresAuth: true } },
+  { path: '/odkrywaj', name: 'Odkrywaj', component: DiscoverView, meta: { requiresAuth: true } }
 ]
 
 const router = createRouter({
@@ -39,8 +47,13 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
+
   if (to.meta.requiresGuest && token) {
     return next('/dashboard')
+  }
+
+  if (to.meta.requiresAuth && !token) {
+    return next('/logowanie')
   }
 
   next()

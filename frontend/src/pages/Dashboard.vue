@@ -5,7 +5,7 @@
       <div class="max-w-screen-xl mx-auto">
         <div>
           <h3 class="text-white text-[30px] tracking-[-0.75px] mt-10">
-            Cześć, <span class="text-primaryOrange">Michał</span
+            Cześć, <span class="text-primaryOrange">{{ name || "Piwosz"}}</span
             ><span class="text-primaryOrange">!</span>
           </h3>
           <p class="text-secondaryGold text-sm leading-5 mt-1 mb-6">Gotowy na piwo ?</p>
@@ -16,9 +16,9 @@
               <p>Twój status</p>
               <div class="flex items-center gap-2">
                 <div class="py-2 px-4 bg-primaryOrange rounded-full w-fit">
-                  <p class="text-white">🍺 wolny na piwo</p>
+                  <p class="text-white"> {{ status }}</p>
                 </div>
-                <button class="text-white bg-primaryGreen py-2 px-3 rounded-full">Zmień</button>
+                <button class="text-white bg-primaryGreen py-2 px-3 rounded-full" @click="changeStatus">Zmień</button>
               </div>
             </div>
             <div class="grid template-columns-1 gap-6 md:grid-cols-3">
@@ -413,4 +413,46 @@
 
 <script setup>
 import Navbar from '@/components/Navbar.vue'
+import { ref, onMounted } from 'vue'
+import axios from '@/api/api.js'
+import { useNotifications } from '@/composables/useNotifications'
+
+const { addNotification } = useNotifications()
+const status = ref('')
+const name = ref('')
+
+const token = localStorage.getItem('token')
+
+const changeStatus = async () => {
+  const newStatus = prompt('Podaj nowy status:')
+  if (!newStatus) return
+
+  const token = localStorage.getItem('token')
+  try {
+    const { data } = await axios.post(
+      '/users/status',
+      { newStatus },
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    status.value = data.status
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+const fetchUserData = async () => {
+  const token = localStorage.getItem('token')
+  try {
+    const { data } = await axios.get('/users/me', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    status.value = data.status
+    name.value = data.name
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+onMounted(fetchUserData)
+
 </script>

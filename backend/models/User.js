@@ -9,7 +9,9 @@ const userSchema = new mongoose.Schema({
   miasto: { type: String },
   plec: { type: String },
   isProfileComplete: { type: Boolean, default: false },
+  status: { type: String, default: "🍺 wolny na piwo" },
 });
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 export default User;
+
