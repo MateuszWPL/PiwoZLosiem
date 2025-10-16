@@ -40,7 +40,12 @@
     <div class="flex items-center gap-2">
       <div class="py-2 px-6 bg-primaryOrange rounded-[10px] flex items-center justify-center">
         <p class="text-white text-sm font-semibold">
-          🍺 {{ user.status === 'wolny' ? 'Wolny na piwo' : 'Zajęty' }}
+          {{ 
+              user.status === 'available' ? '🍺 Wolny na piwo' :
+              user.status === 'busy' ? '❌ Zajęty' :
+              user.status === 'offline' ? '⚪ Offline' :
+              ''
+          }}
         </p>
       </div>
     </div>
@@ -88,13 +93,23 @@
 
         <!-- Akcje -->
         <div class="flex flex-col md:flex-row gap-6 mt-20">
-          <button class="bg-primaryOrange text-white font-semibold py-4 px-6 rounded-[10px] w-full md:w-1/2 shadow-md shadow-primaryOrange/50 hover:shadow-primaryOrange/70 transition duration-300">
-            🏆 Zobacz ranking
-          </button>
-          <button class="bg-tertiaryGreen/50 text-white font-semibold py-4 px-6 rounded-[10px] w-full md:w-1/2 shadow-md shadow-black/20 hover:bg-tertiaryGreen/70 transition duration-300">
-            🍺 Moja historia piw
-          </button>
+          <router-link to="/ranking" class="w-full md:w-1/2">
+            <div class="w-full">
+              <button class="bg-primaryOrange text-white font-semibold py-4 px-6 rounded-[10px] w-full shadow-md shadow-primaryOrange/50 hover:shadow-primaryOrange/70 transition duration-300">
+                🏆 Zobacz ranking
+              </button>
+            </div>
+          </router-link>
+
+          <router-link to="/moje-piwa" class="w-full md:w-1/2">
+            <div class="w-full">
+              <button class="bg-tertiaryGreen/50 text-white font-semibold py-4 px-6 rounded-[10px] w-full shadow-md shadow-black/20 hover:bg-tertiaryGreen/70 transition duration-300">
+                🍺 Moja historia piw
+              </button>
+            </div>
+          </router-link>
         </div>
+
 
       </div>
     </div>
