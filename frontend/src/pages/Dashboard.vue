@@ -460,7 +460,7 @@ const fetchUserData = async () => {
       headers: { Authorization: `Bearer ${token}` }
     })
     status.value = data.status
-    name.value = data.name
+    name.value = data.firstName
   } catch (err) {
     console.error(err)
   }
