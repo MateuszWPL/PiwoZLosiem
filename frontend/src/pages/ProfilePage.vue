@@ -114,6 +114,8 @@
 /* minimalne importy i dane — brak JSX */
 import Navbar from '@/components/Navbar.vue'
 import ProfileEditPopup from '@/components/ProfileEditPopup.vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
 /* SVG jako stringy — używamy dokładnych path z Twojego dashboardu */
 const svgBeer = `
@@ -193,18 +195,50 @@ const badges = [
   { name: '5 z rzędu', icon: svgShield }
 ]
 
-import { ref } from 'vue'
-
 const showEditPopup = ref(false)
+// const user = ref({
+//   name: 'Michał Kowalski',
+//   age: 29,
+//   gender: 'Mężczyzna',
+//   location: 'Poznań',
+//   bio: 'Miłośnik kraftów i dobrych pubów. Zawsze chętny na odkrywanie nowych smaków!',
+//   status: 'wolny',
+//   favoriteBeers: ['ŻUBR', 'ŁOMŻA'],
+//   photo: null
+// })
+
 const user = ref({
-  name: 'Michał Kowalski',
-  age: 29,
-  gender: 'Mężczyzna',
-  location: 'Poznań',
-  bio: 'Miłośnik kraftów i dobrych pubów. Zawsze chętny na odkrywanie nowych smaków!',
-  status: 'wolny',
-  favoriteBeers: ['ŻUBR', 'ŁOMŻA'],
+  name: '',
+  age: '',
+  gender: '',
+  location: '',
+  bio: '',
+  status: '',
+  favoriteBeers: [],
   photo: null
+})
+
+async function fetchUserData() {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      console.warn('Brak tokena — użytkownik nie zalogowany')
+      return
+    }
+
+    const res = await axios.get('http://localhost:5000/api/users/me', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    user.value = res.data
+  } catch (err) {
+    console.error('Błąd pobierania danych użytkownika:', err)
+  }
+}
+
+onMounted(() => {
+  fetchUserData()
 })
 
 function updateProfile(updatedData) {
