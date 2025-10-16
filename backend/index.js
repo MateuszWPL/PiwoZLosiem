@@ -4,6 +4,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import http from "http";
 import { Server } from "socket.io";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import authRoutes from "./routes/authRoutes.js";
 import beerRoutes from "./routes/beerRoutes.js";
@@ -13,6 +15,7 @@ import userRoutes from "./routes/userRoutes.js";
 dotenv.config();
 const app = express();
 const server = http.createServer(app);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const io = new Server(server, {
   cors: {
@@ -36,7 +39,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/beers", beerRoutes);
 app.use("/api", rankingRoutes);
 app.use("/api/users", userRoutes);
-
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 let onlineUsers = {};
 

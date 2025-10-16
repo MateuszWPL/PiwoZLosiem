@@ -11,13 +11,13 @@
   <div class="flex items-center gap-6">
     <div class="flex items-center justify-center bg-primaryOrange/20 rounded-full aspect-square w-24 sm:w-28 xl:w-20 mx-auto xl:mx-0 overflow-hidden">
       <!-- jeśli chcesz mieć zdjęcie -->
-      <img v-if="user.photo" :src="user.photo" alt="Zdjęcie profilowe" class="w-full h-full object-cover" />
+      <img v-if="user.photo" :src="`http://localhost:5000${user.photo}`" alt="Zdjęcie profilowe" class="w-full h-full object-cover" />
       <div v-else v-html="svgBeer" class="w-1/2 h-auto flex-shrink-0" style="max-width: 60%; max-height: 60%;"></div>
     </div>
 
     <div class="space-y-1">
       <h2 class="text-white text-2xl font-semibold">
-        {{ user.name }}, {{ user.age }}
+        {{ user.firstName }} {{ user.lastName }}, {{ user.age }}
       </h2>
 
       <p class="text-secondaryGold text-sm flex items-center gap-2">
@@ -52,7 +52,6 @@
     </button>
   </div>
 </div>
-
 
         <!-- Statystyki -->
         <div class="mt-8">
@@ -111,13 +110,11 @@
 </template>
 
 <script setup>
-/* minimalne importy i dane — brak JSX */
-import Navbar from '@/components/Navbar.vue'
-import ProfileEditPopup from '@/components/ProfileEditPopup.vue'
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import Navbar from '@/components/Navbar.vue'
+import ProfileEditPopup from '@/components/ProfileEditPopup.vue'
 
-/* SVG jako stringy — używamy dokładnych path z Twojego dashboardu */
 const svgBeer = `
 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="32" viewBox="0 0 36 32" fill="none">
   <path d="M25.5 14.6665H27C28.1935 14.6665 29.3381 15.0879 30.182 15.8381C31.0259 16.5882 31.5 17.6056 31.5 18.6665C31.5 19.7274 31.0259 20.7448 30.182 21.4949C29.3381 22.2451 28.1935 22.6665 27 22.6665H25.5" stroke="#D35226" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -180,7 +177,6 @@ const svgShield = `
 </svg>
 `
 
-/* dane do wyświetlenia */
 const stats = [
   { label: 'Piwa', value: 47, icon: svgBeer },
   { label: 'Znajomi', value: 23, icon: svgFriends },
@@ -196,19 +192,10 @@ const badges = [
 ]
 
 const showEditPopup = ref(false)
-// const user = ref({
-//   name: 'Michał Kowalski',
-//   age: 29,
-//   gender: 'Mężczyzna',
-//   location: 'Poznań',
-//   bio: 'Miłośnik kraftów i dobrych pubów. Zawsze chętny na odkrywanie nowych smaków!',
-//   status: 'wolny',
-//   favoriteBeers: ['ŻUBR', 'ŁOMŻA'],
-//   photo: null
-// })
 
 const user = ref({
-  name: '',
+  firstName: '',
+  lastName: '',
   age: '',
   gender: '',
   location: '',
@@ -241,13 +228,45 @@ onMounted(() => {
   fetchUserData()
 })
 
-function updateProfile(updatedData) {
-  Object.assign(user.value, updatedData)
+async function updateProfile(updatedData) {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      alert('Musisz być zalogowany, aby edytować profil')
+      return
+    }
+
+    const optimistic = { ...user.value, ...updatedData }
+    user.value = optimistic
+
+    const payload = {
+      firstName: updatedData.firstName || '',
+      lastName: updatedData.lastName || '',
+      age: updatedData.age || '',
+      gender: updatedData.gender || '',
+      location: updatedData.location || '',
+      bio: updatedData.bio || '',
+      status: updatedData.status || '',
+      favoriteBeers: updatedData.favoriteBeers || [],
+      photo: updatedData.photo || null
+    }
+
+    const res = await axios.put('http://localhost:5000/api/users/me', payload, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+
+    user.value = { ...res.data }
+
+    alert('Profil zapisany!')
+  } catch (err) {
+    console.error('Błąd zapisu profilu', err)
+    alert('Nie udało się zapisać profilu.')
+    fetchUserData()
+  }
 }
 
 </script>
 
 <style scoped>
-/* Dodaj drobne poprawki jeśli trzeba, np. aby SVG-y miały lepsze skalowanie */
 svg { display: block; }
 </style>

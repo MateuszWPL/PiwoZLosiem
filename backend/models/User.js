@@ -10,6 +10,9 @@ const userSchema = new mongoose.Schema({
   plec: { type: String },
   isProfileComplete: { type: Boolean, default: false },
   status: { type: String, default: "🍺 wolny na piwo" },
+  bio: { type: String, default: '' },
+  photoUrl: { type: String, default: null },
+  favoriteBeers: { type: [String], default: [] },
 });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
