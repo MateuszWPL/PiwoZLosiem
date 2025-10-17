@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
   bio: { type: String, default: '' },
   photoUrl: { type: String, default: null },
   favoriteBeers: { type: [String], default: [] },
+  achievements: [ { type: mongoose.Schema.Types.ObjectId, ref: "Achievement", }, ],
 });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);

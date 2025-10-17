@@ -40,12 +40,7 @@
     <div class="flex items-center gap-2">
       <div class="py-2 px-6 bg-primaryOrange rounded-[10px] flex items-center justify-center">
         <p class="text-white text-sm font-semibold">
-          {{ 
-              user.status === 'available' ? '🍺 Wolny na piwo' :
-              user.status === 'busy' ? '❌ Zajęty' :
-              user.status === 'offline' ? '⚪ Offline' :
-              ''
-          }}
+          {{ getStatusLabel(user.status) }}
         </p>
       </div>
     </div>
@@ -125,7 +120,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
+import { statuses } from '../../../shared/statuses.js'
 import axios from 'axios'
 import Navbar from '@/components/Navbar.vue'
 import ProfileEditPopup from '@/components/ProfileEditPopup.vue'
@@ -192,22 +188,21 @@ const svgShield = `
 </svg>
 `
 
-const stats = [
-  { label: 'Piwa', value: 47, icon: svgBeer },
+const stats = ref([
+  { label: 'Piwa', value: 0, icon: svgBeer },
   { label: 'Znajomi', value: 23, icon: svgFriends },
-  { label: 'Ranking', value: '#12', icon: svgRanking },
+  { label: 'Ranking', value: '#0', icon: svgRanking },
   { label: 'Odznaki', value: 8, icon: svgBadge }
-]
+])
 
-const badges = [
-  { name: 'Pierwsze piwo', icon: svgBeer },
-  { name: 'Weekendowy wojownik', icon: svgStar },
-  { name: 'Mistrz browarów', icon: svgTrophy },
-  { name: '5 z rzędu', icon: svgShield }
-]
+// const badges = [
+//   { name: 'Pierwsze piwo', icon: svgBeer },
+//   { name: 'Weekendowy wojownik', icon: svgStar },
+//   { name: 'Mistrz browarów', icon: svgTrophy },
+//   { name: '5 z rzędu', icon: svgShield }
+// ]
 
 const showEditPopup = ref(false)
-
 const user = ref({
   firstName: '',
   lastName: '',
@@ -217,21 +212,24 @@ const user = ref({
   bio: '',
   status: '',
   favoriteBeers: [],
-  photo: null
+  photo: null,
 })
+const beerStats = ref({ today: 0, week: 0, month: 0, total: 0 })
+const userRanking = ref('#0')
+const userAchievements = ref([])
+
+/* ----------------- Functions ----------------- */
+function getStatusLabel(value) {
+  const status = statuses.find(s => s.value === value)
+  return status ? status.label : ''
+}
 
 async function fetchUserData() {
   try {
     const token = localStorage.getItem('token')
-    if (!token) {
-      console.warn('Brak tokena — użytkownik nie zalogowany')
-      return
-    }
-
+    if (!token) return
     const res = await axios.get('http://localhost:5000/api/users/me', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     })
     user.value = res.data
   } catch (err) {
@@ -239,21 +237,53 @@ async function fetchUserData() {
   }
 }
 
-onMounted(() => {
-  fetchUserData()
-})
+const fetchBeerStats = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    const res = await axios.get('http://localhost:5000/api/beers/stats', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    beerStats.value = res.data
+  } catch (err) {
+    console.error('Błąd przy pobieraniu statystyk piw:', err)
+  }
+}
+
+const fetchUserRanking = async (period = 'all') => {
+  try {
+    const token = localStorage.getItem('token')
+    const res = await axios.get(`http://localhost:5000/api/ranking/${period}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    const ranking = res.data
+    const me = user.value
+    let position = ranking.findIndex(
+      r => r.imie === me.firstName && r.nazwisko === me.lastName
+    )
+    if (position === -1) position = ranking.length
+    userRanking.value = `#${position + 1}`
+  } catch (err) {
+    console.error('Błąd przy pobieraniu rankingu:', err)
+  }
+}
+
+const fetchUserAchievements = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.get("http://localhost:5000/api/achievements/me", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    userAchievements.value = res.data;
+  } catch (err) {
+    console.error("Błąd pobierania odznak:", err);
+  }
+};
 
 async function updateProfile(updatedData) {
   try {
     const token = localStorage.getItem('token')
-    if (!token) {
-      alert('Musisz być zalogowany, aby edytować profil')
-      return
-    }
-
-    const optimistic = { ...user.value, ...updatedData }
-    user.value = optimistic
-
+    if (!token) return alert('Musisz być zalogowany, aby edytować profil')
+    user.value = { ...user.value, ...updatedData }
     const payload = {
       firstName: updatedData.firstName || '',
       lastName: updatedData.lastName || '',
@@ -265,13 +295,10 @@ async function updateProfile(updatedData) {
       favoriteBeers: updatedData.favoriteBeers || [],
       photo: updatedData.photo || null
     }
-
     const res = await axios.put('http://localhost:5000/api/users/me', payload, {
       headers: { Authorization: `Bearer ${token}` }
     })
-
     user.value = { ...res.data }
-
     alert('Profil zapisany!')
   } catch (err) {
     console.error('Błąd zapisu profilu', err)
@@ -279,6 +306,31 @@ async function updateProfile(updatedData) {
     fetchUserData()
   }
 }
+
+/* ----------------- Watch ----------------- */
+watch([beerStats, userRanking, userAchievements], () => {
+  stats.value = [
+    { label: 'Piwa', value: beerStats.value.total || 0, icon: svgBeer },
+    { label: 'Znajomi', value: 23, icon: svgFriends },
+    { label: 'Ranking', value: userRanking.value, icon: svgRanking },
+    { label: 'Odznaki', value: userAchievements.value.length || 0, icon: svgBadge }
+  ]
+})
+
+/* ----------------- Lifecycle ----------------- */
+onMounted(async () => {
+  await fetchUserData()
+  await fetchBeerStats()
+  await fetchUserRanking()
+  await fetchUserAchievements()
+})
+
+const badges = computed(() => {
+  return userAchievements.value.map(ach => ({
+    name: ach.name,
+    icon: ach.icon || svgBadge
+  }))
+})
 
 </script>
 

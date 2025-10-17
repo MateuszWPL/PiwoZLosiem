@@ -22,7 +22,7 @@
               </div>
               <ChangeStatusPopup 
                 :visible="isStatusPopupVisible" 
-                :statuses="availableStatuses" 
+                :statuses="statuses" 
                 :current-status="statusLabel"
                 @close="isStatusPopupVisible = false" 
                 @select="updateStatus"
@@ -425,6 +425,7 @@ import axios from '@/api/api.js'
 import { useNotifications } from '@/composables/useNotifications'
 import StatusPopup from '@/components/ChangeStatusPopup.vue'
 import ChangeStatusPopup from '@/components/ChangeStatusPopup.vue'
+import { statuses } from '../../../shared/statuses.js'
 
 
 const { addNotification } = useNotifications()
@@ -466,15 +467,9 @@ const fetchUserData = async () => {
   }
 }
 
-const availableStatuses = ref([
-  { label: '🍺 Wolny na piwo', value: 'available'},
-  { label: '❌ Zajęty', value: 'busy' },
-  { label: '⚪ Offline', value: 'offline' },
-])
-
 const statusLabel = computed(() => {
-  const current = availableStatuses.value.find(s => s.value === status.value)
-  return current ? current.label : status.value 
+  const current = statuses.find(s => s.value === status.value)
+  return current ? current.label : status.value
 })
 
 const updateStatus = async (newStatusValue) => {

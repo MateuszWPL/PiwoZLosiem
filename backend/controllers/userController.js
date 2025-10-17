@@ -34,7 +34,7 @@ export const setStatus = async (req, res) => {
 
 export const getUserData = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('imie nazwisko wiek miasto plec status bio photoUrl')
+    const user = await User.findById(req.user._id).select('imie nazwisko wiek miasto plec status bio photoUrl favoriteBeers')
     if (!user) return res.status(404).json({ error: 'Użytkownik nie znaleziony' })
 
     res.json({
@@ -46,6 +46,7 @@ export const getUserData = async (req, res) => {
       bio: user.bio,
       status: user.status,
       photo: user.photoUrl,
+      favoriteBeers: user.favoriteBeers || [],
     })
   } catch (err) {
     res.status(500).json({ error: 'Błąd serwera' })
