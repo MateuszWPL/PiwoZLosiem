@@ -11,6 +11,7 @@ import authRoutes from "./routes/authRoutes.js";
 import beerRoutes from "./routes/beerRoutes.js";
 import rankingRoutes from "./routes/rankingRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import achievementRoutes from "./routes/achievementRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -39,6 +40,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/beers", beerRoutes);
 app.use("/api", rankingRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/achievements", achievementRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 let onlineUsers = {};

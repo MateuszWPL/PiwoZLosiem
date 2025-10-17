@@ -250,9 +250,9 @@ const fullName = computed({
 const previewImage = ref(null)
 
 const statuses = [
-  { label: 'Wolny na piwo', value: 'wolny' },
-  { label: 'Zajęty', value: 'zajęty' },
-  { label: 'Offline', value: 'offline' }
+  { label: '🍺 Wolny na piwo', value: 'available'},
+  { label: '❌ Zajęty', value: 'busy' },
+  { label: '⚪ Offline', value: 'offline' },
 ]
 
 const beers = ['ŻUBR', 'WARKA', 'ŁOMŻA', 'WOJANEK']
