@@ -1,6 +1,8 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { sendResetEmail } from "../utils/mailer.js";
+import { v4 as uuidv4 } from "uuid";
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -75,5 +77,59 @@ export const completeProfile = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+export const requestPasswordReset = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "Podany email nie jest zarejestrowany" });
+    }
+
+    const token = uuidv4();
+
+    user.resetToken = token;
+    user.resetTokenExpiry = Date.now() + 3600000; // 1h
+    await user.save();
+
+    await sendResetEmail(email, token);
+
+    res.json({ message: "Link do resetu został wysłany!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Błąd przy wysyłaniu maila" });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  try {
+    const user = await User.findOne({
+      resetToken: token,
+      resetTokenExpiry: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "Token nieprawidłowy lub wygasł" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+
+    user.password = await bcrypt.hash(newPassword, salt);
+    user.resetToken = undefined;
+    user.resetTokenExpiry = undefined;
+    await user.save();
+
+    res.json({ message: "Hasło zostało zaktualizowane!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Błąd podczas resetu hasła" });
   }
 };

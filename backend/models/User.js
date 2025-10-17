@@ -14,6 +14,8 @@ const userSchema = new mongoose.Schema({
   photoUrl: { type: String, default: null },
   favoriteBeers: { type: [String], default: [] },
   achievements: [ { type: mongoose.Schema.Types.ObjectId, ref: "Achievement", }, ],
+  resetToken: { type: String },
+  resetTokenExpiry: { type: Date },
 });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);

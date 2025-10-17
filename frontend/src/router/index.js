@@ -12,6 +12,7 @@ import ProfilePage from '@/pages/ProfilePage.vue'
 import Chat from '@/pages/Chat.vue'
 import ChatRoom from '@/pages/ChatRoom.vue'
 import DiscoverView from '@/pages/DiscoverView.vue'
+import ResetPassword from '@/pages/ResetPassword.vue'
 
 const routes = [
   { path: '/', name: 'MainPage', component: MainPage },
@@ -24,6 +25,7 @@ const routes = [
     component: ForgottenPasswordPage,
     meta: { requiresGuest: true },
   },
+  { path: '/reset-hasla', name: 'ResetHasla', component: ResetPassword, meta: { requiresGuest: true }},
   {
     path: '/rejestracja-uzupelnienie',
     name: 'RejestracjaUzupelnienie',
