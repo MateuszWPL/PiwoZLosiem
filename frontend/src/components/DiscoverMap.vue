@@ -1,83 +1,111 @@
 <template>
-  <div class="discover-container">
-    <div class="controls">
-      <label for="distance">Odległość: {{ displayDistance }}</label>
-      <input
-        type="range"
-        min="100"
-        max="10000"
-        step="100"
-        id="distance"
-        v-model="distanceInMeters"
-        class="slider"
-      />
+  <div class="pb-16"> 
+    
+    <div class="bg-tertiaryGreen/50 rounded-[10px] p-5 w-full shadow-md shadow-black/20">
+      
+      <div class="controls mb-6">
+        <label for="distance" class="text-secondaryGold mb-2 block text-sm font-semibold">
+          Zasięg mapy: {{ displayDistance }}
+        </label>
+        <input
+          type="range"
+          min="100"
+          max="10000"
+          step="100"
+          id="distance"
+          v-model="distanceInMeters"
+          ref="rangeInput"
+          class="w-full h-2 rounded-lg appearance-none cursor-pointer custom-range-slider"
+        />
+      </div>
+
+      <div v-if="!currentUserPosition && geolocationError" class="map-placeholder error">
+        <p>Nie udało się pobrać lokalizacji. Sprawdź uprawnienia w przeglądarce.</p>
+      </div>
+      <div v-else-if="!currentUserPosition || !user" class="map-placeholder">
+        <p>Pobieranie Twojej lokalizacji i danych...</p>
+      </div>
+
+      <div v-else style="height:500px; width:100%">
+        <l-map ref="map" v-model:zoom="zoom" :center="currentUserPosition" :use-global-leaflet="false">
+          <l-tile-layer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            layer-type="base"
+            name="Esri World Imagery"
+            :attribution="'&copy; Esri'"
+          ></l-tile-layer>
+          <l-tile-layer
+            url="https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png"
+            layer-type="overlay"
+            name="Labels"
+            :attribution="'&copy; CartoDB'"
+            pane="overlayPane"
+          ></l-tile-layer>
+
+          <l-marker v-if="currentUserPosition && user" :lat-lng="currentUserPosition" :icon="createCustomIcon(user.firstName)">
+            <l-tooltip :options="{ className: 'custom-tooltip' }">{{ user.name }} (Ty)</l-tooltip>
+          </l-marker>
+
+          <l-marker 
+              v-for="otherUser in filteredUsers" 
+              :key="otherUser.userId" 
+              :lat-lng="[otherUser.lat, otherUser.lng]"
+              :icon="createCustomIcon(otherUser.name)"
+          >
+            <l-tooltip :options="{ className: 'custom-tooltip' }">
+              <strong>{{ otherUser.firstName }} {{ otherUser.lastName }}</strong>, {{ otherUser.age }}
+            </l-tooltip>
+          </l-marker>
+        </l-map>
+      </div>
     </div>
-
-    <div v-if="!currentUserPosition && geolocationError" class="map-placeholder error">
-      <p>Nie udało się pobrać lokalizacji. Sprawdź uprawnienia w przeglądarce.</p>
-    </div>
-    <div v-else-if="!currentUserPosition || !user" class="map-placeholder">
-      <p>Pobieranie Twojej lokalizacji i danych...</p>
-    </div>
-
-    <div v-else style="height:700px; width:100%">
-      <l-map ref="map" v-model:zoom="zoom" :center="currentUserPosition" :use-global-leaflet="false">
-        <l-tile-layer
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-          layer-type="base"
-          name="Esri World Imagery"
-          :attribution="'&copy; Esri'"
-        ></l-tile-layer>
-        <l-tile-layer
-          url="https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png"
-          layer-type="overlay"
-          name="Labels"
-          :attribution="'&copy; CartoDB'"
-          pane="overlayPane"
-        ></l-tile-layer>
-
-        <l-marker v-if="currentUserPosition && user" :lat-lng="currentUserPosition" :icon="createCustomIcon(user.name)">
-            <l-tooltip :options="{ className: 'custom-tooltip' }">{{ user.name }}</l-tooltip>
-        </l-marker>
-
-        <l-marker 
-            v-for="otherUser in filteredUsers" 
-            :key="otherUser.id" 
-            :lat-lng="[otherUser.lat, otherUser.lng]"
-            :icon="createCustomIcon(otherUser.name)">
-          <l-tooltip :options="{ className: 'custom-tooltip' }">{{ otherUser.name }}</l-tooltip>
-        </l-marker>
-      </l-map>
-    </div>
-
-    <div class="user-list">
-      <h3>W pobliżu</h3>
-      <ul v-if="currentUserPosition">
-        <li v-for="user in filteredUsers" :key="user.id">
-          {{ user.name }} - {{ calculateDistance(currentUserPosition.lat, currentUserPosition.lng, user.lat, user.lng).toFixed(2) }} km
+    
+    <div class="user-list mt-8 bg-tertiaryGreen/50 rounded-[10px] p-5 shadow-md shadow-black/20">
+      <h4 class="text-white text-[24px] tracking-[-0.6px] font-semibold mb-3">Użytkownicy w promieniu {{ displayDistance }}</h4>
+      <ul v-if="currentUserPosition && filteredUsers.length" class="space-y-2 text-secondaryGold">
+        <li v-for="user in filteredUsers" :key="user.userId" class="flex justify-between p-3 bg-tertiaryGreen/30 rounded-[8px] hover:bg-tertiaryGreen/50 transition">
+          <span class="text-white font-medium">{{ user.firstName }} {{ user.lastName }}</span>
+          <span class="text-secondaryGold text-sm font-light">
+            {{ calculateDistance(currentUserPosition.lat, currentUserPosition.lng, user.lat, user.lng).toFixed(2) }} km
+          </span>
         </li>
       </ul>
-      <p v-else>Oczekuję na lokalizację, aby wyświetlić użytkowników...</p>
+      <p v-else-if="currentUserPosition" class="text-secondaryGold/70">Brak aktywnych użytkowników w promieniu {{ displayDistance }}.</p>
+      <p v-else class="text-secondaryGold/70">Oczekuję na lokalizację...</p>
     </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
 import { io } from "socket.io-client";
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker, LTooltip } from "@vue-leaflet/vue-leaflet";
 import L from 'leaflet';
-import axios from 'axios';
+import axios from 'axios'; 
+import { statuses } from '../../../shared/statuses.js';
 
 const zoom = ref(13);
 const distanceInMeters = ref(5000);
 const onlineUsers = ref([]);
 const currentUserPosition = ref(null);
 const geolocationError = ref(false);
-const user = ref(null);
+const rangeInput = ref(null);
+
+const user = ref(null); 
+const status = ref(''); 
 
 const socket = io("http://localhost:5000");
+
+function updateRangeProgress(value) {
+  const min = 100;
+  const max = 10000;
+  const progress = (value - min) / (max - min);
+  if (rangeInput.value) {
+    rangeInput.value.style.setProperty('--range-progress', progress);
+  }
+}
 
 const displayDistance = computed(() => {
   if (distanceInMeters.value < 1000) {
@@ -87,6 +115,7 @@ const displayDistance = computed(() => {
 });
 
 watch(distanceInMeters, (newDistance) => {
+  updateRangeProgress(newDistance);
   if (newDistance <= 500) zoom.value = 16;
   else if (newDistance <= 1000) zoom.value = 15;
   else if (newDistance <= 2000) zoom.value = 14;
@@ -111,36 +140,6 @@ const filteredUsers = computed(() => {
   });
 });
 
-function createCustomIcon(name = '') {
-  const letter = name ? name.charAt(0).toUpperCase() : '?';
-  return L.divIcon({
-    html: `<span>${letter}</span>`,
-    className: 'custom-marker-icon',
-    iconSize: [32, 32],
-    iconAnchor: [16, 16]
-  });
-}
-
-async function fetchCurrentUser() {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    console.error("Brak tokenu, nie można pobrać danych użytkownika.");
-    user.value = { name: 'Gość' };
-    return;
-  }
-  try {
-    const response = await axios.get('/api/auth/me', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    console.log("Pobrane dane zalogowanego użytkownika:", response.data); 
-    user.value = response.data;
-  } catch (error) {
-    console.error("Błąd podczas pobierania danych użytkownika:", error);
-  }
-}
-
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -153,25 +152,66 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-onMounted(async () => {
-  await fetchCurrentUser();
-
-  socket.on('updateUserList', (users) => {
-    console.log("Otrzymano listę użytkowników z serwera:", users);
-    onlineUsers.value = users.filter(u => u.id !== socket.id);
+function createCustomIcon(name = '') {
+  const letter = name ? name.charAt(0).toUpperCase() : '?';
+  return L.divIcon({
+    html: `<span>${letter}</span>`,
+    className: 'custom-marker-icon',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16]
   });
+}
 
+const fetchUserData = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  try {
+    const res = await axios.get('http://localhost:5000/api/users/me', { 
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    
+    const userData = res.data;
+    status.value = userData.status;
+    
+    user.value = {
+        name: `${userData.firstName} ${userData.lastName}`, 
+        _id: userData._id,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        age: userData.age,
+    };
+  } catch (err) {
+    console.error('Błąd pobierania danych użytkownika:', err);
+    user.value = { name: 'Błąd', _id: 'error' };
+  }
+}
+
+onMounted(async () => {
+  await fetchUserData(); 
+  updateRangeProgress(distanceInMeters.value);
+  
+  socket.on('updateUserList', (users) => {
+    if(user.value) {
+      onlineUsers.value = users.filter(u => u.userId !== user.value._id);
+    }
+  });
+  
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(position => {
       const { latitude, longitude } = position.coords;
       currentUserPosition.value = { lat: latitude, lng: longitude };
       geolocationError.value = false;
       
-      if (user.value && user.value.name) {
+      if (user.value && user.value._id) { 
         socket.emit('updateLocation', {
+          userId: user.value._id, 
           lat: latitude,
           lng: longitude,
-          name: user.value.name
+          name: user.value.firstName.charAt(0).toUpperCase(),
+          firstName: user.value.firstName,
+          lastName: user.value.lastName,
+          age: user.value.age,
+          status: status.value,
         });
       }
     }, 
@@ -190,6 +230,7 @@ onUnmounted(() => {
 });
 </script>
 
+
 <style>
 .custom-marker-icon {
   background-color: #f97316;
@@ -200,14 +241,12 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
 }
-
 .custom-marker-icon span {
   color: white;
   font-size: 16px;
   font-weight: bold;
   font-family: sans-serif;
 }
-
 .custom-tooltip {
   background-color: rgba(0, 0, 0, 0.8);
   border: none;
@@ -218,17 +257,63 @@ onUnmounted(() => {
   box-shadow: none;
   white-space: nowrap;
 }
-
 .leaflet-tooltip-top.custom-tooltip::before,
 .leaflet-tooltip-bottom.custom-tooltip::before {
   border-top-color: rgba(0, 0, 0, 0.8);
   border-bottom-color: rgba(0, 0, 0, 0.8);
 }
+
+.custom-range-slider {
+  --range-fill-color: #1C3A27;
+  --range-empty-color: #D35226;
+  background: none;
+  height: 8px;
+}
+
+.custom-range-slider::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, 
+    var(--range-fill-color) calc(var(--range-progress) * 100%), 
+    var(--range-empty-color) calc(var(--range-progress) * 100%));
+  height: 8px;
+  border-radius: 4px;
+}
+
+.custom-range-slider::-moz-range-track {
+  background: var(--range-empty-color);
+  height: 8px;
+  border-radius: 4px;
+}
+.custom-range-slider::-moz-range-progress {
+  background: var(--range-fill-color);
+  height: 8px;
+  border-radius: 4px;
+}
+
+.custom-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 20px;
+  margin-top: calc(8px / 2 - 20px / 2);
+  
+  background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMiIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIyIDIwIiBmaWxsPSJub25lIj4KICA8cGF0aCBkPSJNMTEuMDUxOCAwLjVDMTYuNDUxOSAwLjUwMDIyNCAyMC44MDc2IDQuNzY1MjkgMjAuODA3NiAxMEMyMC44MDc2IDE1LjIzNDcgMTYuNDUxOSAxOS40OTk4IDExLjA1MTggMTkuNUM1LjY1MTQzIDE5LjUgMS4yOTQ5MiAxNS4yMzQ4IDEuMjk0OTIgMTBDMS4yOTQ5MiA0Ljc2NTE1IDUuNjUxNDMgMC41IDExLjA1MTggMC41WiIgZmlsbD0iIzBFMEUwRSIgc3Ryb2tlPSIjMUMzQTI3Ii8+Cjwvc3ZnPg==") center / contain no-repeat;
+  border: none;
+  cursor: grab;
+}
+
+.custom-range-slider::-moz-range-thumb {
+  width: 22px;
+  height: 20px;
+  border: none;
+  
+  background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMiIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIyIDIwIiBmaWxsPSJub25lIj4KICA8cGF0aCBkPSJNMTEuMDUxOCAwLjVDMTYuNDUxOSAwLjUwMDIyNCAyMC44MDc2IDQuNzY1MjkgMjAuODA3NiAxMEMyMC44MDc2IDE1LjIzNDcgMTYuNDUxOSAxOS40OTk4IDExLjA1MTggMTkuNUM1LjY1MTQzIDE5LjUgMS4yOTQ5MiAxNS4yMzQ4IDEuMjk0OTIgMTBDMS4yOTQ5MiA0Ljc2NTE1IDUuNjUxNDMgMC41IDExLjA1MTggMC41WiIgZmlsbD0iIzBFMEUwRSIgc3Ryb2tlPSIjMUMzQTI3Ii8+Cjwvc3ZnPg==") center / contain no-repeat;
+  cursor: grab;
+}
 </style>
 
 <style scoped>
 .map-placeholder {
-  height: 700px;
+  height: 500px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -241,4 +326,3 @@ onUnmounted(() => {
   color: #ff8888;
 }
 </style>
-
