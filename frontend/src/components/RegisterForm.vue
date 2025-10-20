@@ -3,27 +3,39 @@
     class="rounded-[12px] border border-2 solid border-secondaryGreen flex items-center flex-col p-6 max-w-[500px] w-full bg-gradient-to-t to-primaryGreen from-secondaryGreen"
   >
     <FormHeading title="Dołącz do nas" underTitle="Stwórz konto i zacznij przygodę" />
-    <form class="flex flex-col gap-3 w-full mt-6 w-full max-w-[500px]" @submit.prevent="submit">
+
+    <form class="flex flex-col gap-3 w-full mt-6 max-w-[500px]" @submit.prevent="submit">
+      <!-- EMAIL -->
       <label class="text-sm font-medium">Email</label>
       <input
         v-model="email"
         type="email"
-        class="border border-secondaryGreen/50 bg-tertiaryGreen rounded-lg p-2"
+        placeholder="np. jan.kowalski@gmail.com"
+        class="border border-secondaryGreen/50 bg-tertiaryGreen rounded-lg p-2 text-gray-100 placeholder-gray-400"
       />
+
+      <!-- HASŁO -->
       <label class="text-sm font-medium">Hasło</label>
       <input
         v-model="password"
         type="password"
-        class="border border-secondaryGreen bg-tertiaryGreen rounded-lg p-2"
+        placeholder="Wprowadź hasło"
+        class="border border-secondaryGreen bg-tertiaryGreen rounded-lg p-2 text-gray-100 placeholder-gray-400"
       />
+
+      <!-- POWTÓRZ HASŁO -->
       <label class="text-sm font-medium">Powtórz hasło</label>
       <input
         v-model="confirmPassword"
         type="password"
-        class="border border-secondaryGreen rounded-lg p-2 bg-tertiaryGreen"
+        placeholder="Powtórz hasło"
+        class="border border-secondaryGreen rounded-lg p-2 bg-tertiaryGreen text-gray-100 placeholder-gray-400"
       />
-      <p v-if="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</p>
 
+      <!-- BŁĄD -->
+      <p v-if="errorMessage" class="text-red-500 text-sm mt-1">{{ errorMessage }}</p>
+
+      <!-- PRZYCISK -->
       <button
         type="submit"
         class="bg-primaryOrange flex items-center justify-center gap-4 text-white rounded-lg py-3 mt-1 hover:bg-primaryGold duration-300 transition-all shadow-lg shadow-primaryOrange/50 hover:shadow-primaryGold/50"
@@ -79,8 +91,9 @@
         <a
           href="/logowanie"
           class="text-primaryOrange hover:text-primaryGold duration-300 transition-all font-medium underline"
-          >Zaloguj się</a
         >
+          Zaloguj się
+        </a>
       </p>
     </form>
   </div>
@@ -98,11 +111,24 @@ const confirmPassword = ref('')
 const router = useRouter()
 const errorMessage = ref('')
 
+// Funkcja walidująca dane rejestracji
+const validateForm = () => {
+  if (!email.value.trim()) return 'Podaj adres e-mail.'
+  // pełna walidacja formatu e-maila
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email.value)) return 'Podaj poprawny adres e-mail (np. jan.kowalski@gmail.com).'
+
+  if (!password.value.trim()) return 'Podaj hasło.'
+  if (password.value.length < 6) return 'Hasło musi mieć co najmniej 6 znaków.'
+  if (password.value !== confirmPassword.value) return 'Hasła nie są takie same.'
+  return null
+}
+
 const submit = async () => {
   errorMessage.value = ''
-
-  if (password.value !== confirmPassword.value) {
-    errorMessage.value = 'Hasła nie są takie same'
+  const validationError = validateForm()
+  if (validationError) {
+    errorMessage.value = validationError
     return
   }
 
@@ -120,7 +146,7 @@ const submit = async () => {
       router.push('/dashboard')
     }
   } catch (error) {
-    errorMessage.value = error.response?.data?.message || 'Wystąpił błąd przy rejestracji'
+    errorMessage.value = error.response?.data?.message || 'Wystąpił błąd przy rejestracji.'
   }
 }
 </script>
@@ -130,5 +156,13 @@ input:focus {
   outline: none;
   border-color: #d35226;
   box-shadow: 0 0 0 3px rgba(211, 82, 38, 0.3);
+}
+
+input {
+  color: #f0f0f0;
+}
+
+::placeholder {
+  color: #a1a1a1;
 }
 </style>
