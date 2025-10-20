@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col h-full w-full">
+  <div class="flex flex-col h-full w-full" v-if="chat">
     <div class="flex items-center gap-3 p-4 border-b border-secondaryGreen">
       <button @click="$emit('back')" class="p-2 rounded-full hover:bg-primaryGreen/50 xl:hidden">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -7,10 +7,10 @@
         </svg>
       </button>
 
-      <img :src="chat.avatarUrl" alt="Avatar" class="w-12 h-12 rounded-full object-cover" />
+      <img :src="chat.avatarUrl || defaultAvatar" alt="Avatar" class="w-12 h-12 rounded-full object-cover" />
       <div class="flex flex-col">
-        <span class="font-semibold text-white">{{ chat.name }}</span>
-        <span class="text-secondaryGold text-sm">{{ chat.status }}</span>
+        <span class="font-semibold text-white">{{ chat.name || 'Nieznajomy' }}</span>
+        <span class="text-secondaryGold text-sm">{{ chat.status || '' }}</span>
       </div>
     </div>
 
@@ -19,11 +19,11 @@
         v-for="message in chat.messages"
         :key="message.id"
         class="flex items-start"
-        :class="message.user === currentUser ? 'justify-end' : 'justify-start'"
+        :class="message.userId === currentUserId ? 'justify-end' : 'justify-start'"
       >
         <img
-          v-if="message.user !== currentUser"
-          :src="message.avatarUrl || chat.avatarUrl"
+          v-if="message.userId !== currentUserId"
+          :src="message.avatarUrl || chat.avatarUrl || defaultAvatar"
           alt="Avatar"
           class="w-12 h-12 rounded-full object-cover mr-2 mt-1"
         />
@@ -31,21 +31,21 @@
         <div class="flex flex-col max-w-[calc(100%-3rem)]">
           <div
             :class="[ 'px-4 py-2 rounded-2xl break-words',
-              message.user === currentUser ? 'bg-primaryOrange text-white ml-auto' : 'bg-primaryGreen text-white'
+              message.userId === currentUserId ? 'bg-primaryOrange text-white ml-auto' : 'bg-primaryGreen text-white'
             ]"
           >
             {{ message.text }}
           </div>
           <span
-            :class="['text-secondaryGold text-xs mt-1', message.user === currentUser ? 'text-right' : 'text-left']"
+            :class="['text-secondaryGold text-xs mt-1', message.userId === currentUserId ? 'text-right' : 'text-left']"
           >
             {{ message.time }}
           </span>
         </div>
 
         <img
-          v-if="message.user === currentUser"
-          :src="yourAvatarUrl"
+          v-if="message.userId === currentUserId"
+          :src="yourAvatarUrl || defaultAvatar"
           alt="Twój Avatar"
           class="w-12 h-12 rounded-full object-cover ml-2 mt-1"
         />
@@ -70,28 +70,140 @@
       </button>
     </div>
   </div>
+
+  <!-- fallback gdy chat nie istnieje -->
+  <div v-else class="flex items-center justify-center h-full text-secondaryGold">
+    Wybierz rozmowę
+  </div>
 </template>
 
 <script setup>
-import { ref, nextTick, computed } from 'vue'
+import { ref, nextTick, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useChatStore } from '../stores/chatStore'
+import { getSocket } from '../plugins/socket'
+
+// stałe
+const defaultAvatar = 'https://placehold.co/50x50'
+const yourAvatarUrl = localStorage.getItem('avatarUrl') || defaultAvatar
+
+// socket (może być null jeśli nie zainicjalizowany)
+const socket = getSocket && typeof getSocket === 'function' ? getSocket() : null
 
 const props = defineProps({
   chatData: Object,
 })
-
 const emit = defineEmits(['back'])
 
 const chatStore = useChatStore()
-const currentUser = 'Ty'
-const yourAvatarUrl = 'https://placehold.co/50x50'
+
+// pobieramy userId i username z localStorage (musisz zapisywać przy logowaniu)
+const currentUserId = localStorage.getItem('userId') || null
+const currentUsername = localStorage.getItem('username') || 'Ty'
+
 const newMessage = ref('')
 const messagesContainer = ref(null)
 
-const chat = computed(() =>
-  chatStore.getChatById(props.chatData?.id)
+// bezpieczne computed: chat może być null
+const chat = computed(() => {
+  if (!props.chatData?.id) return null
+  return chatStore.getChatById(props.chatData.id)
+})
+
+// Join room kiedy chat pojawi się
+const tryJoinConversation = () => {
+  if (!socket) {
+    console.warn('⚠️ Socket nie zainicjalizowany — nie można join_conversation')
+    return
+  }
+  const convId = chat.value?.id
+  if (convId) {
+    console.log('🔗 dołączam do rozmowy', convId)
+    socket.emit('join_conversation', { conversationId: convId })
+  }
+}
+
+// Nasłuchiwacze
+const onNewMessage = (message) => {
+  // message powinien zawierać conversationId (backend) - defensywnie
+  const convId = message?.conversationId || message?.conversation || chat.value?.id
+  if (!convId) {
+    console.warn('Otrzymano new_message bez conversationId:', message)
+    return
+  }
+
+  // dostosuj strukturę wiadomości do lokalnego modelu
+  const msg = {
+    id: message._id || Date.now(),
+    userId: (message.sender && (message.sender._id || message.sender)) || message.senderId || currentUserId,
+    text: message.text || '',
+    time: message.time || new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }),
+    avatarUrl: message.avatarUrl || undefined,
+  }
+
+  chatStore.addMessage(convId, msg)
+}
+
+const onJoinedConversation = (data) => {
+  console.log('✅ joined_conversation:', data)
+}
+
+const onErrorMessage = (err) => {
+  console.warn('❗️ server error_message:', err)
+}
+
+onMounted(() => {
+  if (props.chatData?.id) {
+  chatStore.fetchMessages(props.chatData.id)
+  }
+  // jeżeli chat istnieje od razu - dołącz do pokoju
+  tryJoinConversation()
+
+  if (socket) {
+    socket.on('new_message', onNewMessage)
+    socket.on('joined_conversation', onJoinedConversation)
+    socket.on('error_message', onErrorMessage)
+  } else {
+    console.warn('Socket nie dostępny w ChatRoomComp')
+  }
+})
+
+// wyczyszczenie listenerów i opcjonalne "leave"
+onUnmounted(() => {
+  if (!socket) return
+  socket.off('new_message', onNewMessage)
+  socket.off('joined_conversation', onJoinedConversation)
+  socket.off('error_message', onErrorMessage)
+
+  // opcjonalnie: jeśli implementujesz leave po stronie serwera
+  const convId = chat.value?.id
+  if (convId) {
+    socket.emit('leave_conversation', { conversationId: convId })
+  }
+})
+
+// obserwuj zmiany chat.messages i przewijaj na dół
+watch(
+  () => chat.value && chat.value.messages && chat.value.messages.length,
+  async () => {
+    await nextTick()
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+    }
+  }
+)
+watch(
+  () => props.chatData?.id,
+  (newId, oldId) => {
+    if (newId && newId !== oldId) {
+      console.log('📩 Zmieniono czat — pobieram wiadomości dla:', newId)
+      chatStore.fetchMessages(newId)
+      tryJoinConversation() // dołącz do nowego pokoju socketowego
+    }
+  },
+  { immediate: true } // od razu odpala fetch przy pierwszym renderze
 )
 
+// wysyłanie wiadomości
 function sendMessage() {
   if (!newMessage.value.trim() || !chat.value) return
 
@@ -101,23 +213,35 @@ function sendMessage() {
     .toString()
     .padStart(2, '0')}`
 
-  const message = {
+  const convId = chat.value.id
+
+  // lokalny echo
+  const localMsg = {
     id: Date.now(),
-    user: currentUser,
+    userId: currentUserId,
     text: newMessage.value,
     time: timeString,
+    avatarUrl: yourAvatarUrl,
+  }
+  chatStore.addMessage(convId, localMsg)
+
+  // przygotuj payload dla backendu
+  const payload = {
+    conversationId: convId,
+    text: newMessage.value,
   }
 
-  chatStore.addMessage(chat.value.id, message)
-  chat.value.lastMessage = `Ty: ${newMessage.value}`
-  chat.value.time = timeString
-
+  if (socket) {
+    socket.emit('send_message', payload)
+  } else {
+    console.warn('⚠️ Socket nie dostępny, wiadomość nie została wysłana na serwer')
+  }
+  
   newMessage.value = ''
-
-  nextTick(() => {
-    if (messagesContainer.value) {
-      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-    }
+    nextTick(() => {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
   })
+
+  chatStore.fetchMessages(props.chatData.id)
 }
 </script>

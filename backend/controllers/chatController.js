@@ -10,10 +10,10 @@ export const getConversations = async (req, res) => {
     const conversations = await Conversation.find({
       participants: userId,
     })
-      .populate("participants", "username _id")
+      .populate("participants", "imie nazwisko _id")
       .populate({
         path: "lastMessage",
-        populate: { path: "sender", select: "username _id" },
+        populate: { path: "sender", select: "imie nazwisko _id" },
       })
       .sort({ updatedAt: -1 });
 

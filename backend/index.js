@@ -58,7 +58,10 @@ mongoose
     server.listen(5000, () => console.log("🚀 Serwer działa na porcie 5000"));
   })
   .catch((err) => console.error("❌ Błąd połączenia:", err));
-
+app.use(cors({
+  origin: "http://localhost:5173", // 👈 port frontendu (Vite)
+  credentials: true,
+}));
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/beers", beerRoutes);
