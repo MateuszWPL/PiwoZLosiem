@@ -9,7 +9,15 @@ const userSchema = new mongoose.Schema({
   miasto: { type: String },
   plec: { type: String },
   isProfileComplete: { type: Boolean, default: false },
+  status: { type: String, default: "🍺 wolny na piwo" },
+  bio: { type: String, default: '' },
+  photoUrl: { type: String, default: null },
+  favoriteBeers: { type: [String], default: [] },
+  achievements: [ { type: mongoose.Schema.Types.ObjectId, ref: "Achievement", }, ],
+  resetToken: { type: String },
+  resetTokenExpiry: { type: Date },
 });
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 export default User;
+

@@ -24,5 +24,6 @@ const beerSchema = new mongoose.Schema({
   },
 });
 
-const Beer = mongoose.model("Beer", beerSchema);
+const Beer = mongoose.models.Beer || mongoose.model("Beer", beerSchema);
 export default Beer;
+

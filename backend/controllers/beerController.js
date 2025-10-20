@@ -1,4 +1,5 @@
 import Beer from "../models/Beer.js";
+import { checkAchievements } from "../utils/checkAchievements.js";
 
 // Dodanie piwa (tylko zalogowany użytkownik)
 export const addBeer = async (req, res) => {
@@ -15,6 +16,8 @@ export const addBeer = async (req, res) => {
       type,
       place,
     });
+
+    await checkAchievements(req.user._id);
 
     res.status(201).json(beer);
   } catch (error) {

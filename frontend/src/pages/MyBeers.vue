@@ -1,6 +1,6 @@
 <template>
   <div
-    class="xl:flex bg-gradient-to-b pt-20 xl:pt-0 from-primaryGreen/0 to-primaryGreen/50 h-dvh flex-stretch min-h-screen"
+    class="xl:flex bg-gradient-to-b from-primaryGreen/0 to-primaryGreen/50 pt-20 xl:pt-0 h-dvh flex-stretch min-h-screen"
   >
     <Navbar />
     <div class="p-5 w-full h-full">
@@ -8,7 +8,7 @@
         <div class="">
           <div class="flex items-center justify-between items-center">
             <div>
-              <h1 class="text-3xl text-white font-serif mb-2 mt-5">Moje Piwa</h1>
+              <h1 class="text-3xl text-white mb-2 mt-5">Moje Piwa</h1>
               <p class="text-secondaryGold mb-4">Śledź swoje osiągnięcia piwne</p>
             </div>
 
@@ -244,7 +244,7 @@
             class="bg-secondaryGreen/50 backdrop-blur-sm border border-neutral-700 rounded-2xl animate-slide-up"
           >
             <div class="p-6 border-b border-neutral-700">
-              <h2 class="font-serif text-xl">Historia</h2>
+              <h2 class="text-xl">Historia</h2>
             </div>
             <div class="p-6 space-y-3">
               <div>
@@ -309,7 +309,9 @@ import Navbar from '@/components/Navbar.vue'
 import axios from '@/api/api.js'
 import BeerHistory from '@/components/BeerHistory.vue'
 import { ref, onMounted, computed } from 'vue'
+import { useNotifications } from '@/composables/useNotifications'
 
+const { addNotification } = useNotifications()
 const beerAmount = ref('')
 const beerType = ref('')
 const beerPlace = ref('')
@@ -332,41 +334,66 @@ const addBeer = async () => {
         },
       },
     )
+    addNotification('beer_added', 'Dodałeś nowe piwo 🍺')
 
-    alert('Piwo dodane pomyślnie!')
     showModal.value = false
     beerAmount.value = ''
     beerType.value = ''
     beerPlace.value = ''
+
+    await fetchBeers()
   } catch (err) {
     console.error(err)
-    alert('Błąd podczas dodawania piwa')
   }
 }
 
 //Funkcja do liczenia piwka
 
-const beerStats = ref({
-  today: 0,
-  week: 0,
-  month: 0,
-  total: 0,
-})
+const beerStats = computed(() => {
+  const now = new Date()
+  const today = now.getDate()
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(now.getDate() - 7)
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(now.getDate() - 30)
 
-const getBeerStats = async () => {
-  try {
-    const token = localStorage.getItem('token')
-    const res = await axios.get('/beers/stats', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    beerStats.value = res.data
-  } catch (err) {
-    console.error(err)
+  let todayCount = 0
+  let weekCount = 0
+  let monthCount = 0
+  let totalCount = 0
+
+  beers.value.forEach((beer) => {
+    const date = new Date(beer.createdAt)
+    const amount = beer.amount || 0
+
+    totalCount += amount
+
+    // Dziś
+    if (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === today
+    ) {
+      todayCount += amount
+    }
+
+    // Ostatnie 7 dni (łącznie z dzisiaj)
+    if (date >= sevenDaysAgo && date <= now) {
+      weekCount += amount
+    }
+
+    // Ostatnie 30 dni (łącznie z dzisiaj)
+    if (date >= thirtyDaysAgo && date <= now) {
+      monthCount += amount
+    }
+  })
+
+  return {
+    today: todayCount,
+    week: weekCount,
+    month: monthCount,
+    total: totalCount,
   }
-}
-
-onMounted(() => {
-  getBeerStats()
 })
 
 //Funkcja do pobierania wszystkich piw i wyswietlania ich w historii
@@ -389,17 +416,23 @@ onMounted(fetchBeers)
 
 const filteredBeers = computed(() => {
   const now = new Date()
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(now.getDate() - 7)
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(now.getDate() - 30)
+
   return beers.value.filter((beer) => {
     const date = new Date(beer.createdAt)
+
     if (activeTab.value === 'week') {
-      const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay())
-      return date >= startOfWeek
+      return date >= sevenDaysAgo && date <= now
     }
+
     if (activeTab.value === 'month') {
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      return date >= startOfMonth
+      return date >= thirtyDaysAgo && date <= now
     }
-    return true
+
+    return true // all
   })
 })
 </script>

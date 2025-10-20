@@ -5,7 +5,7 @@
       <div class="max-w-screen-xl mx-auto">
         <div>
           <h3 class="text-white text-[30px] tracking-[-0.75px] mt-10">
-            Cześć, <span class="text-primaryOrange">Michał</span
+            Cześć, <span class="text-primaryOrange">{{ name || "Piwosz"}}</span
             ><span class="text-primaryOrange">!</span>
           </h3>
           <p class="text-secondaryGold text-sm leading-5 mt-1 mb-6">Gotowy na piwo ?</p>
@@ -16,10 +16,17 @@
               <p>Twój status</p>
               <div class="flex items-center gap-2">
                 <div class="py-2 px-4 bg-primaryOrange rounded-full w-fit">
-                  <p class="text-white">🍺 wolny na piwo</p>
+                  <p class="text-white"> {{ statusLabel }}</p>
                 </div>
-                <button class="text-white bg-primaryGreen py-2 px-3 rounded-full">Zmień</button>
+                <button class="text-white bg-primaryGreen py-2 px-3 rounded-full" @click="isStatusPopupVisible = true">Zmień</button>
               </div>
+              <ChangeStatusPopup 
+                :visible="isStatusPopupVisible" 
+                :statuses="statuses" 
+                :current-status="statusLabel"
+                @close="isStatusPopupVisible = false" 
+                @select="updateStatus"
+              />
             </div>
             <div class="grid template-columns-1 gap-6 md:grid-cols-3">
               <div
@@ -413,4 +420,75 @@
 
 <script setup>
 import Navbar from '@/components/Navbar.vue'
+import { ref, onMounted, computed } from 'vue'
+import axios from '@/api/api.js'
+import { useNotifications } from '@/composables/useNotifications'
+import StatusPopup from '@/components/ChangeStatusPopup.vue'
+import ChangeStatusPopup from '@/components/ChangeStatusPopup.vue'
+import { statuses } from '../../../shared/statuses.js'
+
+
+const { addNotification } = useNotifications()
+const status = ref('')
+const name = ref('')
+const isStatusPopupVisible = ref(false)
+
+
+const token = localStorage.getItem('token')
+
+/*
+const changeStatus = async () => {
+  const newStatus = prompt('Podaj nowy status:')
+  if (!newStatus) return
+
+  const token = localStorage.getItem('token')
+  try {
+    const { data } = await axios.post(
+      '/users/status',
+      { newStatus },
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    status.value = data.status
+  } catch (err) {
+    console.error(err)
+  }
+}*/
+
+const fetchUserData = async () => {
+  const token = localStorage.getItem('token')
+  try {
+    const { data } = await axios.get('/users/me', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    status.value = data.status
+    name.value = data.firstName
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+const statusLabel = computed(() => {
+  const current = statuses.find(s => s.value === status.value)
+  return current ? current.label : status.value
+})
+
+const updateStatus = async (newStatusValue) => {
+  isStatusPopupVisible.value = false 
+
+  const token = localStorage.getItem('token')
+  try {
+    const { data } = await axios.post(
+      '/users/status',
+      { status: newStatusValue }, 
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    status.value = data.status
+    addNotification('status_changed', `Status zaktualizowany na ${statusLabel.value}`)
+  } catch (err) {
+    console.error('Błąd podczas aktualizacji statusu:', err)
+  }
+}
+
+onMounted(fetchUserData)
+
 </script>
