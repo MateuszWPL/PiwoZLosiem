@@ -25,7 +25,7 @@ export const getMessages = async (req, res) => {
     // Pobierz wiadomości (najnowsze najpierw)
     const totalMessages = await Message.countDocuments({ conversation: conversationId });
     const messages = await Message.find({ conversation: conversationId })
-      .populate("sender", "username _id")
+      .populate("sender", "imie nazwisko _id")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);

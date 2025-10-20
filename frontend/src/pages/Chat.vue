@@ -78,37 +78,53 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Navbar from '../components/Navbar.vue';
 import ChatListComp from '../components/ChatListComp.vue';
 import ChatRoomComp from '../components/ChatRoomComp.vue';
 import { useChatStore } from '../stores/chatStore';
+import { storeToRefs } from 'pinia';
 
 const router = useRouter();
 const search = ref('');
 const chatStore = useChatStore();
-const chats = ref(chatStore.chats);
-   
+const { chats, loading, error } = storeToRefs(chatStore);
+
 const selectedChat = ref(null);
+
+onMounted(() => {
+  chatStore.fetchChats();
+});
 
 const filteredChats = computed(() => {
   if (!search.value.trim()) return chats.value;
   return chats.value.filter(chat =>
-    chat.name.toLowerCase().includes(search.value.toLowerCase()) ||
-    chat.lastMessage.toLowerCase().includes(search.value.toLowerCase())
+    chat.name?.toLowerCase().includes(search.value.toLowerCase()) ||
+    chat.lastMessage?.toLowerCase().includes(search.value.toLowerCase())
   );
 });
 
 // mobilka
 function goToChatRoom(chat) {
-    selectedChat.value = chat;
-    router.push({ name: 'ChatRoom', params: { id: chat.id } });
+  selectedChat.value = chat;
+  router.push({ name: 'ChatRoom', params: { id: chat.id } });
 }
 
-function addNewChat() {
-  const newChat = chatStore.addNewChat();
-  selectedChat.value = newChat;
+async function addNewChat() {
+  // TODO: zmienic
+  const partnerId = prompt('Podaj ID użytkownika, z którym chcesz rozpocząć rozmowę:');
+  if (!partnerId) return;
+
+  try {
+    const newConv = await chatStore.createConversation(partnerId);
+    selectedChat.value = {
+      id: newConv._id,
+      name: newConv.participants.find(p => p._id !== chatStore.getUserIdFromToken(localStorage.getItem('token')))?.username || 'Nowa rozmowa',
+    };
+  } catch (err) {
+    alert('Nie udało się utworzyć rozmowy.');
+  }
 }
 
 </script>
