@@ -5,7 +5,7 @@
       <div class="max-w-screen-xl mx-auto">
         <div>
           <h3 class="text-white text-[30px] tracking-[-0.75px] mt-10">
-            Cześć, <span class="text-primaryOrange">{{ name || "Piwosz"}}</span
+            Cześć, <span class="text-primaryOrange">{{ firstName || "Piwosz"}}</span
             ><span class="text-primaryOrange">!</span>
           </h3>
           <p class="text-secondaryGold text-sm leading-5 mt-1 mb-6">Gotowy na piwo ?</p>
@@ -75,7 +75,7 @@
                     stroke-linejoin="round"
                   />
                 </svg>
-                <p class="text-white text-2xl">47</p>
+                <p class="text-white text-2xl">{{ beerStats.total }}</p>
                 <p>Piwa</p>
               </div>
               <div
@@ -145,7 +145,7 @@
                     stroke-linejoin="round"
                   />
                 </svg>
-                <p class="text-white text-2xl">#12</p>
+                <p class="text-white text-2xl">{{ userRanking }}</p>
                 <p>Ranking</p>
               </div>
             </div>
@@ -157,101 +157,109 @@
               Szybkie akcje
             </h4>
             <div class="flex flex-col gap-6 mt-8">
-              <button
-                class="bg-primaryOrange text-white flex items-center gap-3 rounded-[10px] p-4 w-full shadow-md shadow-primaryOrange/50 hover:shadow-primaryOrange/70 transition duration-300"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
+              <router-link to="/odkrywaj">
+                  <button
+                    class="bg-primaryOrange text-white flex items-center gap-3 rounded-[10px] p-4 w-full shadow-md shadow-primaryOrange/50 hover:shadow-primaryOrange/70 transition duration-300"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <path
+                        d="M20 10C20 14.993 14.461 20.193 12.601 21.799C12.4277 21.9293 12.2168 21.9998 12 21.9998C11.7832 21.9998 11.5723 21.9293 11.399 21.799C9.539 20.193 4 14.993 4 10C4 7.87827 4.84285 5.84344 6.34315 4.34315C7.84344 2.84285 9.87827 2 12 2C14.1217 2 16.1566 2.84285 17.6569 4.34315C19.1571 5.84344 20 7.87827 20 10Z"
+                        stroke="white"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"
+                        stroke="white"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    <p class="text-white font-semibold">Zaproś ludzi w pobliżu</p>
+                  </button>
+              </router-link>
+
+              <router-link to="/ranking">
+                <button
+                  class="bg-primaryGold text-white flex items-center gap-3 rounded-[10px] p-4 w-full shadow-md shadow-primaryGold hover:shadow-primaryGold/70 transition duration-300"
                 >
-                  <path
-                    d="M20 10C20 14.993 14.461 20.193 12.601 21.799C12.4277 21.9293 12.2168 21.9998 12 21.9998C11.7832 21.9998 11.5723 21.9293 11.399 21.799C9.539 20.193 4 14.993 4 10C4 7.87827 4.84285 5.84344 6.34315 4.34315C7.84344 2.84285 9.87827 2 12 2C14.1217 2 16.1566 2.84285 17.6569 4.34315C19.1571 5.84344 20 7.87827 20 10Z"
-                    stroke="white"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <path
-                    d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"
-                    stroke="white"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-                <p class="text-white font-semibold">Zaproś ludzi w pobliżu</p>
-              </button>
-              <button
-                class="bg-primaryGold text-white flex items-center gap-3 rounded-[10px] p-4 w-full shadow-md shadow-primaryGold hover:shadow-primaryGold/70 transition duration-300"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 32 32"
-                  fill="none"
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 32 32"
+                    fill="none"
+                  >
+                    <path
+                      d="M29.3337 9.3335L18.0003 20.6668L11.3337 14.0002L2.66699 22.6668"
+                      stroke="black"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M21.333 9.3335H29.333V17.3335"
+                      stroke="black"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  <p class="text-black font-semibold">Zobacz rankingi</p>
+                </button>
+              </router-link>
+
+              <router-link to="/profil">
+                <button
+                  class="bg-primaryGreen text-white flex items-center gap-3 rounded-[10px] p-4 w-full shadow-md shadow-primaryGreen hover:shadow-primaryGreen/70 transition duration-300"
                 >
-                  <path
-                    d="M29.3337 9.3335L18.0003 20.6668L11.3337 14.0002L2.66699 22.6668"
-                    stroke="black"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <path
-                    d="M21.333 9.3335H29.333V17.3335"
-                    stroke="black"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-                <p class="text-black font-semibold">Sprawdź rankingi i odznaki</p>
-              </button>
-              <button
-                class="bg-primaryGreen text-white flex items-center gap-3 rounded-[10px] p-4 w-full shadow-md shadow-primaryGreen hover:shadow-primaryGreen/70 transition duration-300"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <path
-                    d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H6C4.93913 15 3.92172 15.4214 3.17157 16.1716C2.42143 16.9217 2 17.9391 2 19V21"
-                    stroke="white"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <path
-                    d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z"
-                    stroke="white"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <path
-                    d="M22 20.9999V18.9999C21.9993 18.1136 21.7044 17.2527 21.1614 16.5522C20.6184 15.8517 19.8581 15.3515 19 15.1299"
-                    stroke="white"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <path
-                    d="M16 3.12988C16.8604 3.35018 17.623 3.85058 18.1676 4.55219C18.7122 5.2538 19.0078 6.11671 19.0078 7.00488C19.0078 7.89305 18.7122 8.75596 18.1676 9.45757C17.623 10.1592 16.8604 10.6596 16 10.8799"
-                    stroke="white"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-                <p class="text-white font-semibold">Zobacz aktywność znajomych</p>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <path
+                      d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H6C4.93913 15 3.92172 15.4214 3.17157 16.1716C2.42143 16.9217 2 17.9391 2 19V21"
+                      stroke="white"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z"
+                      stroke="white"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M22 20.9999V18.9999C21.9993 18.1136 21.7044 17.2527 21.1614 16.5522C20.6184 15.8517 19.8581 15.3515 19 15.1299"
+                      stroke="white"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M16 3.12988C16.8604 3.35018 17.623 3.85058 18.1676 4.55219C18.7122 5.2538 19.0078 6.11671 19.0078 7.00488C19.0078 7.89305 18.7122 8.75596 18.1676 9.45757C17.623 10.1592 16.8604 10.6596 16 10.8799"
+                      stroke="white"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  <p class="text-white font-semibold">Sprawdź odznaki</p>
+                </button>
+              </router-link>
             </div>
           </div>
         </div>
@@ -430,29 +438,13 @@ import { statuses } from '../../../shared/statuses.js'
 
 const { addNotification } = useNotifications()
 const status = ref('')
-const name = ref('')
+const firstName = ref('')
+const lastName = ref('')
 const isStatusPopupVisible = ref(false)
-
-
+const beerStats = ref({ today: 0, week: 0, month: 0, total: 0 })
+const userRanking = ref('#0')
 const token = localStorage.getItem('token')
 
-/*
-const changeStatus = async () => {
-  const newStatus = prompt('Podaj nowy status:')
-  if (!newStatus) return
-
-  const token = localStorage.getItem('token')
-  try {
-    const { data } = await axios.post(
-      '/users/status',
-      { newStatus },
-      { headers: { Authorization: `Bearer ${token}` } }
-    )
-    status.value = data.status
-  } catch (err) {
-    console.error(err)
-  }
-}*/
 
 const fetchUserData = async () => {
   const token = localStorage.getItem('token')
@@ -461,7 +453,8 @@ const fetchUserData = async () => {
       headers: { Authorization: `Bearer ${token}` }
     })
     status.value = data.status
-    name.value = data.firstName
+    firstName.value = data.firstName
+    lastName.value = data.lastName
   } catch (err) {
     console.error(err)
   }
@@ -489,6 +482,47 @@ const updateStatus = async (newStatusValue) => {
   }
 }
 
-onMounted(fetchUserData)
+const fetchBeerStats = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    const res = await axios.get('http://localhost:5000/api/beers/stats', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    beerStats.value = res.data
+  } catch (err) {
+    console.error('Błąd przy pobieraniu statystyk piw:', err)
+  }
+}
+
+const fetchUserRanking = async (period = 'all') => {
+  try {
+    const token = localStorage.getItem('token')
+    const res = await axios.get(`/ranking/${period}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+
+    const ranking = res.data
+    const fname = firstName.value
+    const lname = lastName.value
+    let position = ranking.findIndex(
+      r => r.imie === fname && r.nazwisko === lname
+    )
+
+    if (position === -1) position = ranking.length
+
+    userRanking.value = `#${position + 1}`
+  } catch (err) {
+    console.error('Błąd przy pobieraniu rankingu:', err)
+  }
+}
+
+
+// onMounted(fetchUserData)
+
+onMounted(async () => {
+  await fetchUserData()
+  await fetchBeerStats()
+  await fetchUserRanking()
+})
 
 </script>

@@ -198,13 +198,6 @@ const stats = ref([
   { label: 'Odznaki', value: 8, icon: svgBadge }
 ])
 
-// const badges = [
-//   { name: 'Pierwsze piwo', icon: svgBeer },
-//   { name: 'Weekendowy wojownik', icon: svgStar },
-//   { name: 'Mistrz browarów', icon: svgTrophy },
-//   { name: '5 z rzędu', icon: svgShield }
-// ]
-
 const showEditPopup = ref(false)
 const user = ref({
   firstName: '',
