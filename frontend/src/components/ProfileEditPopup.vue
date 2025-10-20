@@ -63,15 +63,18 @@
               class="w-full bg-primaryGreen/30 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primaryOrange"
               placeholder="np. Jan Kowalski"
             />
+            <p v-if="errors.fullName" class="text-red-400 text-xs mt-1">{{ errors.fullName }}</p>
           </div>
           <div>
             <label class="block text-sm mb-1 text-secondaryGold">Wiek</label>
             <input
               v-model="localForm.age"
               type="number"
+              min="18"
               class="w-full bg-primaryGreen/30 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primaryOrange"
               placeholder="Wiek"
             />
+            <p v-if="errors.age" class="text-red-400 text-xs mt-1">{{ errors.age }}</p>
           </div>
         </div>
 
@@ -84,6 +87,7 @@
             class="w-full bg-primaryGreen/30 rounded-lg p-2 resize-none focus:outline-none focus:ring-2 focus:ring-primaryOrange"
             placeholder="Napisz coś o sobie..."
           ></textarea>
+          <p v-if="errors.bio" class="text-red-400 text-xs mt-1">{{ errors.bio }}</p>
         </div>
 
         <!-- Płeć -->
@@ -96,6 +100,7 @@
             <option value="Kobieta">Kobieta</option>
             <option value="Mężczyzna">Mężczyzna</option>
           </select>
+          <p v-if="errors.gender" class="text-red-400 text-xs mt-1">{{ errors.gender }}</p>
         </div>
 
         <!-- Lokalizacja -->
@@ -116,6 +121,7 @@
               Użyj mojej lokalizacji
             </button>
           </div>
+          <p v-if="errors.location" class="text-red-400 text-xs mt-1">{{ errors.location }}</p>
         </div>
 
         <!-- Status -->
@@ -184,6 +190,8 @@
 
 <script setup>
 import { ref, reactive, watch, computed, defineProps, defineEmits, onUnmounted } from 'vue'
+import { io } from 'socket.io-client'
+const socket = io('http://localhost:5000')
 
 const props = defineProps({
   visible: Boolean,
@@ -221,15 +229,15 @@ const defaultUser = {
 }
 
 const localForm = reactive({ ...defaultUser })
+const errors = reactive({ fullName: '', age: '', bio: '', gender: '', location: '' })
 
 watch(
   () => props.userData,
   (val) => {
     if (!val) return
-    // Przepisujemy dane z props.userData do localForm głęboko
     for (const key in defaultUser) {
       if (Array.isArray(val[key])) {
-        localForm[key] = [...val[key]] // kopiujemy tablicę, żeby zachować reaktivność
+        localForm[key] = [...val[key]]
       } else {
         localForm[key] = val[key] ?? defaultUser[key]
       }
@@ -250,7 +258,7 @@ const fullName = computed({
 const previewImage = ref(null)
 
 const statuses = [
-  { label: '🍺 Wolny na piwo', value: 'available'},
+  { label: '🍺 Wolny na piwo', value: 'available' },
   { label: '❌ Zajęty', value: 'busy' },
   { label: '⚪ Offline', value: 'offline' },
 ]
@@ -262,17 +270,6 @@ const toggleBeer = (beer) => {
   const index = list.indexOf(beer)
   index >= 0 ? list.splice(index, 1) : list.push(beer)
 }
-
-// const onImageUpload = (e) => {
-//   const file = e.target.files[0]
-//   if (!file) return
-//   const reader = new FileReader()
-//   reader.onload = (ev) => {
-//     previewImage.value = ev.target.result
-//     localForm.photo = ev.target.result
-//   }
-//   reader.readAsDataURL(file)
-// }
 
 async function onImageUpload(e) {
   const file = e.target.files[0]
@@ -299,35 +296,110 @@ async function onImageUpload(e) {
   }
 }
 
-const useCurrentLocation = () => {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(({ coords }) => {
-      localForm.location = `Lat: ${coords.latitude.toFixed(2)}, Lng: ${coords.longitude.toFixed(2)}`
-    })
+const useCurrentLocation = async () => {
+  if (!navigator.geolocation) {
+    alert('Twoja przeglądarka nie obsługuje geolokalizacji.')
+    return
   }
+
+  navigator.geolocation.getCurrentPosition(
+    async ({ coords }) => {
+      const { latitude, longitude } = coords
+      localForm.location = `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`
+
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+        )
+        const data = await res.json()
+        if (data?.address?.city || data?.address?.town) {
+          localForm.location = data.address.city || data.address.town
+        }
+      } catch (err) {
+        console.warn('Nie udało się pobrać nazwy miasta:', err)
+      }
+
+      const token = localStorage.getItem('token')
+      if (token) {
+        try {
+          const res = await fetch('http://localhost:5000/api/users/me', {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+          const user = await res.json()
+
+          if (user && user._id) {
+            socket.emit('updateLocation', {
+              userId: user._id,
+              lat: latitude,
+              lng: longitude,
+              name: user.firstName?.charAt(0)?.toUpperCase() || '?',
+              firstName: user.firstName,
+              lastName: user.lastName,
+              age: user.age,
+              status: localForm.status
+            })
+          }
+        } catch (err) {
+          console.error('Błąd podczas wysyłania lokalizacji:', err)
+        }
+      }
+    },
+    (error) => {
+      console.error('Błąd geolokalizacji:', error)
+      alert('Nie udało się uzyskać Twojej lokalizacji.')
+    },
+    { enableHighAccuracy: true }
+  )
 }
 
-let prevOverflow = ''
-let prevPadding = ''
-const lockScroll = () => {
-  prevOverflow = document.body.style.overflow
-  prevPadding = document.body.style.paddingRight
-  const scrollBar = window.innerWidth - document.documentElement.clientWidth
-  document.body.style.overflow = 'hidden'
-  if (scrollBar > 0) document.body.style.paddingRight = `${scrollBar}px`
+function validateForm() {
+  let isValid = true
+  errors.fullName = ''
+  errors.age = ''
+  errors.bio = ''
+  errors.gender = ''
+  errors.location = ''
+
+  if (!localForm.firstName || !localForm.lastName) {
+    errors.fullName = 'Podaj imię i nazwisko.'
+    isValid = false
+  }
+
+  const ageNum = parseInt(localForm.age, 10)
+  if (isNaN(ageNum) || ageNum < 18) {
+    errors.age = 'Musisz mieć co najmniej 18 lat, aby korzystać z aplikacji.'
+    isValid = false
+  }
+
+  if (!localForm.bio || localForm.bio.trim().length < 10) {
+    errors.bio = 'Bio musi zawierać co najmniej 10 znaków.'
+    isValid = false
+  }
+
+  if (!localForm.gender) {
+    errors.gender = 'Wybierz płeć.'
+    isValid = false
+  }
+
+  if (!localForm.location) {
+    errors.location = 'Podaj lokalizację lub użyj geolokalizacji.'
+    isValid = false
+  }
+
+  return isValid
 }
-const restoreScroll = () => {
-  document.body.style.overflow = prevOverflow || ''
-  document.body.style.paddingRight = prevPadding || ''
-}
-watch(() => props.visible, (val) => (val ? lockScroll() : restoreScroll()))
-onUnmounted(restoreScroll)
 
 const close = () => emit('close')
+
 const saveChanges = () => {
+  if (!validateForm()) return
   emit('save', { ...localForm, favoriteBeers: [...localForm.favoriteBeers] })
   close()
 }
+
+onUnmounted(() => {
+  socket.disconnect()
+})
 </script>
 
 <style scoped>
@@ -335,10 +407,7 @@ const saveChanges = () => {
   width: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #d35226;
+  background: #d35226;
   border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
 }
 </style>
