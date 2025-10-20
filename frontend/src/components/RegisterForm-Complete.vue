@@ -50,7 +50,7 @@
           />
           <button
             type="button"
-            @click="useCurrentLocation"
+            @click="useCurrentLocationHandler"
             class="bg-primaryOrange text-white rounded-lg px-3 py-2 hover:bg-primaryGold transition-all shadow-md shadow-primaryOrange/40"
           >
             📍
@@ -89,6 +89,7 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { io } from 'socket.io-client'
 import FormHeading from '../components/FormHeading.vue'
+import { useCurrentLocation } from '@/composables/useCurrentLocation'
 
 const router = useRouter()
 const socket = io('http://localhost:5000')
@@ -99,6 +100,7 @@ const wiek = ref('')
 const miasto = ref('')
 const plec = ref('')
 const errorMessage = ref('')
+const { getLocation } = useCurrentLocation()
 
 const validateForm = () => {
   if (!imie.value.trim()) return 'Podaj imię.'
@@ -141,59 +143,13 @@ const submit = async () => {
   }
 }
 
-const useCurrentLocation = async () => {
-  if (!navigator.geolocation) {
-    alert('Twoja przeglądarka nie obsługuje geolokalizacji.')
-    return
+const useCurrentLocationHandler = async () => {
+  try {
+    const location = await getLocation()
+    miasto.value = location
+  } catch (err) {
+    console.warn(err)
   }
-
-  navigator.geolocation.getCurrentPosition(
-    async ({ coords }) => {
-      const { latitude, longitude } = coords
-      miasto.value = `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`
-
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-        )
-        const data = await res.json()
-        if (data?.address?.city || data?.address?.town) {
-          miasto.value = data.address.city || data.address.town
-        }
-      } catch (err) {
-        console.warn('Nie udało się pobrać nazwy miasta:', err)
-      }
-
-      const token = localStorage.getItem('token')
-      if (token) {
-        try {
-          const res = await fetch('http://localhost:5000/api/users/me', {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-          const user = await res.json()
-
-          if (user && user._id) {
-            socket.emit('updateLocation', {
-              userId: user._id,
-              lat: latitude,
-              lng: longitude,
-              name: user.firstName?.charAt(0)?.toUpperCase() || '?',
-              firstName: user.firstName,
-              lastName: user.lastName,
-              age: user.age,
-            })
-          }
-        } catch (err) {
-          console.error('Błąd podczas wysyłania lokalizacji:', err)
-        }
-      }
-    },
-    (error) => {
-      console.error('Błąd geolokalizacji:', error)
-      alert('Nie udało się uzyskać Twojej lokalizacji.')
-    },
-    { enableHighAccuracy: true }
-  )
 }
 </script>
 
