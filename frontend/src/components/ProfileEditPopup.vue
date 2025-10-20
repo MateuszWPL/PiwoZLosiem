@@ -117,7 +117,7 @@
             />
             <button
               type="button"
-              @click="useCurrentLocation"
+              @click="useCurrentLocationHandler"
               class="text-xs border border-secondaryGold rounded-lg px-2 py-1 hover:bg-secondaryGold/20 transition w-full sm:w-auto"
             >
               Użyj mojej lokalizacji
@@ -195,6 +195,7 @@ import { ref, reactive, watch, computed, defineProps, defineEmits, onUnmounted }
 import { io } from 'socket.io-client'
 import SvgIcon from '@/components/svgIcons/SvgIcon.vue'
 import { statuses } from '../../../shared/statuses'
+import { useCurrentLocation } from '@/composables/useCurrentLocation'
 
 const socket = io('http://localhost:5000')
 
@@ -226,6 +227,7 @@ const defaultUser = {
 
 const localForm = reactive({ ...defaultUser })
 const errors = reactive({ fullName: '', age: '', bio: '', gender: '', location: '' })
+const { getLocation } = useCurrentLocation()
 
 watch(
   () => props.userData,
@@ -285,60 +287,46 @@ async function onImageUpload(e) {
   }
 }
 
-const useCurrentLocation = async () => {
-  if (!navigator.geolocation) {
-    alert('Twoja przeglądarka nie obsługuje geolokalizacji.')
-    return
+// const useCurrentLocation = async () => {
+//   if (!navigator.geolocation) {
+//     alert('Twoja przeglądarka nie obsługuje geolokalizacji.')
+//     return
+//   }
+
+//   navigator.geolocation.getCurrentPosition(
+//     async ({ coords }) => {
+//       const { latitude, longitude } = coords
+//       let location = `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`
+
+//       try {
+//         const res = await fetch(
+//           `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+//         )
+//         const data = await res.json()
+//         if (data?.address?.city || data?.address?.town) {
+//           location = data.address.city || data.address.town
+//         }
+//       } catch (err) {
+//         console.warn('Nie udało się pobrać nazwy miasta:', err)
+//       }
+
+//       localForm.location = location
+//     },
+//     (error) => {
+//       console.error('Błąd geolokalizacji:', error)
+//       alert('Nie udało się uzyskać Twojej lokalizacji.')
+//     },
+//     { enableHighAccuracy: true }
+//   )
+// }
+
+const useCurrentLocationHandler = async () => {
+  try {
+    const location = await getLocation()
+    localForm.location = location
+  } catch (err) {
+    console.warn(err)
   }
-
-  navigator.geolocation.getCurrentPosition(
-    async ({ coords }) => {
-      const { latitude, longitude } = coords
-      localForm.location = `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`
-
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-        )
-        const data = await res.json()
-        if (data?.address?.city || data?.address?.town) {
-          localForm.location = data.address.city || data.address.town
-        }
-      } catch (err) {
-        console.warn('Nie udało się pobrać nazwy miasta:', err)
-      }
-
-      const token = localStorage.getItem('token')
-      if (token) {
-        try {
-          const res = await fetch('http://localhost:5000/api/users/me', {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-          const user = await res.json()
-
-          if (user && user._id) {
-            socket.emit('updateLocation', {
-              userId: user._id,
-              lat: latitude,
-              lng: longitude,
-              name: user.firstName?.charAt(0)?.toUpperCase() || '?',
-              firstName: user.firstName,
-              lastName: user.lastName,
-              age: user.age,
-              status: localForm.status
-            })
-          }
-        } catch (err) {
-          console.error('Błąd podczas wysyłania lokalizacji:', err)
-        }
-      }
-    },
-    (error) => {
-      console.error('Błąd geolokalizacji:', error)
-      alert('Nie udało się uzyskać Twojej lokalizacji.')
-    },
-    { enableHighAccuracy: true }
-  )
 }
 
 function validateForm() {
