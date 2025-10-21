@@ -129,6 +129,9 @@ import axios from 'axios'
 import Navbar from '@/components/Navbar.vue'
 import ProfileEditPopup from '@/components/ProfileEditPopup.vue'
 import SvgIcon from '@/components/svgIcons/SvgIcon.vue'
+import { fetchUserRanking } from '@/composables/fetchUserRanking'
+import { user, fetchUserData } from '@/composables/fetchUserData'
+import { beerStats, fetchBeerStats } from '@/composables/fetchBeerStats'
 
 const stats = ref([
   { label: 'Piwa', value: 0, icon: 'beer'},
@@ -138,18 +141,6 @@ const stats = ref([
 ])
 
 const showEditPopup = ref(false)
-const user = ref({
-  firstName: '',
-  lastName: '',
-  age: '',
-  gender: '',
-  location: '',
-  bio: '',
-  status: '',
-  favoriteBeers: [],
-  photo: null,
-})
-const beerStats = ref({ today: 0, week: 0, month: 0, total: 0 })
 const userRanking = ref('#0')
 const userAchievements = ref([])
 
@@ -157,49 +148,6 @@ const userAchievements = ref([])
 function getStatusLabel(value) {
   const status = statuses.find(s => s.value === value)
   return status ? status.label : ''
-}
-
-async function fetchUserData() {
-  try {
-    const token = localStorage.getItem('token')
-    if (!token) return
-    const res = await axios.get('http://localhost:5000/api/users/me', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    user.value = res.data
-  } catch (err) {
-    console.error('Błąd pobierania danych użytkownika:', err)
-  }
-}
-
-const fetchBeerStats = async () => {
-  try {
-    const token = localStorage.getItem('token')
-    const res = await axios.get('http://localhost:5000/api/beers/stats', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    beerStats.value = res.data
-  } catch (err) {
-    console.error('Błąd przy pobieraniu statystyk piw:', err)
-  }
-}
-
-const fetchUserRanking = async (period = 'all') => {
-  try {
-    const token = localStorage.getItem('token')
-    const res = await axios.get(`http://localhost:5000/api/ranking/${period}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    const ranking = res.data
-    const me = user.value
-    let position = ranking.findIndex(
-      r => r.imie === me.firstName && r.nazwisko === me.lastName
-    )
-    if (position === -1) position = ranking.length
-    userRanking.value = `#${position + 1}`
-  } catch (err) {
-    console.error('Błąd przy pobieraniu rankingu:', err)
-  }
 }
 
 const fetchUserAchievements = async () => {
@@ -254,9 +202,9 @@ watch([beerStats, userRanking, userAchievements], () => {
 
 /* ----------------- Lifecycle ----------------- */
 onMounted(async () => {
-  await fetchUserData()
+  user.value = await fetchUserData()
   await fetchBeerStats()
-  await fetchUserRanking()
+  await fetchUserRanking(user, userRanking, 'all')
   await fetchUserAchievements()
 })
 
@@ -267,8 +215,6 @@ const badges = computed(() => {
     icon: ach.icon || null
   }))
 })
-
-
 </script>
 
 <style scoped>

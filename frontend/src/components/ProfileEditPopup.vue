@@ -213,7 +213,7 @@ function resolvePhotoUrl(photo) {
   return `http://localhost:5000${photo}`
 }
 
-const defaultUser = {
+const user = {
   photo: null,
   firstName: '',
   lastName: '',
@@ -225,7 +225,7 @@ const defaultUser = {
   favoriteBeers: []
 }
 
-const localForm = reactive({ ...defaultUser })
+const localForm = reactive({ ...user })
 const errors = reactive({ fullName: '', age: '', bio: '', gender: '', location: '' })
 const { getLocation } = useCurrentLocation()
 
@@ -233,11 +233,11 @@ watch(
   () => props.userData,
   (val) => {
     if (!val) return
-    for (const key in defaultUser) {
+    for (const key in user) {
       if (Array.isArray(val[key])) {
         localForm[key] = [...val[key]]
       } else {
-        localForm[key] = val[key] ?? defaultUser[key]
+        localForm[key] = val[key] ?? user[key]
       }
     }
   },
@@ -286,39 +286,6 @@ async function onImageUpload(e) {
     console.error('Błąd uploadu zdjęcia:', err)
   }
 }
-
-// const useCurrentLocation = async () => {
-//   if (!navigator.geolocation) {
-//     alert('Twoja przeglądarka nie obsługuje geolokalizacji.')
-//     return
-//   }
-
-//   navigator.geolocation.getCurrentPosition(
-//     async ({ coords }) => {
-//       const { latitude, longitude } = coords
-//       let location = `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`
-
-//       try {
-//         const res = await fetch(
-//           `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-//         )
-//         const data = await res.json()
-//         if (data?.address?.city || data?.address?.town) {
-//           location = data.address.city || data.address.town
-//         }
-//       } catch (err) {
-//         console.warn('Nie udało się pobrać nazwy miasta:', err)
-//       }
-
-//       localForm.location = location
-//     },
-//     (error) => {
-//       console.error('Błąd geolokalizacji:', error)
-//       alert('Nie udało się uzyskać Twojej lokalizacji.')
-//     },
-//     { enableHighAccuracy: true }
-//   )
-// }
 
 const useCurrentLocationHandler = async () => {
   try {

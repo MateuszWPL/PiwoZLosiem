@@ -1,0 +1,27 @@
+import axios from 'axios'
+
+export const fetchUserRanking = async (user, userRanking, period = 'all') => {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      console.warn('Brak tokena – użytkownik niezalogowany.')
+      return
+    }
+
+    const res = await axios.get(`http://localhost:5000/api/ranking/${period}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+
+    const ranking = res.data
+    const me = user.value
+
+    let position = ranking.findIndex(
+      r => r.imie === me.firstName && r.nazwisko === me.lastName
+    )
+
+    if (position === -1) position = ranking.length
+    userRanking.value = `#${position + 1}`
+  } catch (err) {
+    console.error('Błąd przy pobieraniu rankingu:', err)
+  }
+}
