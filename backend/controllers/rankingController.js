@@ -38,7 +38,7 @@ export const getRanking = async (req, res) => {
       { $unwind: "$user" },
       {
         $project: {
-          _id: 0,
+          _id: "$user.id",
           imie: "$user.imie",
           nazwisko: "$user.nazwisko",
           miasto: "$user.miasto",
@@ -57,7 +57,7 @@ export const getRanking = async (req, res) => {
 export const getCurrentUserRanking = async (req, res) => {
   const { period } = req.params;
   const startDate = getStartDate(period);
-  const userId = req.user._id; // zakładamy, że masz middleware uwierzytelniający i req.user
+  const userId = req.user._id; 
 
   try {
     // pobranie sumy piwa wszystkich uzytkownikow w danym okresie \
@@ -68,14 +68,15 @@ export const getCurrentUserRanking = async (req, res) => {
     ]);
 
     // znalezienie miejsca aktualnego uzytkownika
-    const rankIndex = rankingAll.findIndex(r => r._id.toString() === userId.toString());
+    const rankIndex = rankingAll.findIndex(r => r._id.toString() === userId.toString()); // szukanie po id
     const rank = rankIndex !== -1 ? rankIndex + 1 : null;
     const points = rankIndex !== -1 ? rankingAll[rankIndex].totalAmount : 0;
 
     // pobranie danych
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select("imie nazwisko miasto");
 
     res.json({
+      _id: user._id,
       rank,
       imie: user.imie,
       nazwisko: user.nazwisko,
