@@ -5,7 +5,7 @@
       <div class="max-w-screen-xl mx-auto">
         <div>
           <h3 class="text-white text-[30px] tracking-[-0.75px] mt-10">
-            Cześć, <span class="text-primaryOrange">{{ firstName || "Piwosz"}}</span
+            Cześć, <span class="text-primaryOrange">{{ user.firstName || "Piwosz"}}</span
             ><span class="text-primaryOrange">!</span>
           </h3>
           <p class="text-secondaryGold text-sm leading-5 mt-1 mb-6">Gotowy na piwo ?</p>
@@ -134,35 +134,21 @@ import StatusPopup from '@/components/ChangeStatusPopup.vue'
 import ChangeStatusPopup from '@/components/ChangeStatusPopup.vue'
 import { statuses } from '../../../shared/statuses.js'
 import SvgIcon from '@/components/svgIcons/SvgIcon.vue'
-
+import { fetchUserRanking } from '@/composables/fetchUserRanking'
+import { user, fetchUserData } from '@/composables/fetchUserData'
+import { beerStats, fetchBeerStats } from '@/composables/fetchBeerStats'
 
 const { addNotification } = useNotifications()
 const status = ref('')
 const firstName = ref('')
 const lastName = ref('')
 const isStatusPopupVisible = ref(false)
-const beerStats = ref({ today: 0, week: 0, month: 0, total: 0 })
 const userRanking = ref('#0')
 const token = localStorage.getItem('token')
 
-
-const fetchUserData = async () => {
-  const token = localStorage.getItem('token')
-  try {
-    const { data } = await axios.get('/users/me', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    status.value = data.status
-    firstName.value = data.firstName
-    lastName.value = data.lastName
-  } catch (err) {
-    console.error(err)
-  }
-}
-
 const statusLabel = computed(() => {
   const current = statuses.find(s => s.value === status.value)
-  return current ? current.label : status.value
+  return current ? current.label : 'Nie ustawiono statusu'
 })
 
 const updateStatus = async (newStatusValue) => {
@@ -182,47 +168,12 @@ const updateStatus = async (newStatusValue) => {
   }
 }
 
-const fetchBeerStats = async () => {
-  try {
-    const token = localStorage.getItem('token')
-    const res = await axios.get('http://localhost:5000/api/beers/stats', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    beerStats.value = res.data
-  } catch (err) {
-    console.error('Błąd przy pobieraniu statystyk piw:', err)
-  }
-}
-
-const fetchUserRanking = async (period = 'all') => {
-  try {
-    const token = localStorage.getItem('token')
-    const res = await axios.get(`/ranking/${period}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-
-    const ranking = res.data
-    const fname = firstName.value
-    const lname = lastName.value
-    let position = ranking.findIndex(
-      r => r.imie === fname && r.nazwisko === lname
-    )
-
-    if (position === -1) position = ranking.length
-
-    userRanking.value = `#${position + 1}`
-  } catch (err) {
-    console.error('Błąd przy pobieraniu rankingu:', err)
-  }
-}
-
-
-// onMounted(fetchUserData)
-
 onMounted(async () => {
+  user.value = await fetchUserData()
+  status.value = user.value.status || ''
   await fetchUserData()
   await fetchBeerStats()
-  await fetchUserRanking()
+  await fetchUserRanking(user, userRanking, 'all')
 })
 
 </script>
