@@ -1,5 +1,6 @@
 import FriendRequest from "../models/FriendRequest.js";
 import User from "../models/User.js";
+import { checkAchievements } from "../utils/checkAchievements.js";
 
 const formatUser = (user) => ({
   id: user._id,
@@ -151,6 +152,9 @@ export const acceptFriendRequest = async (req, res) => {
     });
     
     await FriendRequest.findByIdAndDelete(requestId);
+
+    await checkAchievements(userId);
+    await checkAchievements(senderId);
 
     res.json({ message: "Zaproszenie zaakceptowane" });
   } catch (err) {
