@@ -206,7 +206,7 @@ onMounted(async () => {
   await Promise.all([
     fetchBeerStats(),
     fetchUserRanking('all'),
-    fetchUserAchievements()
+    fetchUserAchievements(),
     fetchFriendsCount()
   ])
 })
