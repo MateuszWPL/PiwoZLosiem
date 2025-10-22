@@ -3,7 +3,7 @@ import User from "../models/User.js";
 import Achievement from "../models/Achievement.js";
 
 export const checkAchievements = async (userId) => {
-  const user = await User.findById(userId).populate("achievements");
+  const user = await User.findById(userId).populate("achievements").populate("friends");
   if (!user) throw new Error("Nie znaleziono użytkownika");
 
   const beers = await Beer.find({ user: userId });
@@ -57,6 +57,28 @@ export const checkAchievements = async (userId) => {
             achievementsToAdd.push(achievement._id);
           }
         break;
+
+        // osiagniecia znajomych
+        case "first_friend":
+          if (user.friends && user.friends.length >= 1) {
+            achievementsToAdd.push(achievement._id);
+          }
+          break;
+        case "friend_collector":
+          if (user.friends && user.friends.length >= 5) {
+            achievementsToAdd.push(achievement._id);
+          }
+          break;
+        case "popular_person":
+          if (user.friends && user.friends.length >= 20) {
+            achievementsToAdd.push(achievement._id);
+          }
+          break;
+        case "friend_master":
+          if (user.friends && user.friends.length >= 50) {
+            achievementsToAdd.push(achievement._id);
+          }
+          break;
       }
     }
   }

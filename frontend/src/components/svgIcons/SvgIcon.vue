@@ -15,6 +15,9 @@ import ShieldIcon from './ShieldIcon.vue'
 import StarIcon from './StarIcon.vue'
 import MedalIcon from './MedalIcon.vue'
 import LocalizationIcon from './LocalizationIcon.vue'
+import ChatIcon from './ChatIcon.vue'
+import CancellIcon from './CancellIcon.vue'
+
 
 const icons = {
   beer: BeerIcon,
@@ -26,6 +29,8 @@ const icons = {
   star: StarIcon,
   medal: MedalIcon,
   localization: LocalizationIcon,
+  chat: ChatIcon,
+  cancell: CancellIcon,
 }
 
 defineProps({

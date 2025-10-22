@@ -13,6 +13,7 @@ import Chat from '@/pages/Chat.vue'
 import ChatRoom from '@/pages/ChatRoom.vue'
 import DiscoverView from '@/pages/DiscoverView.vue'
 import ResetPassword from '@/pages/ResetPassword.vue'
+import Friends from '@/pages/Friends.vue'
 
 const routes = [
   { path: '/', name: 'MainPage', component: MainPage, meta: { title: 'Strona Główna' } },
@@ -29,6 +30,7 @@ const routes = [
   { path: '/chat/:id', name: 'ChatRoom', component: ChatRoom, meta: { title: 'Chat Room' } },
   { path: '/ranking', name: 'Ranking', component: Ranking, meta: { requiresAuth: true, title: 'Ranking' } },
   { path: '/odkrywaj', name: 'Odkrywaj', component: DiscoverView, meta: { requiresAuth: true, title: 'Odkrywaj' } },
+  { path: '/znajomi', name: 'Znajomi', component: Friends, meta: { requiresAuth: true } },
 ]
 
 

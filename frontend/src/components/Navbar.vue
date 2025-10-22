@@ -257,6 +257,14 @@
               Moje piwa
             </p>
           </RouterLink>
+          <RouterLink to="/znajomi" class="flex items-center gap-4 py-3 group">
+            <SvgIcon name="friends" width="24" height="24" class="text-secondaryGold group-hover:scale-110 transition-all duration-300 group-hover:stroke-primaryOrange" />
+            <p
+              class="text-secondaryGold group-hover:translate-x-1 transition-all duration-300 group-hover:text-primaryOrange"
+            >
+              Znajomi
+            </p>
+          </RouterLink>
           <RouterLink to="/profil" class="flex items-center gap-4 py-3 group">
             <svg
               class="group-hover:scale-110 transition-all duration-300 group-hover:stroke-primaryOrange"
@@ -342,6 +350,7 @@
 import { ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import NotificationDropdown from './NotificationDropdown.vue'
+import SvgIcon from './svgIcons/SvgIcon.vue'
 
 const router = useRouter()
 const menuOpen = ref(false)

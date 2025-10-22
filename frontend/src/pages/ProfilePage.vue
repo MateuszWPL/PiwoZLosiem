@@ -132,6 +132,7 @@ import SvgIcon from '@/components/svgIcons/SvgIcon.vue'
 import { userRanking, fetchUserRanking } from '@/composables/fetchUserRanking'
 import { user, fetchUserData } from '@/composables/fetchUserData'
 import { beerStats, fetchBeerStats } from '@/composables/fetchBeerStats'
+import { friendsCount, fetchFriendsCount } from '@/composables/fetchFriendsCount.js'
 
 const stats = ref([
   { label: 'Piwa', value: 0, icon: 'beer'},
@@ -193,7 +194,7 @@ async function updateProfile(updatedData) {
 watch([beerStats, userRanking, userAchievements], () => {
   stats.value = [
     { label: 'Piwa', value: beerStats.value.total || 0, icon: 'beer' },
-    { label: 'Znajomi', value: 23, icon: 'friends' },
+    { label: 'Znajomi', value: friendsCount.value || 0, icon: 'friends' },
     { label: 'Ranking', value: userRanking.value, icon: 'ranking' },
     { label: 'Odznaki', value: userAchievements.value.length || 0, icon: 'badge' }
   ]
@@ -206,6 +207,7 @@ onMounted(async () => {
     fetchBeerStats(),
     fetchUserRanking('all'),
     fetchUserAchievements()
+    fetchFriendsCount()
   ])
 })
 

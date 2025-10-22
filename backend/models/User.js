@@ -9,13 +9,14 @@ const userSchema = new mongoose.Schema({
   miasto: { type: String },
   plec: { type: String },
   isProfileComplete: { type: Boolean, default: false },
-  status: { type: String, default: "🍺 wolny na piwo" },
+  status: { type: String, default: "available" },
   bio: { type: String, default: '' },
   photoUrl: { type: String, default: null },
   favoriteBeers: { type: [String], default: [] },
   achievements: [ { type: mongoose.Schema.Types.ObjectId, ref: "Achievement", }, ],
   resetToken: { type: String },
   resetTokenExpiry: { type: Date },
+  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
