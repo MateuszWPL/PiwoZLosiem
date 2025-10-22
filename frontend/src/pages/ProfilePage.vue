@@ -201,10 +201,12 @@ watch([beerStats, userRanking, userAchievements], () => {
 
 /* ----------------- Lifecycle ----------------- */
 onMounted(async () => {
-  user.value = await fetchUserData()
-  await fetchBeerStats()
-  await fetchUserRanking('all')
-  await fetchUserAchievements()
+  user.value = await fetchUserData() 
+  await Promise.all([
+    fetchBeerStats(),
+    fetchUserRanking('all'),
+    fetchUserAchievements()
+  ])
 })
 
 const badges = computed(() => {
