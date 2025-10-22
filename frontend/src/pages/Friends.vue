@@ -39,7 +39,7 @@
               class="bg-tertiaryGreen border border-primaryGreen p-4 rounded-2xl shadow-md text-white flex justify-between items-start">
 
               <div class="flex items-center gap-4">
-                <img v-if="friend.photo" :src="friend.photo" class="w-12 h-12 rounded-full object-cover" />
+                <img :src="friend.photo ? `http://localhost:5000${friend.photo}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover"/>
                 <div class="flex flex-col">
                   <h3 class="font-semibold">{{ friend.name }}</h3>
                   <div class="flex items-center gap-1">
@@ -69,7 +69,7 @@
                 class="bg-tertiaryGreen border border-primaryGreen p-4 rounded-2xl shadow-md text-white flex justify-between items-center">
 
                 <div class="flex items-center gap-4">
-                  <img v-if="request.photo" :src="request.photo" class="w-12 h-12 rounded-full object-cover" />
+                  <img :src="request.photo ? `http://localhost:5000${request.photo}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover"/>
                   <div class="flex flex-col gap-1">
                     <h3 class="font-semibold">{{ request.name }}</h3>
                     <div class="flex items-center gap-1">
@@ -99,7 +99,7 @@
                 class="bg-tertiaryGreen border border-primaryGreen p-4 rounded-2xl shadow-md text-white flex justify-between items-center">
 
                 <div class="flex items-center gap-4">
-                  <img v-if="request.photo" :src="request.photo" class="w-12 h-12 rounded-full object-cover" />
+                  <img :src="request.photo ? `http://localhost:5000${request.photo}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover" />
                   <div class="flex flex-col">
                     <h3 class="font-semibold">{{ request.name }}</h3>
                     <div class="flex items-center gap-1">
@@ -107,7 +107,6 @@
                       <p class="text-sm text-secondaryGold">{{ request.location || 'Brak lokalizacji' }}</p>
                     </div>
                     <span class="mt-2 inline-block px-1.5 py-1 text-xs bg-primaryOrange rounded-full whitespace-nowrap w-fit">{{ getStatusLabel(request.status) }}</span>
-                    <p class="text-xs text-gray-300 mt-1">Oczekuje na akceptację</p>
                     <p class="text-xs text-gray-400 mt-1">Wysłano: {{ formatDate(request.createdAt) }}</p>
                   </div>
                 </div>
@@ -140,7 +139,7 @@
                 class="bg-tertiaryGreen border border-primaryGreen p-4 rounded-2xl shadow-md text-white flex justify-between items-center">
 
                 <div class="flex items-center gap-4">
-                  <img v-if="user.photo" :src="user.photo" class="w-12 h-12 rounded-full object-cover" />
+                  <img :src="user.photo ? `http://localhost:5000${user.photo}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover"/>
                   <div class="flex flex-col">
                     <h3 class="font-semibold">{{ user.name }}</h3>
                     <div class="flex items-center gap-1">
