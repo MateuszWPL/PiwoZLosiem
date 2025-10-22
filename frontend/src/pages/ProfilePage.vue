@@ -129,7 +129,7 @@ import axios from 'axios'
 import Navbar from '@/components/Navbar.vue'
 import ProfileEditPopup from '@/components/ProfileEditPopup.vue'
 import SvgIcon from '@/components/svgIcons/SvgIcon.vue'
-import { fetchUserRanking } from '@/composables/fetchUserRanking'
+import { userRanking, fetchUserRanking } from '@/composables/fetchUserRanking'
 import { user, fetchUserData } from '@/composables/fetchUserData'
 import { beerStats, fetchBeerStats } from '@/composables/fetchBeerStats'
 import { friendsCount, fetchFriendsCount } from '@/composables/fetchFriendsCount.js'
@@ -142,7 +142,6 @@ const stats = ref([
 ])
 
 const showEditPopup = ref(false)
-const userRanking = ref('#0')
 const userAchievements = ref([])
 
 /* ----------------- Functions ----------------- */
@@ -203,11 +202,13 @@ watch([beerStats, userRanking, userAchievements], () => {
 
 /* ----------------- Lifecycle ----------------- */
 onMounted(async () => {
-  user.value = await fetchUserData()
-  await fetchBeerStats()
-  await fetchUserRanking(user, userRanking, 'all')
-  await fetchUserAchievements()
-  await fetchFriendsCount()
+  user.value = await fetchUserData() 
+  await Promise.all([
+    fetchBeerStats(),
+    fetchUserRanking('all'),
+    fetchUserAchievements()
+    fetchFriendsCount()
+  ])
 })
 
 const badges = computed(() => {

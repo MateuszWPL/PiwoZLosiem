@@ -4,17 +4,22 @@ import { checkAchievements } from "../utils/checkAchievements.js";
 // Dodanie piwa (tylko zalogowany użytkownik)
 export const addBeer = async (req, res) => {
   try {
-    const { amount, type, place } = req.body;
+    const { amount, type, place, createdAt } = req.body;
 
     if (!amount || !type || !place) {
       return res.status(400).json({ message: "Wszystkie pola są wymagane" });
     }
 
+    if (createdAt && new Date(createdAt) > new Date()) {
+      return res.status(400).json({ message: "Data dodanego piwka nie może być z przyszłości!" });
+    }
+    
     const beer = await Beer.create({
       user: req.user._id,
       amount,
       type,
       place,
+      createdAt: createdAt ? new Date(createdAt) : undefined,
     });
 
     await checkAchievements(req.user._id);

@@ -16,33 +16,23 @@ import ResetPassword from '@/pages/ResetPassword.vue'
 import Friends from '@/pages/Friends.vue'
 
 const routes = [
-  { path: '/', name: 'MainPage', component: MainPage },
-  { path: '/rejestracja', name: 'Rejestracja', component: RegisterPage },
-  { path: '/dashboard', name: 'Dashboard', component: Dashboard, meta: { requiresAuth: true } },
-  { path: '/logowanie', name: 'Logowanie', component: LoginPage, meta: { requiresGuest: true } },
-  {
-    path: '/resetowanie-hasla',
-    name: 'ResetowanieHasla',
-    component: ForgottenPasswordPage,
-    meta: { requiresGuest: true },
-  },
-  { path: '/reset-hasla', name: 'ResetHasla', component: ResetPassword, meta: { requiresGuest: true }},
-  {
-    path: '/rejestracja-uzupelnienie',
-    name: 'RejestracjaUzupelnienie',
-    component: RegisterPageComplete,
-    meta: { requiresAuth: true },
-  },
-  { path: '/powitanie', name: 'Powitanie', component: Welcome },
-  { path: '/moje-piwa', name: 'MojePiwa', component: MyBeers },
-  { path: '/profil', name: 'Profil', component: ProfilePage },
-  { path: '/chat', name: 'Chat', component: Chat },
-  { path: '/chat/:id', name: 'ChatRoom', component: ChatRoom },
-  { path: '/ranking', name: 'Ranking', component: Ranking, meta: { requiresAuth: true } },
-  { path: '/moje-piwa', name: 'MojePiwa', component: MyBeers, meta: { requiresAuth: true } },
-  { path: '/odkrywaj', name: 'Odkrywaj', component: DiscoverView, meta: { requiresAuth: true } },
-  { path: '/znajomi', name: 'Znajomi', component: Friends, meta: { requiresAuth: true } }
+  { path: '/', name: 'MainPage', component: MainPage, meta: { title: 'Strona Główna' } },
+  { path: '/rejestracja', name: 'Rejestracja', component: RegisterPage, meta: { title: 'Rejestracja' } },
+  { path: '/dashboard', name: 'Dashboard', component: Dashboard, meta: { requiresAuth: true, title: 'Dashboard' } },
+  { path: '/logowanie', name: 'Logowanie', component: LoginPage, meta: { requiresGuest: true, title: 'Logowanie' } },
+  { path: '/resetowanie-hasla', name: 'ResetowanieHasla', component: ForgottenPasswordPage, meta: { requiresGuest: true, title: 'Resetowanie hasła' } },
+  { path: '/reset-hasla', name: 'ResetHasla', component: ResetPassword, meta: { requiresGuest: true, title: 'Reset Hasła' } },
+  { path: '/rejestracja-uzupelnienie', name: 'RejestracjaUzupelnienie', component: RegisterPageComplete, meta: { requiresAuth: true, title: 'Uzupełnij rejestrację' } },
+  { path: '/powitanie', name: 'Powitanie', component: Welcome, meta: { title: 'Powitanie' } },
+  { path: '/moje-piwa', name: 'MojePiwa', component: MyBeers, meta: { requiresAuth: true, title: 'Moje Piwa' } },
+  { path: '/profil', name: 'Profil', component: ProfilePage, meta: { title: 'Profil' } },
+  { path: '/chat', name: 'Chat', component: Chat, meta: { title: 'Chat' } },
+  { path: '/chat/:id', name: 'ChatRoom', component: ChatRoom, meta: { title: 'Chat Room' } },
+  { path: '/ranking', name: 'Ranking', component: Ranking, meta: { requiresAuth: true, title: 'Ranking' } },
+  { path: '/odkrywaj', name: 'Odkrywaj', component: DiscoverView, meta: { requiresAuth: true, title: 'Odkrywaj' } },
+  { path: '/znajomi', name: 'Znajomi', component: Friends, meta: { requiresAuth: true } },
 ]
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -61,6 +51,10 @@ router.beforeEach((to, from, next) => {
   }
 
   next()
+})
+
+router.afterEach((to) => {
+  document.title = to.meta.title || 'Moja Aplikacja' 
 })
 
 export default router

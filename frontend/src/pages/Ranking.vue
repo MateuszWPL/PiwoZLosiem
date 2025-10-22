@@ -74,6 +74,7 @@ const currentUserRankings = ref([null, null, null])
 const fetchRanking = async (period) => {
   try {
     const res = await axios.get(`http://localhost:5000/api/ranking/${period}`)
+    // console.log(res.data)
     return res.data
   } catch (err) {
     console.error(`Błąd przy pobieraniu rankingu (${period}):`, err)
@@ -88,6 +89,7 @@ const fetchCurrentUserRanking = async (period) => {
     const res = await axios.get(`http://localhost:5000/api/ranking/${period}/current-user`, {
       headers: { Authorization: `Bearer ${token}` }
     })
+    // console.log(res.data)
     return res.data
   } catch (err) {
     console.error(`Błąd przy pobieraniu aktualnego użytkownika (${period}):`, err)
@@ -98,9 +100,15 @@ const fetchCurrentUserRanking = async (period) => {
 // pobranie danych po mount
 onMounted(async () => {
   const periods = ['week', 'month', 'all']
-  for (let i = 0; i < periods.length; i++) {
-    rankings.value[i] = await fetchRanking(periods[i])
-    currentUserRankings.value[i] = await fetchCurrentUserRanking(periods[i])
-  }
+
+  // rownolegle fetche - zmiana optymalizacyjna
+  const rankingPromises = periods.map(p => fetchRanking(p))
+  const currentUserPromises = periods.map(p => fetchCurrentUserRanking(p))
+
+  const rankingResults = await Promise.all(rankingPromises)
+  const currentUserResults = await Promise.all(currentUserPromises)
+
+  rankings.value = rankingResults
+  currentUserRankings.value = currentUserResults
 })
 </script>

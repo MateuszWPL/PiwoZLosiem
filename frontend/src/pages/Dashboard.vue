@@ -134,7 +134,7 @@ import StatusPopup from '@/components/ChangeStatusPopup.vue'
 import ChangeStatusPopup from '@/components/ChangeStatusPopup.vue'
 import { statuses } from '../../../shared/statuses.js'
 import SvgIcon from '@/components/svgIcons/SvgIcon.vue'
-import { fetchUserRanking } from '@/composables/fetchUserRanking'
+import { userRanking, fetchUserRanking } from '@/composables/fetchUserRanking'
 import { user, fetchUserData } from '@/composables/fetchUserData'
 import { beerStats, fetchBeerStats } from '@/composables/fetchBeerStats'
 import { friendsCount, fetchFriendsCount } from '@/composables/fetchFriendsCount'
@@ -144,7 +144,6 @@ const status = ref('')
 const firstName = ref('')
 const lastName = ref('')
 const isStatusPopupVisible = ref(false)
-const userRanking = ref('#0')
 const token = localStorage.getItem('token')
 
 const statusLabel = computed(() => {
@@ -170,12 +169,16 @@ const updateStatus = async (newStatusValue) => {
 }
 
 onMounted(async () => {
-  user.value = await fetchUserData()
+  await Promise.all([
+    fetchUserData(),
+    fetchBeerStats(),
+    fetchUserRanking('all')
+  ])
+
   status.value = user.value.status || ''
   await fetchUserData()
   await fetchBeerStats()
   await fetchUserRanking(user, userRanking, 'all')
   await fetchFriendsCount()
 })
-
 </script>
