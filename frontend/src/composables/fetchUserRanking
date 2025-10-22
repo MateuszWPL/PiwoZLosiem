@@ -1,6 +1,9 @@
+import { ref } from 'vue'
 import axios from 'axios'
 
-export const fetchUserRanking = async (user, userRanking, period = 'all') => {
+export const userRanking = ref('#0')
+
+export const fetchUserRanking = async (period = 'all') => {
   try {
     const token = localStorage.getItem('token')
     if (!token) {
@@ -8,19 +11,15 @@ export const fetchUserRanking = async (user, userRanking, period = 'all') => {
       return
     }
 
-    const res = await axios.get(`http://localhost:5000/api/ranking/${period}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-
-    const ranking = res.data
-    const me = user.value
-
-    let position = ranking.findIndex(
-      r => r.imie === me.firstName && r.nazwisko === me.lastName
+    const res = await axios.get(
+      `http://localhost:5000/api/ranking/${period}/current-user`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
     )
 
-    if (position === -1) position = ranking.length
-    userRanking.value = `#${position + 1}`
+    //console.log('fetchUserRanking endpoint:', res.data)
+    userRanking.value = `#${res.data.rank || 0}`
   } catch (err) {
     console.error('Błąd przy pobieraniu rankingu:', err)
   }
