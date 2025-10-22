@@ -40,7 +40,7 @@
                 class="flex flex-col gap-2 items-center mx-auto w-full rounded-[10px] bg-tertiaryGreen/50 p-4 md:max-w-none"
               >
                 <SvgIcon name="friends" style="color:#C8A654; width: 36px; height: 32px;"/>
-                <p class="text-white text-2xl">23</p>
+                <p class="text-white text-2xl">{{ friendsCount }}</p>
                 <p>Znajomi</p>
               </div>
               <div
@@ -137,6 +137,7 @@ import SvgIcon from '@/components/svgIcons/SvgIcon.vue'
 import { fetchUserRanking } from '@/composables/fetchUserRanking'
 import { user, fetchUserData } from '@/composables/fetchUserData'
 import { beerStats, fetchBeerStats } from '@/composables/fetchBeerStats'
+import { friendsCount, fetchFriendsCount } from '@/composables/fetchFriendsCount'
 
 const { addNotification } = useNotifications()
 const status = ref('')
@@ -174,6 +175,7 @@ onMounted(async () => {
   await fetchUserData()
   await fetchBeerStats()
   await fetchUserRanking(user, userRanking, 'all')
+  await fetchFriendsCount()
 })
 
 </script>

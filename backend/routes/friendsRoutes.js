@@ -6,7 +6,8 @@ import {
   sendFriendRequest,
   acceptFriendRequest,
   rejectFriendRequest,
-  removeFriend
+  removeFriend,
+  getFriendsCount
 } from "../controllers/friendsController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
@@ -18,6 +19,7 @@ router.use(protect);
 router.get("/", getFriends);
 router.get("/requests", getFriendRequests);
 router.get("/all", getAllUsers);
+router.get("/count", getFriendsCount);
 
 router.post("/:id", sendFriendRequest);
 router.post("/requests/:id/accept", acceptFriendRequest);

@@ -200,3 +200,16 @@ export const removeFriend = async (req, res) => {
     res.status(500).json({ error: 'Błąd serwera' });
   }
 };
+
+export const getFriendsCount = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId).populate("friends");
+    const friendsCount = user.friends.length;
+    
+    res.json({ count: friendsCount });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Błąd serwera' });
+  }
+};
