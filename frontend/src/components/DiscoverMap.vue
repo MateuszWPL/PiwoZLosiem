@@ -83,7 +83,7 @@ import { io } from "socket.io-client";
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker, LTooltip } from "@vue-leaflet/vue-leaflet";
 import L from 'leaflet';
-import axios from 'axios'; 
+import apiClient from '@/api/api.js'
 import { statuses } from '../../../shared/statuses.js';
 
 const zoom = ref(13);
@@ -166,9 +166,9 @@ const fetchUserData = async () => {
   const token = localStorage.getItem('token');
   if (!token) return;
   try {
-    const res = await axios.get('http://localhost:5000/api/users/me', { 
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const res = await apiClient.get('/users/me', { 
+      headers: { Authorization: `Bearer ${token}` }
+    });
     
     const userData = res.data;
     status.value = userData.status;

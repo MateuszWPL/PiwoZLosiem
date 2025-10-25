@@ -1,22 +1,18 @@
 import { ref } from 'vue'
-import axios from 'axios'
+import apiClient from '@/api/api.js'
 
 export const friendsCount = ref(0)
 
-const createAxiosInstance = () => {
-  const token = localStorage.getItem('token')
-  return axios.create({
-    baseURL: 'http://localhost:5000/api/friends',
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  })
-}
-
 export const fetchFriendsCount = async () => {
   try {
-    const axiosInstance = createAxiosInstance()
-    const res = await axiosInstance.get('/count')
+    const token = localStorage.getItem('token')
+    if (!token) throw new Error("Brak tokena")
+
+    const res = await apiClient.get('/friends/count', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
 
     friendsCount.value = res.data.count
     return friendsCount.value

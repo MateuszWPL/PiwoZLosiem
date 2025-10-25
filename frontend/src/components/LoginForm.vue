@@ -91,7 +91,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import apiClient from '@/api/api.js'
 import FormHeading from '../components/FormHeading.vue'
 
 const email = ref('')
