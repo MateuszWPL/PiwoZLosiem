@@ -1,5 +1,5 @@
-import Beer from "../models/beer.js";
-import User from "../models/user.js";
+import Beer from "../models/Beer.js";
+import User from "../models/User.js";
 
 // helper do obliczania dat
 const getStartDate = (period) => {
