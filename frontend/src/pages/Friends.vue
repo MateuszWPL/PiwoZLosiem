@@ -39,7 +39,7 @@
               class="bg-tertiaryGreen border border-primaryGreen p-4 rounded-2xl shadow-md text-white flex justify-between items-start">
 
               <div class="flex items-center gap-4">
-                <img :src="friend.photo ? `http://localhost:5000${friend.photo}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover"/>
+                <img :src="friend.photo ? `/${friend.photo}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover"/>
                 <div class="flex flex-col">
                   <h3 class="font-semibold">{{ friend.name }}</h3>
                   <div class="flex items-center gap-1">
@@ -69,7 +69,7 @@
                 class="bg-tertiaryGreen border border-primaryGreen p-4 rounded-2xl shadow-md text-white flex justify-between items-center">
 
                 <div class="flex items-center gap-4">
-                  <img :src="request.photo ? `http://localhost:5000${request.photo}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover"/>
+                  <img :src="request.photo ? `/${request.photo}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover"/>
                   <div class="flex flex-col gap-1">
                     <h3 class="font-semibold">{{ request.name }}</h3>
                     <div class="flex items-center gap-1">
@@ -99,7 +99,7 @@
                 class="bg-tertiaryGreen border border-primaryGreen p-4 rounded-2xl shadow-md text-white flex justify-between items-center">
 
                 <div class="flex items-center gap-4">
-                  <img :src="request.photo ? `http://localhost:5000${request.photo}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover" />
+                  <img :src="request.photo ? `/${request.photo}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover" />
                   <div class="flex flex-col">
                     <h3 class="font-semibold">{{ request.name }}</h3>
                     <div class="flex items-center gap-1">
@@ -139,7 +139,7 @@
                 class="bg-tertiaryGreen border border-primaryGreen p-4 rounded-2xl shadow-md text-white flex justify-between items-center">
 
                 <div class="flex items-center gap-4">
-                  <img :src="user.photo ? `http://localhost:5000${user.photo}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover"/>
+                  <img :src="user.photo ? `/${user.photo}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover"/>
                   <div class="flex flex-col">
                     <h3 class="font-semibold">{{ user.name }}</h3>
                     <div class="flex items-center gap-1">
@@ -169,7 +169,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import Navbar from '@/components/Navbar.vue'
-import axios from 'axios'
+import axios from '@/api/api.js'
 import SvgIcon from '@/components/svgIcons/SvgIcon.vue'
 import { statuses } from '../../../shared/statuses'
 import { useNotifications } from '@/composables/useNotifications'
@@ -178,10 +178,10 @@ const { addNotification } = useNotifications()
 const token = localStorage.getItem("token");
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5000/api/friends',
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
+  baseURL: '/friends',
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
 })
 
 const tabs = ['Znajomi', 'Zaproszenia', 'Znajdź']
@@ -275,7 +275,7 @@ const rejectRequest = async (requestId) => {
 
 const cancelRequest = async (requestId) => {
   try {
-    await axiosInstance.post(`/requests/${requestId}/reject`)
+    await axiosInstance.post(`/requests/${requestId}/reject`)``
     sentRequests.value = sentRequests.value.filter(r => r.requestId !== requestId)
   } catch (err) { console.error(err) }
 }
