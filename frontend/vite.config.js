@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => ({ 
   plugins: [
     vue(),
     mode === 'development' && vueDevTools(),
@@ -13,5 +13,4 @@ export default defineConfig(({ mode }) => ({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-
 }))
