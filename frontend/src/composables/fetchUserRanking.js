@@ -11,8 +11,8 @@ export const fetchUserRanking = async (period = 'all') => {
       return
     }
 
-    const res = await axios.get(
-      `http://localhost:5000/api/ranking/${period}/current-user`,
+    const res = await apiClient.get(
+      `/ranking/${period}/current-user`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }

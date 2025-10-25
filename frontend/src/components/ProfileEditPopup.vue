@@ -196,8 +196,9 @@ import { io } from 'socket.io-client'
 import SvgIcon from '@/components/svgIcons/SvgIcon.vue'
 import { statuses } from '../../../shared/statuses'
 import { useCurrentLocation } from '@/composables/useCurrentLocation'
+import apiClient from '@/api/api.js'
 
-const socket = io('http://localhost:5000')
+const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000');
 
 const props = defineProps({
   visible: Boolean,
@@ -207,10 +208,10 @@ const emit = defineEmits(['close', 'save'])
 const isSvg = (content) => typeof content === 'string' && content.trim().startsWith('<svg')
 
 function resolvePhotoUrl(photo) {
-  if (!photo) return ''
-  if (photo.startsWith('data:image') || photo.startsWith('<svg')) return photo
-  if (photo.startsWith('http')) return photo
-  return `http://localhost:5000${photo}`
+  if (!photo) return ''
+  if (photo.startsWith('data:image') || photo.startsWith('<svg')) return photo
+  if (photo.startsWith('http')) return photo
+  return `${import.meta.env.VITE_SOCKET_URL}${photo}`
 }
 
 const user = {
@@ -270,13 +271,13 @@ async function onImageUpload(e) {
   formData.append('photo', file)
 
   try {
-    const res = await fetch('http://localhost:5000/api/users/me/photo', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      },
-      body: formData
-    })
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/me/photo`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      },
+      body: formData
+    })
     const data = await res.json()
     if (data.photo) {
       localForm.photo = data.photo

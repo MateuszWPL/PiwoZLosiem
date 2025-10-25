@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import apiClient from '@/api/api.js'
+import axios from '@/api/api.js'
 
 export const friendsCount = ref(0)
 
@@ -8,7 +8,7 @@ export const fetchFriendsCount = async () => {
     const token = localStorage.getItem('token')
     if (!token) throw new Error("Brak tokena")
 
-    const res = await apiClient.get('/friends/count', {
+    const res = await axios.get('/friends/count', {
       headers: {
         Authorization: `Bearer ${token}`
       }

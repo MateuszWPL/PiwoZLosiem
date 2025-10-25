@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import axios from 'axios'
+import axios from '@/api/api.js'
 
 export const user = ref({
   firstName: '',
@@ -21,7 +21,7 @@ export const fetchUserData = async () => {
       return null
     }
 
-    const res = await apiClient.get('/users/me', {
+    const res = await axios.get('/users/me', {
       headers: { Authorization: `Bearer ${token}` }
     })
 

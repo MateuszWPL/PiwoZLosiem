@@ -91,7 +91,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import apiClient from '@/api/api.js'
+import axios from '@/api/api.js'
 import FormHeading from '../components/FormHeading.vue'
 
 const email = ref('')
@@ -102,7 +102,7 @@ const router = useRouter()
 const submit = async () => {
   errorMessage.value = ''
   try {
-    const res = await apiClient.post('/auth/login', {
+    const res = await axios.post('/auth/login', {
       email: email.value,
       password: password.value,
     })
