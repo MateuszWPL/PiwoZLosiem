@@ -139,7 +139,7 @@
                 class="bg-tertiaryGreen border border-primaryGreen p-4 rounded-2xl shadow-md text-white flex justify-between items-center">
 
                 <div class="flex items-center gap-4">
-                  <img :src="user.photo ? `https://piwozlosiem-backend.onrender.com/${user.photo}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover"/>
+                  <img :src="user.photo ? `https://piwozlosiem-backend.onrender.com${user.photo}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover"/>
                   <div class="flex flex-col">
                     <h3 class="font-semibold">{{ user.name }}</h3>
                     <div class="flex items-center gap-1">
