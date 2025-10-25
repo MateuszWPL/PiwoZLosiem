@@ -19,14 +19,16 @@ const app = express();
 const server = http.createServer(app);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // Pamiętaj, aby ustawić poprawny adres URL frontendu
+    origin: FRONTEND_URL, 
     methods: ["GET", "POST"],
   },
 });
 
-app.use(cors());
+app.use(cors({ origin: FRONTEND_URL }));
 app.use(express.json());
 
 mongoose
@@ -66,5 +68,4 @@ io.on("connection", (socket) => {
 });
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`🚀 Serwer z Socket.IO działa na porcie ${PORT}`));
-
+server.listen(PORT, '0.0.0.0', () => console.log(`🚀 Serwer z Socket.IO działa na porcie ${PORT}`));
