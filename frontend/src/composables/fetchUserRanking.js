@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import axios from 'axios'
+import axios from '@/api/api.js'
 
 export const userRanking = ref('#0')
 
