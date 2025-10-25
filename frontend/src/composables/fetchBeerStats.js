@@ -13,7 +13,7 @@ export const fetchBeerStats = async () => {
     const token = localStorage.getItem('token')
     if (!token) return
 
-    const res = await apiClient.get('/beers/stats', {
+    const res = await axios.get('/beers/stats', {
       headers: { Authorization: `Bearer ${token}` }
     })
 
