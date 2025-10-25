@@ -57,7 +57,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import axios from '@/api/api.js'
 import Navbar from '@/components/Navbar.vue'
 import RankingPoints from '@/components/RankingPoints.vue'
 
@@ -73,7 +73,7 @@ const currentUserRankings = ref([null, null, null])
 // pobranie danych ranking top10
 const fetchRanking = async (period) => {
   try {
-    const res = await axios.get(`http://localhost:5000/api/ranking/${period}`)
+    const res = await axios.get(`/ranking/${period}`)
     // console.log(res.data)
     return res.data
   } catch (err) {
@@ -86,7 +86,7 @@ const fetchRanking = async (period) => {
 const fetchCurrentUserRanking = async (period) => {
   try {
     const token = localStorage.getItem('token')
-    const res = await axios.get(`http://localhost:5000/api/ranking/${period}/current-user`, {
+    const res = await axios.get(`/ranking/${period}/current-user`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     // console.log(res.data)

@@ -125,7 +125,7 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import { statuses } from '../../../shared/statuses.js'
-import axios from 'axios'
+import axios from '@/api/api.js'
 import Navbar from '@/components/Navbar.vue'
 import ProfileEditPopup from '@/components/ProfileEditPopup.vue'
 import SvgIcon from '@/components/svgIcons/SvgIcon.vue'
@@ -153,7 +153,7 @@ function getStatusLabel(value) {
 const fetchUserAchievements = async () => {
   try {
     const token = localStorage.getItem("token");
-    const res = await axios.get("http://localhost:5000/api/achievements/me", {
+    const res = await axios.get("/achievements/me", {
       headers: { Authorization: `Bearer ${token}` }
     });
     userAchievements.value = res.data;
@@ -178,9 +178,9 @@ async function updateProfile(updatedData) {
       favoriteBeers: updatedData.favoriteBeers || [],
       photo: updatedData.photo || null
     }
-    const res = await axios.put('http://localhost:5000/api/users/me', payload, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    const res = await axios.put('/users/me', payload, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
     user.value = { ...res.data }
     alert('Profil zapisany!')
   } catch (err) {
