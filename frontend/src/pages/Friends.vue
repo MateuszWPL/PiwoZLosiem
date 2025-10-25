@@ -178,11 +178,12 @@ const { addNotification } = useNotifications()
 const token = localStorage.getItem("token");
 
 const axiosInstance = axios.create({
-  baseURL: '/friends',
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
+  baseURL: `${import.meta.env.VITE_API_BASE_URL}/friends`,
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
 })
+
 
 const tabs = ['Znajomi', 'Zaproszenia', 'Znajdź']
 const selectedTab = ref(0)
