@@ -86,13 +86,13 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import axios from '@/api/api.js'
 import { io } from 'socket.io-client'
 import FormHeading from '../components/FormHeading.vue'
 import { useCurrentLocation } from '@/composables/useCurrentLocation'
 
 const router = useRouter()
-const socket = io('http://localhost:5000')
+const socket = io(`${import.meta.env.VITE_SOCKET_URL}`)
 
 const imie = ref('')
 const nazwisko = ref('')
@@ -126,7 +126,7 @@ const submit = async () => {
     if (!token) throw new Error('Brak tokenu')
 
     await axios.post(
-      'http://localhost:5000/api/auth/complete-profile',
+      '/auth/complete-profile',
       {
         imie: imie.value,
         nazwisko: nazwisko.value,
