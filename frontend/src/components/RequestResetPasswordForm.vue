@@ -42,7 +42,7 @@
 <script setup>
 import FormHeading from '../components/FormHeading.vue'
 import { ref } from "vue";
-import axios from "axios";
+import axios from '@/api/api.js';
 
 const email = ref('')
 const loading = ref(false)
@@ -56,7 +56,7 @@ const sendResetLink = async () => {
 
   try {
     const response = await axios.post(
-      'http://localhost:5000/api/auth/request-password-reset',
+      'auth/request-password-reset',
       { email: email.value }
     )
 
