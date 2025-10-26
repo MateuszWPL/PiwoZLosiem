@@ -254,6 +254,7 @@ const fullName = computed({
 })
 
 const previewImage = ref(null)
+
 const beers = ['ŻUBR', 'WARKA', 'ŁOMŻA', 'WOJANEK']
 
 const toggleBeer = (beer) => {
@@ -266,26 +267,38 @@ async function onImageUpload(e) {
   const file = e.target.files[0]
   if (!file) return
 
+  if (!file.type.startsWith('image/')) {
+    alert('Proszę wybrać plik obrazu')
+    return
+  }
+
   const formData = new FormData()
   formData.append('photo', file)
 
   try {
-    const res = await fetch('http://localhost:5000/api/users/me/photo', {
+    const res = await fetch(`http://localhost:5000/api/users/me/photo`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       },
       body: formData
     })
+
     const data = await res.json()
-    if (data.photo) {
+
+    if (res.ok && data.photo) {
       localForm.photo = data.photo
       previewImage.value = data.photo
+      console.log('Zdjęcie zapisane')
+    } else {
+      alert('Błąd: ' + (data.error || 'Nie udało się zapisać zdjęcia'))
     }
   } catch (err) {
-    console.error('Błąd uploadu zdjęcia:', err)
+    console.error('Błąd uploadu:', err)
+    alert('Błąd sieci')
   }
 }
+
 
 const useCurrentLocationHandler = async () => {
   try {

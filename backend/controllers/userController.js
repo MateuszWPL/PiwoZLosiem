@@ -3,6 +3,14 @@ import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
 
+import { v2 as cloudinary } from 'cloudinary'
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
+
 export const getStatus = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
@@ -95,20 +103,7 @@ export const updateUser = async (req, res) => {
   }
 }
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = 'uploads'
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir)
-    cb(null, dir)
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname)
-    const random = Math.random().toString(36).substring(2, 8)
-    const uniqueName = `${req.user._id}_${Date.now()}_${random}${ext}`
-    cb(null, uniqueName)
-  }
-})
-
+const storage = multer.memoryStorage()
 export const upload = multer({ storage })
 
 export const uploadPhoto = async (req, res) => {
@@ -128,3 +123,32 @@ export const uploadPhoto = async (req, res) => {
     res.status(500).json({ error: 'Błąd przy uploadzie' })
   }
 }
+
+export const uploadPhoto2 = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Brak pliku' })
+    }
+
+    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
+
+    const result = await cloudinary.uploader.upload(base64Image, {
+      folder: 'users'
+    })
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { photoUrl: result.secure_url },
+      { new: true }
+    )
+
+    res.json({ 
+      photo: user.photoUrl
+    })
+
+  } catch (err) {
+    console.error('Błąd uploadu:', err)
+    res.status(500).json({ error: 'Błąd przy uploadzie zdjęcia' })
+  }
+}
+
