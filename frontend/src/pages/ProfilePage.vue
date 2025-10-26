@@ -12,7 +12,7 @@
           <div class="flex items-center gap-6">
             <div
               class="flex items-center justify-center bg-primaryOrange/20 rounded-full aspect-square w-24 sm:w-28 xl:w-20 mx-auto xl:mx-0 overflow-hidden">
-              <img v-if="user.photo" :src="`http://localhost:5000${user.photo}`" alt="Zdjęcie profilowe"
+              <img v-if="user.photo" :src="`${user.photo}`" alt="Zdjęcie profilowe"
                 class="w-full h-full object-cover" />
               <div v-else class="w-1/2 h-auto flex-shrink-0" style="max-width: 60%; max-height: 60%;">
                 <SvgIcon name="beer" class="w-full h-full" style="color: #D35226"/>
