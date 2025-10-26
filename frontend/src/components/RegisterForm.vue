@@ -102,7 +102,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import axios from '@/api/api.js'
 import FormHeading from '../components/FormHeading.vue'
 
 const email = ref('')
@@ -133,7 +133,7 @@ const submit = async () => {
   }
 
   try {
-    const res = await axios.post('http://localhost:5000/api/auth/register', {
+    const res = await axios.post('/auth/register', {
       email: email.value,
       password: password.value,
     })
