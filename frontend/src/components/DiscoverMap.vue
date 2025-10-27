@@ -185,6 +185,25 @@ const fetchUserData = async () => {
     user.value = { name: 'Błąd', _id: 'error' };
   }
 }
+const latLng = ref();
+watchEffect( () => {
+  const [latitude, longitude] = latLng.value;
+
+  if("_id" in (user.value??{}))
+{
+socket.emit('updateLocation', {
+          userId: user.value._id, 
+          lat: latitude,
+          lng: longitude,
+          name: user.value.firstName.charAt(0).toUpperCase(),
+          firstName: user.value.firstName,
+          lastName: user.value.lastName,
+          age: user.value.age,
+          status: status.value,
+        });
+}
+
+}) 
 
 onMounted(async () => {
   await fetchUserData(); 
@@ -202,17 +221,9 @@ onMounted(async () => {
       currentUserPosition.value = { lat: latitude, lng: longitude };
       geolocationError.value = false;
       
-      if (user.value && user.value._id) { 
-        socket.emit('updateLocation', {
-          userId: user.value._id, 
-          lat: latitude,
-          lng: longitude,
-          name: user.value.firstName.charAt(0).toUpperCase(),
-          firstName: user.value.firstName,
-          lastName: user.value.lastName,
-          age: user.value.age,
-          status: status.value,
-        });
+      if (user.value && user.value._id) {
+        latLng.value= [latitude, longitude]; 
+        
       }
     }, 
     (error) => {
