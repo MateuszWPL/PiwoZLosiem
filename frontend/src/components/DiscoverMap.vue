@@ -78,7 +78,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
+
+import { ref, onMounted, computed, watch, onUnmounted, watchEffect } from 'vue';
 import { io } from "socket.io-client";
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker, LTooltip } from "@vue-leaflet/vue-leaflet";
