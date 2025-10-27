@@ -4,8 +4,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import http from "http";
 import { Server } from "socket.io";
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from "path";
+import { fileURLToPath } from "url";
 
 import authRoutes from "./routes/authRoutes.js";
 import beerRoutes from "./routes/beerRoutes.js";
@@ -15,6 +15,7 @@ import achievementRoutes from "./routes/achievementRoutes.js";
 import friendsRoutes from "./routes/friendsRoutes.js";
 
 dotenv.config();
+
 const app = express();
 const server = http.createServer(app);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -23,7 +24,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 const io = new Server(server, {
   cors: {
-    origin: FRONTEND_URL, 
+    origin: FRONTEND_URL,
     methods: ["GET", "POST"],
   },
 });
@@ -44,8 +45,8 @@ app.use("/api/beers", beerRoutes);
 app.use("/api", rankingRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/achievements", achievementRoutes);
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/api/friends', friendsRoutes);
+app.use("/api/friends", friendsRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 let onlineUsers = {};
 
@@ -56,7 +57,9 @@ io.on("connection", (socket) => {
     onlineUsers[socket.id] = {
       id: socket.id,
       ...locationData,
+      lastUpdate: Date.now(),
     };
+
     io.emit("updateUserList", Object.values(onlineUsers));
   });
 
@@ -67,5 +70,24 @@ io.on("connection", (socket) => {
   });
 });
 
+setInterval(() => {
+  const now = Date.now();
+  const TIMEOUT = 120 * 1000; 
+  let changed = false;
+
+  for (const [id, user] of Object.entries(onlineUsers)) {
+    if (now - user.lastUpdate > TIMEOUT) {
+      delete onlineUsers[id];
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    io.emit("updateUserList", Object.values(onlineUsers));
+  }
+}, 120 * 1000);
+
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, '0.0.0.0', () => console.log(`🚀 Serwer z Socket.IO działa na porcie ${PORT}`));
+server.listen(PORT, "0.0.0.0", () =>
+  console.log(`🚀 Serwer z Socket.IO działa na porcie ${PORT}`)
+);
