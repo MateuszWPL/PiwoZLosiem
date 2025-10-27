@@ -66,7 +66,7 @@
             v-for="otherUser in filteredUsers" 
             :key="otherUser.userId" 
             :lat-lng="[otherUser.lat, otherUser.lng]"
-            :icon="createCustomIcon(otherUser.name)"
+            :icon="createCustomIcon(otherUser.firstName)"
           >
             <l-tooltip :options="{ className: 'custom-tooltip' }">
               <strong>{{ otherUser.firstName }} {{ otherUser.lastName }}</strong>, {{ otherUser.age }}
@@ -108,7 +108,6 @@ import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker, LTooltip } from "@vue-leaflet/vue-leaflet";
 import L from 'leaflet';
 import apiClient from '@/api/api.js';
-import { statuses } from '../../../shared/statuses.js';
 
 const zoom = ref(13);
 const distanceInMeters = ref(5000);
@@ -116,9 +115,10 @@ const onlineUsers = ref([]);
 const currentUserPosition = ref(null);
 const geolocationError = ref(false);
 const rangeInput = ref(null);
-
 const user = ref(null);
 const status = ref('');
+const latLng = ref([0, 0]);``
+
 const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000");
 
 function updateRangeProgress(value) {
@@ -204,14 +204,13 @@ const fetchUserData = async () => {
   }
 };
 
-const latLng = ref([0, 0]);
 socket.on("connect", () => {
-  latLng.value = [...latLng.value];
+  console.log("🔌 Połączono z Socket.IO:", socket.id);
 });
 
 watchEffect(() => {
   const [latitude, longitude] = latLng.value;
-  if ("_id" in (user.value ?? {})) {
+  if (user.value && user.value._id) {
     socket.emit('updateLocation', {
       userId: user.value._id,
       lat: latitude,
@@ -226,11 +225,15 @@ watchEffect(() => {
 });
 
 onMounted(async () => {
+  console.log("⏳ Inicjalizacja mapy...");
   await fetchUserData();
+  console.log("✅ Dane użytkownika:", user.value);
+
   updateRangeProgress(distanceInMeters.value);
 
   socket.on('updateUserList', (users) => {
-    if (user.value) {
+    console.log("📡 Odebrano listę użytkowników:", users);
+    if (user.value && user.value._id) {
       onlineUsers.value = users.filter(u => u.userId !== user.value._id);
     }
   });
@@ -256,12 +259,12 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  console.log("👋 Rozłączono z Socket.IO");
   socket.disconnect();
 });
 </script>
 
 <style>
-/* Ikony markerów */
 .custom-marker-icon {
   background-color: #f97316;
   border-radius: 50%;
@@ -278,7 +281,6 @@ onUnmounted(() => {
   font-family: sans-serif;
 }
 
-/* Tooltipy */
 .custom-tooltip {
   background-color: rgba(0, 0, 0, 0.8);
   border-radius: 4px;
@@ -288,7 +290,6 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
-/* Suwak */
 .custom-range-slider {
   --range-fill-color: #1C3A27;
   --range-empty-color: #D35226;
@@ -315,7 +316,6 @@ onUnmounted(() => {
   cursor: grab;
 }
 
-/* --- MAPA --- */
 .map-wrapper {
   position: relative;
   z-index: 0;
@@ -327,21 +327,17 @@ onUnmounted(() => {
   z-index: 0 !important;
 }
 
-/* Navbar nad mapą */
 .navbar, .nav-menu, .header {
   position: relative;
   z-index: 1000;
 }
 
-/* Responsywność */
 @media (max-width: 768px) {
   .map-wrapper {
     height: 500px !important;
   }
 }
-</style>
 
-<style scoped>
 .map-placeholder {
   height: 500px;
   display: flex;
