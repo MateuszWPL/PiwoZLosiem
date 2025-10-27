@@ -185,12 +185,16 @@ const fetchUserData = async () => {
     user.value = { name: 'Błąd', _id: 'error' };
   }
 }
-const latLng = ref();
+const latLng = ref([0,0]);
+socket.on("connect", () => {
+  latLng.value = [...latLng.value];
+})
 watchEffect( () => {
   const [latitude, longitude] = latLng.value;
 
   if("_id" in (user.value??{}))
 {
+  console.log("wysylam lokalizacje");
 socket.emit('updateLocation', {
           userId: user.value._id, 
           lat: latitude,
