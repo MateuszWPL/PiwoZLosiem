@@ -146,7 +146,6 @@ watch(distanceInMeters, (newDistance) => {
 });
 
 const filteredUsers = computed(() => {
-  // Czekamy na WSZYSTKO: pozycję, dane usera i ID usera
   if (!currentUserPosition.value || !user.value || !user.value._id) return [];
   
   const distanceInKm = distanceInMeters.value / 1000;
