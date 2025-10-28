@@ -117,7 +117,7 @@ const geolocationError = ref(false);
 const rangeInput = ref(null);
 const user = ref(null);
 const status = ref('');
-const latLng = ref([0, 0]);``
+const latLng = ref([0, 0]);
 
 const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000");
 
@@ -146,17 +146,22 @@ watch(distanceInMeters, (newDistance) => {
 });
 
 const filteredUsers = computed(() => {
-  if (!currentUserPosition.value) return [];
-  const distanceInKm = distanceInMeters.value / 1000;
-  return onlineUsers.value.filter(u => {
-    const dist = calculateDistance(
-      currentUserPosition.value.lat,
-      currentUserPosition.value.lng,
-      u.lat,
-      u.lng
-    );
-    return dist <= distanceInKm;
-  });
+  // Czekamy na WSZYSTKO: pozycję, dane usera i ID usera
+  if (!currentUserPosition.value || !user.value || !user.value._id) return [];
+  
+  const distanceInKm = distanceInMeters.value / 1000;
+  
+  return onlineUsers.value.filter(u => {
+    const isNotMe = u.userId !== user.value._id;
+    if (!isNotMe) return false; 
+    const dist = calculateDistance(
+      currentUserPosition.value.lat,
+      currentUserPosition.value.lng,
+      u.lat,
+      u.lng
+    );
+    return dist <= distanceInKm;
+  });
 });
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -232,11 +237,9 @@ onMounted(async () => {
   updateRangeProgress(distanceInMeters.value);
 
   socket.on('updateUserList', (users) => {
-    console.log("📡 Odebrano listę użytkowników:", users);
-    if (user.value && user.value._id) {
-      onlineUsers.value = users.filter(u => u.userId !== user.value._id);
-    }
-  });
+    console.log("📡 Odebrano listę użytkowników:", users);
+    onlineUsers.value = users;
+  });
 
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(position => {
