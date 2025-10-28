@@ -87,6 +87,7 @@ export const updateUser = async (req, res) => {
     if (!user) return res.status(404).json({ error: 'Użytkownik nie znaleziony' })
 
     res.json({
+      _id: user._id,
       name: `${user.imie || ''} ${user.nazwisko || ''}`.trim(),
       firstName: user.imie || '',
       lastName: user.nazwisko || '',
