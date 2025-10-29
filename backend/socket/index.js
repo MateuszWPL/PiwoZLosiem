@@ -6,6 +6,7 @@ import { handleMessages } from "./handlers/messageHandler.js";
 import { handleStatus } from "./handlers/statusHandler.js";
 
 let io;
+let onlineUsers = {};
 
 /**
  * Inicjalizuje Socket.io i rejestruje handler'y.
@@ -23,9 +24,9 @@ export const initSocket = (server) => {
 
   io.on("connection", (socket) => {
     // Każdy handler rejestruje swoje eventy
-    handleConnection(io, socket);
+    handleConnection(io, socket, onlineUsers);
     handleMessages(io, socket);
-    handleStatus(io, socket);
+    handleStatus(io, socket, onlineUsers);
   });
 
   console.log("✅ Socket.io zainicjalizowany (moduły)");

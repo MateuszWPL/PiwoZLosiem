@@ -23,13 +23,6 @@ const app = express();
 const server = http.createServer(app);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173", // Pamiętaj, aby ustawić poprawny adres URL frontendu
-    methods: ["GET", "POST"],
-  },
-});
-
 app.use(cors());
 app.use(express.json());
 
@@ -59,5 +52,3 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/chat/messages", messageRoutes);
 
 
-// Start the server on port 5000
-server.listen(process.env.PORT ||5000, () => console.log("Serwer działa na porcie 5000"));
