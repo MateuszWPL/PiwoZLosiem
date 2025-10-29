@@ -20,7 +20,8 @@ import { useChatStore } from '../stores/chatStore';
 import { computed } from 'vue';
 
 const chatStore = useChatStore();
-const chat = computed(() => chatStore.getChatById(Number(route.params.id)));
+const chat = computed(() => chatStore.getChatById(route.params.id));
+
 
 onMounted(() => {
   if (!chat.value) router.push({ name: 'Chat' });

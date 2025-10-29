@@ -14,7 +14,12 @@
       </div>
     </div>
 
-    <div ref="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-3">
+    <div
+  ref="messagesContainer"
+  class="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-primaryOrange scrollbar-track-tertiaryGreen"
+  style="max-height: calc(100vh - 240px); scroll-behavior: smooth;"
+>
+
       <div
         v-for="message in chat.messages"
         :key="message.id"
@@ -43,12 +48,7 @@
           </span>
         </div>
 
-        <img
-          v-if="message.userId === currentUserId"
-          :src="yourAvatarUrl || defaultAvatar"
-          alt="Twój Avatar"
-          class="w-12 h-12 rounded-full object-cover ml-2 mt-1"
-        />
+
       </div>
     </div>
 
@@ -97,8 +97,7 @@ const emit = defineEmits(['back'])
 const chatStore = useChatStore()
 
 // pobieramy userId i username z localStorage (musisz zapisywać przy logowaniu)
-const currentUserId = localStorage.getItem('userId') || null
-const currentUsername = localStorage.getItem('username') || 'Ty'
+const currentUserId = chatStore.getCurrentUserId()
 
 const newMessage = ref('')
 const messagesContainer = ref(null)
@@ -130,11 +129,19 @@ const onNewMessage = (message) => {
     console.warn('Otrzymano new_message bez conversationId:', message)
     return
   }
+  const senderId = String(
+      message.sender._id ||
+      'unknown' 
+  );
 
+  if (senderId === currentUserId) {
+    console.log('Ignoruję własną wiadomość (local echo):', message.text);
+    return
+  }
   // dostosuj strukturę wiadomości do lokalnego modelu
   const msg = {
     id: message._id || Date.now(),
-    userId: (message.sender && (message.sender._id || message.sender)) || message.senderId || currentUserId,
+    userId: senderId,
     text: message.text || '',
     time: message.time || new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }),
     avatarUrl: message.avatarUrl || undefined,
@@ -242,6 +249,5 @@ function sendMessage() {
     messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
   })
 
-  chatStore.fetchMessages(props.chatData.id)
 }
 </script>

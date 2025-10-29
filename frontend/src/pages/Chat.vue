@@ -3,6 +3,7 @@
 
     <Navbar />
 
+    <!-- 📱 MOBILE VIEW -->
     <div class="flex-1 xl:hidden p-4 flex flex-col gap-2 pt-20">
       <h1 class="font-semibold text-2xl text-white pt-10">Wiadomości</h1>
 
@@ -29,9 +30,15 @@
         </button>
       </div>
 
-      <ChatListComp :chats="filteredChats" @select="goToChatRoom" />
+      <!-- 🟢 Scrollowana lista czatów -->
+      <ChatListComp
+        class="flex-1 overflow-y-auto max-h-[calc(100vh-220px)] custom-scrollbar"
+        :chats="filteredChats"
+        @select="goToChatRoom"
+      />
     </div>
 
+    <!-- 💻 DESKTOP VIEW -->
     <div class="hidden xl:flex flex-1 flex-col">
       <div class="p-4 flex items-center gap-4 border-b border-secondaryGreen">
         <div class="relative flex-1">
@@ -57,16 +64,18 @@
       </div>
 
       <div class="flex flex-1">
-        <div class="w-1/3 border-r border-secondaryGreen">
+        <!-- 🟢 Scrollowana lista czatów (desktop) -->
+        <div class="w-1/3 border-r border-secondaryGreen overflow-y-auto max-h-[calc(100vh-100px)] custom-scrollbar">
           <ChatListComp :chats="filteredChats" @select="selectedChat = $event" />
         </div>
 
+        <!-- 💬 Okno czatu -->
         <div class="flex-1">
           <ChatRoomComp
             v-if="selectedChat"
             :chatData="chats.find(c => c.id === selectedChat.id)"
             @back="selectedChat = null"
-            />
+          />
           <div v-else class="flex items-center justify-center h-full text-secondaryGold">
             Wybierz czat
           </div>
@@ -89,12 +98,13 @@ import { storeToRefs } from 'pinia';
 const router = useRouter();
 const search = ref('');
 const chatStore = useChatStore();
-const { chats, loading, error } = storeToRefs(chatStore);
+const { chats } = storeToRefs(chatStore);
 
 const selectedChat = ref(null);
 
 onMounted(() => {
   chatStore.fetchChats();
+  chatStore.setupSocketListeners();
 });
 
 const filteredChats = computed(() => {
@@ -105,14 +115,15 @@ const filteredChats = computed(() => {
   );
 });
 
-// mobilka
+// 📱 Mobile navigation
 function goToChatRoom(chat) {
+  chat.unread = false;
   selectedChat.value = chat;
   router.push({ name: 'ChatRoom', params: { id: chat.id } });
 }
 
+// ➕ Dodawanie nowego czatu (tymczasowy mock)
 async function addNewChat() {
-  // TODO: zmienic
   const partnerId = prompt('Podaj ID użytkownika, z którym chcesz rozpocząć rozmowę:');
   if (!partnerId) return;
 
@@ -126,5 +137,17 @@ async function addNewChat() {
     alert('Nie udało się utworzyć rozmowy.');
   }
 }
-
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #d4af37; /* złoty */
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+</style>

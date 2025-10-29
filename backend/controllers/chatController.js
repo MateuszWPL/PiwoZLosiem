@@ -9,11 +9,12 @@ export const getConversations = async (req, res) => {
 
     const conversations = await Conversation.find({
       participants: userId,
+      $expr: { $gt: [{ $size: "$participants" }, 1] },
     })
-      .populate("participants", "imie nazwisko _id")
+      .populate("participants", "imie nazwisko _id photoUrl")
       .populate({
         path: "lastMessage",
-        populate: { path: "sender", select: "imie nazwisko _id" },
+        populate: { path: "sender", select: "imie nazwisko _id photoUrl" },
       })
       .sort({ updatedAt: -1 });
 
@@ -45,8 +46,7 @@ export const createConversation = async (req, res) => {
       });
     }
 
-    // Opcjonalnie: wczytaj z partnerem
-    await conversation.populate("participants", "username _id");
+    await conversation.populate("participants", "imie nazwisko _id photoUrl");
 
     res.status(201).json(conversation);
   } catch (error) {

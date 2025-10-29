@@ -1,0 +1,10 @@
+# Ignorowanie katalogu node_modules w backendzie
+backend/node_modules/
+
+# Ignorowanie katalogu node_modules we frontendzie
+frontend/node_modules/
+
+*.log
+.DS_Store
+dist/
+build/
