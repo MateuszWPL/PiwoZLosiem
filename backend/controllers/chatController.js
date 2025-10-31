@@ -25,30 +25,32 @@ export const getConversations = async (req, res) => {
   }
 };
 
-// 📄 Tworzenie rozmowy (jeśli jeszcze nie istnieje)
 export const createConversation = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id;
     const { partnerId } = req.body;
 
-    if (userId === partnerId) {
+    if (userId.toString() === partnerId) {
       return res.status(400).json({ error: "Nie możesz rozmawiać sam ze sobą 😅" });
     }
 
-    // Sprawdź, czy taka rozmowa już istnieje
+    // 🔍 Sprawdź, czy taka rozmowa już istnieje
     let conversation = await Conversation.findOne({
       participants: { $all: [userId, partnerId], $size: 2 },
-    });
+    }).populate("participants", "imie nazwisko _id photoUrl");
 
+    // 🆕 Jeśli nie ma — utwórz nową
     if (!conversation) {
       conversation = await Conversation.create({
         participants: [userId, partnerId],
       });
+
+      await conversation.populate("participants", "imie nazwisko _id photoUrl");
+      return res.status(201).json(conversation);
     }
 
-    await conversation.populate("participants", "imie nazwisko _id photoUrl");
-
-    res.status(201).json(conversation);
+    // ✅ Jeśli istnieje — po prostu ją zwróć
+    res.status(200).json(conversation);
   } catch (error) {
     console.error("❌ Błąd przy tworzeniu rozmowy:", error);
     res.status(500).json({ error: "Błąd serwera." });
