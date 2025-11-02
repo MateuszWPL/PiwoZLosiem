@@ -15,7 +15,7 @@ import rankingRoutes from "./routes/rankingRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import achievementRoutes from "./routes/achievementRoutes.js";
 import friendsRoutes from "./routes/friendsRoutes.js";
-import { initSocket } from "./socket/index.js"; 
+import { initSocket, getOnlineUsers } from "./socket/index.js"; 
 import Conversation from "./models/Conversation.js";
 
 dotenv.config();
@@ -50,25 +50,8 @@ app.use("/api/achievements", achievementRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/friends', friendsRoutes);
 
-let onlineUsers = {};
-
-io.on("connection", (socket) => {
-  console.log(`🔌 Użytkownik połączony przez Socket.IO: ${socket.id}`);
-
-  socket.on("updateLocation", (locationData) => {
-    onlineUsers[socket.id] = {
-      id: socket.id,
-      ...locationData,
-    };
-    io.emit("updateUserList", Object.values(onlineUsers));
-  });
-
-  socket.on("disconnect", () => {
-    console.log(`👋 Użytkownik rozłączony: ${socket.id}`);
-    delete onlineUsers[socket.id];
-    io.emit("updateUserList", Object.values(onlineUsers));
-  });
-});
+const ioInstance = initSocket(server);
+let onlineUsers = getOnlineUsers()
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`🚀 Serwer z Socket.IO działa na porcie ${PORT}`));
