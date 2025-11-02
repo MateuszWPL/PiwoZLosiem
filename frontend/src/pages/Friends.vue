@@ -51,7 +51,13 @@
               </div>
 
               <div class="flex flex-col gap-2 ml-4">
-                <button class="bg-blue-500 px-3 py-1 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"> <SvgIcon name="chat" class="w-4 h-4" /> Wiadomość</button>
+                <button
+                  @click="openChat(friend.id)"
+                  class="bg-blue-500 px-3 py-1 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
+                >
+                  <SvgIcon name="chat" class="w-4 h-4" /> Wiadomość
+                </button>
+
                 <button @click="removeFriend(friend.id)"
                   class="bg-primaryOrange px-3 py-1 rounded-lg hover:bg-red-600 transition flex items-center gap-1"> <SvgIcon name="cancell" class="w-4 h-4" /> Usuń</button>
               </div>
@@ -173,7 +179,11 @@ import axios from '@/api/api.js'
 import SvgIcon from '@/components/svgIcons/SvgIcon.vue'
 import { statuses } from '../../../shared/statuses'
 import { useNotifications } from '@/composables/useNotifications'
+import { useRouter } from 'vue-router'
 const { addNotification } = useNotifications()
+
+const router = useRouter()
+
 
 const token = localStorage.getItem("token");
 
@@ -293,6 +303,22 @@ const sendRequest = async (userId) => {
     await fetchData()
   } catch (err) { console.error(err) }
 }
+const openChat = async (friendId) => {
+  try {
+    const res = await axios.post('http://localhost:5000/api/chat/conversations', {
+      partnerId: friendId,
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const conversation = res.data;
+    router.push({ path: `/chat/${conversation._id}` });
+  } catch (err) {
+    console.error("❌ Błąd otwierania czatu:", err.response?.data || err.message);
+  }
+};
 
 onMounted(() => {
   fetchData()

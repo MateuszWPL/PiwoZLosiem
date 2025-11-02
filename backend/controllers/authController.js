@@ -4,10 +4,12 @@ import User from "../models/User.js";
 import { sendResetEmail } from "../utils/mailer.js";
 import { v4 as uuidv4 } from "uuid";
 
+// 🔒 Token zawiera tylko ID użytkownika
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
 
+// 🧩 Rejestracja użytkownika
 export const registerUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -15,8 +17,10 @@ export const registerUser = async (req, res) => {
     if (userExists) {
       return res.status(400).json({ message: "Użytkownik już istnieje" });
     }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+
     const user = await User.create({ email, password: hashedPassword });
 
     const token = generateToken(user._id);
@@ -31,6 +35,7 @@ export const registerUser = async (req, res) => {
   }
 };
 
+// 🔑 Logowanie użytkownika
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -38,14 +43,19 @@ export const loginUser = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: "Nieprawidłowe dane logowania" });
     }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Nieprawidłowe dane logowania" });
     }
+
     const token = generateToken(user._id);
+
     res.json({
       _id: user._id,
       email: user.email,
+      imie: user.imie, // ✅ dodaj imię
+      nazwisko: user.nazwisko, // ✅ dodaj nazwisko
       isProfileComplete: user.isProfileComplete,
       token,
     });
@@ -54,6 +64,7 @@ export const loginUser = async (req, res) => {
   }
 };
 
+// 👤 Uzupełnianie profilu po rejestracji
 export const completeProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -69,6 +80,7 @@ export const completeProfile = async (req, res) => {
     user.miasto = miasto || user.miasto;
     user.plec = plec || user.plec;
     user.isProfileComplete = true;
+
     await user.save();
 
     res.json({
@@ -79,7 +91,6 @@ export const completeProfile = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 export const requestPasswordReset = async (req, res) => {
   const { email } = req.body;
 
@@ -115,13 +126,10 @@ export const resetPassword = async (req, res) => {
     });
 
     if (!user) {
-      return res
-        .status(400)
-        .json({ message: "Token nieprawidłowy lub wygasł" });
+      return res.status(400).json({ message: "Token nieprawidłowy lub wygasł" });
     }
 
     const salt = await bcrypt.genSalt(10);
-
     user.password = await bcrypt.hash(newPassword, salt);
     user.resetToken = undefined;
     user.resetTokenExpiry = undefined;
@@ -131,5 +139,21 @@ export const resetPassword = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Błąd podczas resetu hasła" });
+  }
+};
+
+export const getUserStatus = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).select(
+      "imie nazwisko isOnline lastSeen"
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "Nie znaleziono użytkownika" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: "Błąd serwera" });
   }
 };

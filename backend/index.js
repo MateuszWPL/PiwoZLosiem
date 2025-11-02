@@ -4,49 +4,51 @@ import cors from "cors";
 import dotenv from "dotenv";
 import http from "http";
 import { Server } from "socket.io";
-import path from "path";
-import { fileURLToPath } from "url";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import authRoutes from "./routes/authRoutes.js";
 import beerRoutes from "./routes/beerRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 import rankingRoutes from "./routes/rankingRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import achievementRoutes from "./routes/achievementRoutes.js";
 import friendsRoutes from "./routes/friendsRoutes.js";
+import { initSocket } from "./socket/index.js"; 
+import Conversation from "./models/Conversation.js";
 
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 const io = new Server(server, {
   cors: {
-    origin: FRONTEND_URL,
+    origin: "http://localhost:5173", // Pamiętaj, aby ustawić poprawny adres URL frontendu
     methods: ["GET", "POST"],
   },
 });
 
-app.use(cors({ origin: FRONTEND_URL }));
+app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+// ✅ MongoDB
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ Połączono z bazą:", mongoose.connection.name))
-  .catch((err) => console.error("❌ Błąd połączenia:", err));
+  .catch((err) => console.error("❌ Błąd połączenia z MongoDB:", err));
 
+// ✅ Trasy API
 app.use("/api/auth", authRoutes);
 app.use("/api/beers", beerRoutes);
 app.use("/api", rankingRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/achievements", achievementRoutes);
-app.use("/api/friends", friendsRoutes);
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/friends', friendsRoutes);
 
 let onlineUsers = {};
 
@@ -57,9 +59,7 @@ io.on("connection", (socket) => {
     onlineUsers[socket.id] = {
       id: socket.id,
       ...locationData,
-      lastUpdate: Date.now(),
     };
-
     io.emit("updateUserList", Object.values(onlineUsers));
   });
 
@@ -70,24 +70,6 @@ io.on("connection", (socket) => {
   });
 });
 
-setInterval(() => {
-  const now = Date.now();
-  const TIMEOUT = 120 * 1000; 
-  let changed = false;
-
-  for (const [id, user] of Object.entries(onlineUsers)) {
-    if (now - user.lastUpdate > TIMEOUT) {
-      delete onlineUsers[id];
-      changed = true;
-    }
-  }
-
-  if (changed) {
-    io.emit("updateUserList", Object.values(onlineUsers));
-  }
-}, 120 * 1000);
-
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, "0.0.0.0", () =>
-  console.log(`🚀 Serwer z Socket.IO działa na porcie ${PORT}`)
-);
+server.listen(PORT, () => console.log(`🚀 Serwer z Socket.IO działa na porcie ${PORT}`));
+

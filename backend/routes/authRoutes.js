@@ -4,7 +4,8 @@ import {
   loginUser,
   completeProfile,
   requestPasswordReset,
-  resetPassword
+  resetPassword,
+  getUserStatus
 } from "../controllers/authController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { sendResetEmail } from "../utils/mailer.js";
@@ -16,5 +17,5 @@ router.post("/login", loginUser);
 router.post("/complete-profile", protect, completeProfile);
 router.post("/request-password-reset", requestPasswordReset);
 router.post("/reset-password", resetPassword);
-
+router.get("/status/:userId", protect, getUserStatus);
 export default router;
