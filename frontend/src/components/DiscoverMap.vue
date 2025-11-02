@@ -67,10 +67,20 @@
             :key="otherUser.userId" 
             :lat-lng="[otherUser.lat, otherUser.lng]"
             :icon="createCustomIcon(otherUser.firstName)"
+            @click="selectUser(otherUser)"
           >
-            <l-tooltip :options="{ className: 'custom-tooltip' }">
-              <strong>{{ otherUser.firstName }} {{ otherUser.lastName }}</strong>, {{ otherUser.age }}
-            </l-tooltip>
+            <l-popup :options="{ className: 'custom-popup' }">
+                <div class="p-2 text-center text-black">
+                    <p class="font-bold text-lg mb-1">{{ otherUser.firstName }} {{ otherUser.lastName }}, {{ otherUser.age }}</p>
+                    <p class="text-sm text-gray-600 mb-3">Status: {{ otherUser.status || 'Dostępny' }}</p>
+                    <button 
+                        @click="startChat(otherUser.userId)" 
+                        class="bg-secondaryGold hover:bg-tertiaryGreen text-white font-bold py-2 px-4 rounded transition-colors"
+                    >
+                        Rozpocznij Chat 💬
+                    </button>
+                </div>
+             </l-popup>
           </l-marker>
         </l-map>
       </div>
@@ -86,7 +96,7 @@
           v-for="user in filteredUsers" 
           :key="user.userId" 
           class="flex justify-between p-3 bg-tertiaryGreen/30 rounded-[8px] hover:bg-tertiaryGreen/50 transition"
-        >
+          @click="selectUser(user)" >
           <span class="text-white font-medium">{{ user.firstName }} {{ user.lastName }}</span>
           <span class="text-secondaryGold text-sm font-light">
             {{ calculateDistance(currentUserPosition.lat, currentUserPosition.lng, user.lat, user.lng).toFixed(2) }} km
@@ -99,13 +109,40 @@
       <p v-else class="text-secondaryGold/70">Oczekuję na lokalizację...</p>
     </div>
   </div>
+  <div 
+    v-if="selectedUser" 
+    class="fixed inset-0 bg-black/50 z-50 flex justify-center items-center" 
+    @click.self="selectedUser = null"
+>
+    <div class="bg-white p-6 rounded-lg shadow-2xl w-full max-w-sm transform transition-all duration-300">
+        <h3 class="text-xl font-bold mb-2 text-primaryGreen">{{ selectedUser.firstName }} {{ selectedUser.lastName }}</h3>
+        <p class="text-gray-700">Wiek: <span class="font-medium">{{ selectedUser.age }}</span></p>
+        <p class="text-gray-700 mb-4">Status: <span class="font-medium text-secondaryGold">{{ selectedUser.status || 'Online' }}</span></p>
+        
+        <div class="mt-4 flex justify-between">
+            <button 
+                @click="startChat(selectedUser.userId)" 
+                class="bg-primaryGreen hover:bg-tertiaryGreen text-white font-bold py-2 px-4 rounded transition-colors"
+            >
+                Rozpocznij Chat 💬
+            </button>
+            <button 
+                @click="selectedUser = null" 
+                class="text-gray-600 hover:text-gray-900 py-2 px-4 rounded"
+            >
+                Zamknij
+            </button>
+        </div>
+    </div>
+</div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed, watch, onUnmounted, watchEffect } from 'vue';
+import { useRouter } from 'vue-router';
 import { io } from "socket.io-client";
 import "leaflet/dist/leaflet.css";
-import { LMap, LTileLayer, LMarker, LTooltip } from "@vue-leaflet/vue-leaflet";
+import { LMap, LTileLayer, LMarker, LTooltip, LPopup} from "@vue-leaflet/vue-leaflet";
 import L from 'leaflet';
 import apiClient from '@/api/api.js';
 
@@ -118,8 +155,10 @@ const rangeInput = ref(null);
 const user = ref(null);
 const status = ref('');
 const latLng = ref([0, 0]);
-
+const selectedUser = ref(null);
+const router = useRouter();
 const socket = ref(null);
+let locationUpdateTimer = null;
 const initializeSocket = (token) => {
     const VITE_SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
     const newSocket = io(VITE_SOCKET_URL, {
@@ -138,6 +177,44 @@ const initializeSocket = (token) => {
         onlineUsers.value = users;
     });
     return newSocket;
+};
+
+// 💡 FUNKCJA KLIKNIĘCIA
+function selectUser(user) {
+    // Ustawia wybranego użytkownika (otwiera modal/popup)
+    selectedUser.value = user;
+}
+
+// 💡 FUNKCJA NAWIGACJI DO CHATU
+const startChat = async (friendId) => {
+    // 1. Pobierz token z localStorage - konieczne, ponieważ funkcja nie jest asynchroniczna jak onMounted
+    const token = localStorage.getItem('token');
+    if (!token) {
+        console.error("❌ Brak tokena uwierzytelniającego.");
+        // Możesz tutaj dodać przekierowanie do strony logowania, jeśli to konieczne
+        return; 
+    }
+    try {
+        // 2. Użyj apiClient i dostosuj nagłówki
+        const res = await apiClient.post('/chat/conversations', {
+            partnerId: friendId, // friendId to będzie otherUser.userId
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        const conversation = res.data;
+        // 3. Przekierowanie do odpowiedniego czatu
+        router.push({ path: `/chat/${conversation._id}` });
+        if (selectedUser.value) {
+            selectedUser.value = null;
+        }
+        
+    } catch (err) {
+        // Użyj err.response?.data?.message dla lepszej diagnostyki
+        console.error("❌ Błąd otwierania czatu:", err.response?.data?.message || err.message);
+        // Opcjonalnie: Pokaż powiadomienie użytkownikowi
+    }
 };
 function updateRangeProgress(value) {
   const min = 100;
@@ -228,21 +305,32 @@ const fetchUserData = async () => {
 };
 
 
-watchEffect(() => {
-  const [latitude, longitude] = latLng.value;
-  if (socket.value && user.value && user.value._id) {
-    socket.value.emit('updateLocation', {
-      userId: user.value._id,
-      lat: latitude,
-      lng: longitude,
-      name: user.value.firstName.charAt(0).toUpperCase(),
-      firstName: user.value.firstName,
-      lastName: user.value.lastName,
-      age: user.value.age,
-      status: status.value,
-    });
-  }
-});
+watch(latLng, (newLatLng) => {
+    // 1. Wyczyść poprzedni timer, jeśli istnieje
+    if (locationUpdateTimer) {
+        clearTimeout(locationUpdateTimer);
+    }
+
+    // 2. Ustaw nowy timer (np. 3 sekundy opóźnienia)
+    locationUpdateTimer = setTimeout(() => {
+        const [latitude, longitude] = newLatLng;
+
+        // 3. Wyślij dane tylko, jeśli socket jest gotowy
+        if (socket.value && user.value && user.value._id) {
+            console.log(`⏱️ Wysyłam lokalizację po debouncingu: ${latitude}, ${longitude}`);
+            socket.value.emit('updateLocation', {
+                userId: user.value._id,
+                lat: latitude,
+                lng: longitude,
+                name: user.value.firstName.charAt(0).toUpperCase(),
+                firstName: user.value.firstName,
+                lastName: user.value.lastName,
+                age: user.value.age,
+                status: status.value,
+            });
+        }
+    }, 3000); // Wstrzymaj wysyłanie na 3 sekundy
+}, { deep: true }); // Opcja deep jest potrzebna, bo latLng to tablica/ref złożony
 
 onMounted(async () => {
   console.log("⏳ Inicjalizacja mapy...");
@@ -276,6 +364,9 @@ onMounted(async () => {
 
 onUnmounted(() => {
   console.log("👋 Rozłączono z Socket.IO");
+  if (locationUpdateTimer) {
+      clearTimeout(locationUpdateTimer);
+  }
   if (socket.value) {
     socket.value.disconnect();
   }
