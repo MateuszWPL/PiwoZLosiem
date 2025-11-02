@@ -208,10 +208,10 @@ const emit = defineEmits(['close', 'save'])
 const isSvg = (content) => typeof content === 'string' && content.trim().startsWith('<svg')
 
 function resolvePhotoUrl(photo) {
-  if (!photo) return ''
-  if (photo.startsWith('data:image') || photo.startsWith('<svg')) return photo
-  if (photo.startsWith('http')) return photo
-  return `${import.meta.env.VITE_SOCKET_URL}${photo}`
+  if (!photo) return ''
+  if (photo.startsWith('data:image') || photo.startsWith('<svg')) return photo
+  if (photo.startsWith('http')) return photo
+  return `${import.meta.env.VITE_SOCKET_URL}${photo}`
 }
 
 const user = {
@@ -256,7 +256,7 @@ const fullName = computed({
 
 const previewImage = ref(null)
 
-const beers = ['ŻUBR', 'WARKA', 'ŁOMŻA', 'WOJANEK']
+const beers = ['ŻUBR', 'WARKA', 'ŁOMŻA', 'WOJANEK', 'TROOPER', 'PERŁA']
 
 const toggleBeer = (beer) => {
   const list = localForm.favoriteBeers

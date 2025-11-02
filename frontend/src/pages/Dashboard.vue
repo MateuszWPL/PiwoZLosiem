@@ -88,7 +88,7 @@
             </div>
           </div>
         </div>
-        <div class="bg-tertiaryGreen/50 rounded-[10px] p-5 w-full shadow-md shadow-black/20 mt-10">
+        <!-- <div class="bg-tertiaryGreen/50 rounded-[10px] p-5 w-full shadow-md shadow-black/20 mt-10">
           <h4 class="text-white text-[24px] tracking-[-0.6px] font-semibold">Ostatnia aktywność</h4>
           <div class="mt-6 flex flex-col gap-6">
             <div class="flex items-center gap-4 border-b border-b-secondaryGold/20 pb-4">
@@ -119,7 +119,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>
