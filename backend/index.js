@@ -43,6 +43,8 @@ app.use("/api/users", userRoutes);
 app.use("/api/achievements", achievementRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/friends', friendsRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/chat/messages', messageRoutes);
 
 const ioInstance = initSocket(server);
 let onlineUsers = getOnlineUsers()
