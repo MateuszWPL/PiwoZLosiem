@@ -69,9 +69,9 @@ npm install [brakujący_pakiet]
 
 ---
 ## 👥 Zespół
-[Kacper Mróz](https://github.com/bboychlodny)
-[Łukasz Kucikowicz](https://github.com/lukasz1231)
-[Marcin Kosiński](https://github.com/mkosinskki)
-[Mateusz Woronowicz](https://github.com/MateuszWPL)
-[Miłosz Sidor](https://github.com/Mainloo)
-[Patryk Czech](https://github.com/pamix00)
+* [Kacper Mróz](https://github.com/bboychlodny)
+* [Łukasz Kucikowicz](https://github.com/lukasz1231)
+* [Marcin Kosiński](https://github.com/mkosinskki)
+* [Mateusz Woronowicz](https://github.com/MateuszWPL)
+* [Miłosz Sidor](https://github.com/Mainloo)
+* [Patryk Czech](https://github.com/pamix00)
