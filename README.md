@@ -15,6 +15,8 @@
 ---
 ## ✉️ Opis projektu
 
+Link do strony: https://piwozlosiem-frontend.onrender.com/
+
 Projekt Piwo z Łosiem jest aplikacją służącą do znajdowania innych użytkowników chętnych na wspólne wyjście na browara. Aplikacja ta ma ułatwiać ludziom zawiązywanie nowych znajomości, podczas wspólnego wypadu na piwo do pobliskiego baru. Piwo z Łosiem pozwala użytkownikom szukać innych dostępnych użytkowników na mapie i proponować im wspólne wyjście. Jeżeli się z kimś zaprzyjaźnisz, możesz dodać go do znajomych i chatować do woli. Jeżeli lubisz poczuć odrobinę rywalizacji, mamy coś dla Ciebie. W aplikacji znajduje się system rankingu w którym możesz sprawdzić swoje miejsce pod względem wypitych piw w ciągu danego: tygodnia, miesiąca lub od samego początku.
 
 ---
