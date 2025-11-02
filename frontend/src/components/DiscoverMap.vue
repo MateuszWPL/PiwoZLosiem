@@ -67,11 +67,11 @@
             :key="otherUser.userId" 
             :lat-lng="[otherUser.lat, otherUser.lng]"
             :icon="createCustomIcon(otherUser.firstName)"
-            @click="selectUser(otherUser)"
           >
             <l-popup :options="{ className: 'custom-popup' }">
                 <div class="p-2 text-center text-black">
-                    <p class="font-bold text-lg mb-1">{{ otherUser.firstName }} {{ otherUser.lastName }}, {{ otherUser.age }}</p>
+                    <p class="font-bold text-lg mb-1">{{ otherUser.firstName }} {{ otherUser.lastName }}</p>
+                    <p class="text-sm text-gray-600 mb-3">Wiek: {{ otherUser.age }}</p>
                     <p class="text-sm text-gray-600 mb-3">Status: {{ otherUser.status || 'Dostępny' }}</p>
                     <button 
                         @click="startChat(otherUser.userId)" 
