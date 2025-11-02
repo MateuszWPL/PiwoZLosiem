@@ -25,12 +25,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: FRONTEND_URL, 
-    methods: ["GET", "POST"],
-  },
-});
 
 app.use(cors());
 app.use(express.json());

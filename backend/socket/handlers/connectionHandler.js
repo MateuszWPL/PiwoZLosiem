@@ -35,7 +35,7 @@ export const handleConnection = (io, socket, onlineUsers) => { // 💡 onlineUse
                 userId: userId,
                 // Możesz dodać domyślną lokalizację lub null
                 lat: null, 
-                lon: null, 
+                lng: null, 
             };
         } else {
              // Jeśli użytkownik był już połączony, tylko aktualizujemy socketId

@@ -119,8 +119,26 @@ const user = ref(null);
 const status = ref('');
 const latLng = ref([0, 0]);
 
-const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000");
-
+const socket = ref(null);
+const initializeSocket = (token) => {
+    const VITE_SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+    const newSocket = io(VITE_SOCKET_URL, {
+        auth: {
+            token: token
+        }
+    });
+    newSocket.on("connect", () => {
+        console.log("🔌 Połączono z Socket.IO:", newSocket.id);
+    });
+    newSocket.on("disconnect", () => {
+        console.log("👋 Rozłączono z Socket.IO");
+    });
+    newSocket.on('updateUserList', (users) => {
+        console.log("📡 Odebrano listę użytkowników:", users);
+        onlineUsers.value = users;
+    });
+    return newSocket;
+};
 function updateRangeProgress(value) {
   const min = 100;
   const max = 10000;
@@ -202,20 +220,18 @@ const fetchUserData = async () => {
       lastName: userData.lastName,
       age: userData.age,
     };
+    return token;
   } catch (err) {
     console.error('Błąd pobierania danych użytkownika:', err);
-    user.value = { name: 'Błąd', _id: 'error' };
+    user.value = null;
   }
 };
 
-socket.on("connect", () => {
-  console.log("🔌 Połączono z Socket.IO:", socket.id);
-});
 
 watchEffect(() => {
   const [latitude, longitude] = latLng.value;
-  if (user.value && user.value._id) {
-    socket.emit('updateLocation', {
+  if (socket.value && user.value && user.value._id) {
+    socket.value.emit('updateLocation', {
       userId: user.value._id,
       lat: latitude,
       lng: longitude,
@@ -230,15 +246,13 @@ watchEffect(() => {
 
 onMounted(async () => {
   console.log("⏳ Inicjalizacja mapy...");
-  await fetchUserData();
+  const token = await fetchUserData();
   console.log("✅ Dane użytkownika:", user.value);
-
+  if (token && user.value) {
+    socket.value = initializeSocket(token);
+  }
   updateRangeProgress(distanceInMeters.value);
 
-  socket.on('updateUserList', (users) => {
-    console.log("📡 Odebrano listę użytkowników:", users);
-    onlineUsers.value = users;
-  });
 
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(position => {
@@ -262,7 +276,9 @@ onMounted(async () => {
 
 onUnmounted(() => {
   console.log("👋 Rozłączono z Socket.IO");
-  socket.disconnect();
+  if (socket.value) {
+    socket.value.disconnect();
+  }
 });
 </script>
 
