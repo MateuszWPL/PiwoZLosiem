@@ -305,7 +305,7 @@ const sendRequest = async (userId) => {
 }
 const openChat = async (friendId) => {
   try {
-    const res = await axios.post('http://localhost:5000/api/chat/conversations', {
+    const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/chat/conversations`, {
       partnerId: friendId,
     }, {
       headers: {

@@ -197,7 +197,7 @@ const startChat = async (friendId) => {
     }
     try {
         // 2. Użyj apiClient i dostosuj nagłówki
-        const res = await apiClient.post('/chat/conversations', {
+        const res = await apiClient.post(`${import.meta.env.VITE_API_BASE_URL}/chat/conversations`, {
             partnerId: friendId, // friendId to będzie otherUser.userId
         }, {
             headers: {
@@ -212,9 +212,7 @@ const startChat = async (friendId) => {
         }
         
     } catch (err) {
-        // Użyj err.response?.data?.message dla lepszej diagnostyki
         console.error("❌ Błąd otwierania czatu:", err.response?.data?.message || err.message);
-        // Opcjonalnie: Pokaż powiadomienie użytkownikowi
     }
 };
 function updateRangeProgress(value) {
