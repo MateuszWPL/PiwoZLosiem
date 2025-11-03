@@ -56,6 +56,9 @@
   <input id="beerDate" v-model="beerDate" type="date"
     class="w-full rounded px-3 py-2 bg-neutral-800 text-white border border-neutral-700 focus:outline-none focus:border-primaryOrange" />
   <p class="text-xs text-gray-400 mt-1">Jeśli nie podasz daty, zostanie użyta dzisiejsza.</p>
+  <p v-if="beerDateError" class="text-xs text-red-500 mt-1">
+    {{ beerDateError }}
+  </p>
 </div>
 
                   <button type="submit"
@@ -206,10 +209,24 @@ const beerAmount = ref('')
 const beerType = ref('')
 const beerPlace = ref('')
 const beerDate = ref('')
+const beerDateError = ref('');
 const activeTab = ref('all')
 const showModal = ref(false)
 
 const addBeer = async () => {
+  
+  beerDateError.value = '' 
+
+  if (beerDate.value) {
+    const selectedDate = new Date(beerDate.value)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    if (selectedDate > today) {
+      beerDateError.value = 'Data wypitego piwka nie może być z przyszłości 🍻'
+      return
+    }
+  }
+
   try {
     const token = localStorage.getItem('token')
     await axios.post(
@@ -233,16 +250,12 @@ const addBeer = async () => {
     beerType.value = ''
     beerPlace.value = ''
     beerDate.value = ''
+    beerDateError.value = ''
 
     await fetchBeers()
   } catch (err) {
     console.error(err)
-    // obsluga 400 - data z przyszlosci
-    if (err.response && err.response.status === 400) {
-      addNotification('error', err.response.data.message || 'Nie możesz dodać piwa z wyprzedzeniem!')
-    } else {
-      addNotification('error', 'Coś poszło nie tak!')
-    }
+    addNotification('error', 'Coś poszło nie tak!')
   }
 }
 
