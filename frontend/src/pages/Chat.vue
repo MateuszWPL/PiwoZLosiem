@@ -55,11 +55,6 @@
           />
         </div>
 
-        <button @click="addNewChat" class="w-[42.5px] h-[42.5px] bg-primaryOrange text-white font-semibold rounded-xl flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M19 12.998H13V18.998H11V12.998H5V10.998H11V4.99805H13V10.998H19V12.998Z" fill="white"/>
-          </svg>
-        </button>
       </div>
 
       <div class="flex flex-1">
@@ -147,22 +142,6 @@ function handleBack() {
   router.push('/chat');
 }
 
-async function addNewChat() {
-  const partnerId = prompt('Podaj ID użytkownika, z którym chcesz rozpocząć rozmowę:');
-  if (!partnerId) return;
-
-  try {
-    const newConv = await chatStore.createConversation(partnerId);
-    const newChat = {
-      id: newConv._id,
-      name: newConv.participants.find(p => p._id !== chatStore.getUserIdFromToken(localStorage.getItem('token')))?.username || 'Nowa rozmowa',
-    };
-    selectedChat.value = newChat;
-    router.push(`/chat/${newChat.id}`);
-  } catch (err) {
-    alert('Nie udało się utworzyć rozmowy.');
-  }
-}
 </script>
 
 <style scoped>
