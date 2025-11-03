@@ -83,7 +83,8 @@ import { useChatStore } from '../stores/chatStore'
 import { getSocket } from '../plugins/socket'
 
 // stałe
-const defaultAvatar = 'https://archiwum.niemczyk.pl/images/202205/68c128d94a309ebb9a2e899cd65a_orginal.jpg'
+// const defaultAvatar = 'https://archiwum.niemczyk.pl/images/202205/68c128d94a309ebb9a2e899cd65a_orginal.jpg'
+const defaultAvatar = '/images/defaultAvatar.png'
 const yourAvatarUrl = localStorage.getItem('photoUrl') || defaultAvatar
 
 

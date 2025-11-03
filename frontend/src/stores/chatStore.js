@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { getSocket, initSocket } from '../plugins/socket';
-import axios from 'axios';
+import axios from '@/api/api.js'
 
 export const useChatStore = defineStore('chat', () => {
     const chats = ref([]);
@@ -63,8 +63,8 @@ export const useChatStore = defineStore('chat', () => {
         });
     };
 
-const BASE_URL = 'http://localhost:5000'; // lub z .env
-const defaultAvatar = 'https://placehold.co/50x50';
+// const BASE_URL = 'http://localhost:5000'; // lub z .env
+const defaultAvatar = '/images/defaultAvatar.png';
 
 const fetchChats = async () => {
   loading.value = true;
@@ -72,7 +72,7 @@ const fetchChats = async () => {
 
   try {
     const token = localStorage.getItem('token');
-    const res = await axios.get(`${BASE_URL}/api/chat/conversations`, {
+    const res = await axios.get(`/chat/conversations`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -99,8 +99,10 @@ const fetchChats = async () => {
             // budowanie pełnego URL do avatara
             if (other?.photoUrl) {
               photoUrl = other.photoUrl.startsWith('/')
-                ? `${BASE_URL}${other.photoUrl}`
-                : other.photoUrl;
+            }
+            else
+            {
+              other.photoUrl;
             }
           }
           console.log(photoUrl);
@@ -145,7 +147,7 @@ const fetchChats = async () => {
         try {
       const token = localStorage.getItem('token');
       const res = await axios.post(
-        'http://localhost:5000/api/chat/conversations',
+        '/chat/conversations',
         { partnerId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -227,7 +229,7 @@ const fetchChats = async () => {
         try {
             const token = localStorage.getItem('token');
             const res = await axios.get(
-                `http://localhost:5000/api/chat/messages/${conversationId}?page=1&limit=50`,
+                `/chat/messages/${conversationId}?page=1&limit=50`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
