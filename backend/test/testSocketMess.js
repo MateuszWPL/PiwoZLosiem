@@ -7,7 +7,7 @@ const token = process.argv[2];
 const conversationId = "68ed3dbd855188c0d67c94b9";
 
 // 🔌 Połączenie z Socket.io
-const socket = io("http://localhost:5000", {
+const socket = io(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000", {
   auth: { token },
   transports: ["websocket"]
 });

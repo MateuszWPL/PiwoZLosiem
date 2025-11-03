@@ -5,7 +5,7 @@ xZmJlMjhhOTkyM2IyNTAxODUxNCIsImlhdCI6MTc2MDM3MTU2NCwiZXhwIjoxNzYwOT\
 c2MzY0fQ.lvbgKYSIqLd0-wlMgnG4_GYJbYtm9BrKLnZgjK3mCO0";
 
 
-const socket = io("http://localhost:5000", {
+const socket = io(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000", {
   auth: { token }, 
   transports: ["websocket"]
 });
