@@ -17,14 +17,23 @@ export const handleMessages = (io, socket) => {
       const isParticipant = conversation.participants.some((p) => p.toString() === socket.userId);
       if (!isParticipant) return socket.emit("error_message", { error: "Brak dostępu do rozmowy." });
 
-      joinRoomOnce(socket, conversationId);
-      socket.emit("joined_conversation", { conversationId });
-      console.log(`📥 ${socket.userId} joined ${conversationId}`);
-    } catch (err) {
-      console.error("messageHandler.join_conversation:", err);
-      socket.emit("error_message", { error: "Błąd przy dołączaniu do rozmowy." });
-    }
-  });
+  socket.rooms.forEach(room => {
+            if (room !== socket.id) { 
+                leaveRoom(socket, room); 
+                console.log(`📤 ${socket.userId} left room ${room}`);
+            }
+        });
+
+        // Wreszcie dołączamy do nowego pokoju
+        socket.join(conversationId); // Można użyć joinRoomOnce, ale to jest jaśniejsze
+        socket.emit("joined_conversation", { conversationId });
+        console.log(`📥 ${socket.userId} joined ${conversationId}`);
+
+    } catch (err) {
+        console.error("messageHandler.join_conversation:", err);
+        socket.emit("error_message", { error: "Błąd przy dołączaniu do rozmowy." });
+    }
+});
 
   socket.on("send_message", async ({ conversationId, text }) => {
     try {
