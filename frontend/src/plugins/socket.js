@@ -10,7 +10,7 @@ let socket = null;
 export function initSocket() {
   const token = localStorage.getItem("token");
 
-  socket = io("http://localhost:5000", {
+  socket = io(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000", {
     auth: { token },
     transports: ["websocket"], // zapewnia stabilne połączenie
   });
