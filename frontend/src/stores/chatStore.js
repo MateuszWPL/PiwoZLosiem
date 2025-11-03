@@ -63,74 +63,82 @@ export const useChatStore = defineStore('chat', () => {
         });
     };
 
+const BASE_URL = 'http://localhost:5000'; // lub z .env
+const defaultAvatar = 'https://placehold.co/50x50';
 
-    // 📥 Pobierz rozmowy użytkownika z backendu
-    const fetchChats = async () => {
-        loading.value = true;
-        error.value = null;
+const fetchChats = async () => {
+  loading.value = true;
+  error.value = null;
 
-        try {
-            const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/chat/conversations', {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+  try {
+    const token = localStorage.getItem('token');
+    const res = await axios.get(`${BASE_URL}/api/chat/conversations`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-            const meId = getUserIdFromToken(token);
+    const meId = getUserIdFromToken(token);
 
-            chats.value = Array.isArray(res.data)
-                ? res.data.map((conv) => {
-                    const participants = conv.participants || [];
-                    const lastMsg = conv.lastMessage || null;
+    chats.value = Array.isArray(res.data)
+      ? res.data.map((conv) => {
+          const participants = conv.participants || [];
+          const lastMsg = conv.lastMessage || null;
 
-                    // Logika określania nazwy i awatara
-                    let name = '';
-                    if (conv.isGroup) {
-                        // ... logika dla grup TODO
-                    } else {
-                        const other = participants.find((p) => String(p._id) !== String(meId));
-                        name =
-                            other && (other.imie || other.nazwisko)
-                                ? `${other.imie || ''} ${other.nazwisko || ''}`.trim()
-                                : 'Nieznajomy';
-                    }
+          let name = '';
+          let photoUrl = defaultAvatar;
 
-                    const lastSender =
-                        typeof lastMsg?.sender === 'object'
-                            ? `${lastMsg.sender.imie || ''} ${lastMsg.sender.nazwisko || ''}`.trim()
-                            : 'Ktoś';
+          if (conv.isGroup) {
+            name = conv.groupName || 'Grupa';
+            photoUrl = 'https://placehold.co/50x50?text=GR';
+          } else {
+            const other = participants.find((p) => String(p._id) !== String(meId));
+            name =
+              other && (other.imie || other.nazwisko)
+                ? `${other.imie || ''} ${other.nazwisko || ''}`.trim()
+                : 'Nieznajomy';
 
-                    const photoUrl = conv.isGroup
-                        ? 'https://placehold.co/50x50?text=GR'
-                        : (participants.find((p) => String(p._id) !== String(meId))?.photoUrl) ||
-                            'https://placehold.co/50x50';
-                    console.log(participants.find((p) => String(p._id) !== String(meId))?.photoUrl);
-                    return {
-                        id: conv._id || conv.id || String(Date.now()),
-                        name,
-                        photoUrl,
-                        lastMessage: lastMsg
-                            ? `${lastSender}: ${lastMsg.text ?? ''}`
-                            : 'Brak wiadomości',
-                        time: conv.updatedAt
-                            ? new Date(conv.updatedAt).toLocaleTimeString('pl-PL', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                            })
-                            : '',
-                        participants, // Pełne dane uczestników, potrzebne później do avatarów
-                        messages: [],
-                        isGroup: conv.isGroup || false,
-                        groupName: conv.groupName || null,
-                    };
+            // budowanie pełnego URL do avatara
+            if (other?.photoUrl) {
+              photoUrl = other.photoUrl.startsWith('/')
+                ? `${BASE_URL}${other.photoUrl}`
+                : other.photoUrl;
+            }
+          }
+          console.log(photoUrl);
+
+          const lastSender =
+            typeof lastMsg?.sender === 'object'
+              ? `${lastMsg.sender.imie || ''} ${lastMsg.sender.nazwisko || ''}`.trim()
+              : 'Ktoś';
+
+          return {
+            id: conv._id || conv.id || String(Date.now()),
+            name,
+            photoUrl,
+            lastMessage: lastMsg
+              ? `${lastSender}: ${lastMsg.text ?? ''}`
+              : 'Brak wiadomości',
+            time: conv.updatedAt
+              ? new Date(conv.updatedAt).toLocaleTimeString('pl-PL', {
+                  hour: '2-digit',
+                  minute: '2-digit',
                 })
-                : [];
-        } catch (err) {
-            console.error('❌ Błąd pobierania czatów:', err);
-            error.value = err?.response?.data?.error || err?.message || 'Nie udało się pobrać rozmów';
-        } finally {
-            loading.value = false;
-        }
-    };
+              : '',
+            participants,
+            messages: [],
+            isGroup: conv.isGroup || false,
+            groupName: conv.groupName || null,
+          };
+        })
+      : [];
+  } catch (err) {
+    console.error('❌ Błąd pobierania czatów:', err);
+    error.value =
+      err?.response?.data?.error || err?.message || 'Nie udało się pobrać rozmów';
+  } finally {
+    loading.value = false;
+  }
+};
+
 
     // 🆕 Tworzenie nowej rozmowy
     const createConversation = async (partnerId) => {
@@ -263,7 +271,6 @@ export const useChatStore = defineStore('chat', () => {
     const setChats = (arr) => {
         chats.value = Array.isArray(arr) ? arr : [];
     };
-
     return {
         chats,
         loading,

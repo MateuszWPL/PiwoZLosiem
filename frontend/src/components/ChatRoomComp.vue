@@ -7,7 +7,7 @@
         </svg>
       </button>
 
-      <img :src="chat.avatarUrl || defaultAvatar" alt="Avatar" class="w-12 h-12 rounded-full object-cover" />
+      <img :src="chat.photoUrl || defaultAvatar" alt="Avatar" class="w-12 h-12 rounded-full object-cover" />
       <div class="flex flex-col">
         <span class="font-semibold text-white">{{ chat.name || 'Nieznajomy' }}</span>
         <span class="text-secondaryGold text-sm">{{ chat.status || '' }}</span>
@@ -28,7 +28,7 @@
       >
         <img
           v-if="message.userId !== currentUserId"
-          :src="message.avatarUrl || chat.avatarUrl || defaultAvatar"
+          :src="message.avatarUrl || chat.photoUrl || defaultAvatar"
           alt="Avatar"
           class="w-12 h-12 rounded-full object-cover mr-2 mt-1"
         />
@@ -83,8 +83,9 @@ import { useChatStore } from '../stores/chatStore'
 import { getSocket } from '../plugins/socket'
 
 // stałe
-const defaultAvatar = 'https://placehold.co/50x50'
-const yourAvatarUrl = localStorage.getItem('avatarUrl') || defaultAvatar
+const defaultAvatar = 'https://archiwum.niemczyk.pl/images/202205/68c128d94a309ebb9a2e899cd65a_orginal.jpg'
+const yourAvatarUrl = localStorage.getItem('photoUrl') || defaultAvatar
+
 
 // socket (może być null jeśli nie zainicjalizowany)
 const socket = getSocket && typeof getSocket === 'function' ? getSocket() : null
@@ -108,6 +109,7 @@ const chat = computed(() => {
   return chatStore.getChatById(props.chatData.id)
 })
 
+
 // Join room kiedy chat pojawi się
 const tryJoinConversation = () => {
   if (!socket) {
@@ -123,7 +125,6 @@ const tryJoinConversation = () => {
 
 // Nasłuchiwacze
 const onNewMessage = (message) => {
-  // message powinien zawierać conversationId (backend) - defensywnie
   const convId = message?.conversationId || message?.conversation || chat.value?.id
   if (!convId) {
     console.warn('Otrzymano new_message bez conversationId:', message)
@@ -144,7 +145,7 @@ const onNewMessage = (message) => {
     userId: senderId,
     text: message.text || '',
     time: message.time || new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }),
-    avatarUrl: message.avatarUrl || undefined,
+    avatarUrl: chat.value?.photoUrl || defaultAvatar,
   }
 
   chatStore.addMessage(convId, msg)
@@ -168,7 +169,7 @@ onMounted(() => {
   if (socket) {
     socket.on('new_message', onNewMessage)
     socket.on('joined_conversation', onJoinedConversation)
-    socket.on('error_message', onErrorMessage)
+    socket.on('eUrlrror_message', onErrorMessage)
   } else {
     console.warn('Socket nie dostępny w ChatRoomComp')
   }
@@ -190,7 +191,7 @@ onUnmounted(() => {
 
 // obserwuj zmiany chat.messages i przewijaj na dół
 watch(
-  () => chat.value && chat.value.messages && chat.value.messages.length,
+  () => chat.value && chat.value?.messages && chat.value?.messages?.length,
   async () => {
     await nextTick()
     if (messagesContainer.value) {

@@ -13,7 +13,7 @@
     >
       <div class="flex items-center gap-3">
         <img
-          :src="chat.avatarUrl"
+          :src="chat.photoUrl"
           alt="Avatar"
           class="w-12 h-12 rounded-full object-cover border border-primaryOrange"
         />
