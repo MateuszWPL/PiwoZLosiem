@@ -14,23 +14,25 @@ import ChatRoom from '@/pages/ChatRoom.vue'
 import DiscoverView from '@/pages/DiscoverView.vue'
 import ResetPassword from '@/pages/ResetPassword.vue'
 import Friends from '@/pages/Friends.vue'
+import NotFound from '@/pages/NotFound.vue'
 
 const routes = [
   { path: '/', name: 'MainPage', component: MainPage, meta: { title: 'Strona Główna' } },
   { path: '/rejestracja', name: 'Rejestracja', component: RegisterPage, meta: { title: 'Rejestracja' } },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard, meta: { requiresAuth: true, title: 'Dashboard' } },
-  { path: '/logowanie', name: 'Logowanie', component: LoginPage, meta: { requiresGuest: true, title: 'Logowanie' } },
-  { path: '/resetowanie-hasla', name: 'ResetowanieHasla', component: ForgottenPasswordPage, meta: { requiresGuest: true, title: 'Resetowanie hasła' } },
-  { path: '/reset-hasla', name: 'ResetHasla', component: ResetPassword, meta: { requiresGuest: true, title: 'Reset Hasła' } },
+  { path: '/logowanie', name: 'Logowanie', component: LoginPage, meta: { title: 'Logowanie' } },
+  { path: '/resetowanie-hasla', name: 'ResetowanieHasla', component: ForgottenPasswordPage, meta: { title: 'Resetowanie hasła' } },
+  { path: '/reset-hasla', name: 'ResetHasla', component: ResetPassword, meta: { title: 'Reset Hasła' } },
   { path: '/rejestracja-uzupelnienie', name: 'RejestracjaUzupelnienie', component: RegisterPageComplete, meta: { requiresAuth: true, title: 'Uzupełnij rejestrację' } },
   { path: '/powitanie', name: 'Powitanie', component: Welcome, meta: { title: 'Powitanie' } },
   { path: '/moje-piwa', name: 'MojePiwa', component: MyBeers, meta: { requiresAuth: true, title: 'Moje Piwa' } },
-  { path: '/profil', name: 'Profil', component: ProfilePage, meta: { title: 'Profil' } },
-  { path: '/chat', name: 'Chat', component: Chat, meta: { title: 'Chat' } },
-  { path: '/chat/:id', name: 'ChatRoom', component: ChatRoom, meta: { title: 'Chat Room' } },
+  { path: '/profil', name: 'Profil', component: ProfilePage, meta: { requiresAuth: true, title: 'Profil' } },
+  { path: '/chat', name: 'Chat', component: Chat, meta: { requiresAuth: true, title: 'Chat' } },
+  { path: '/chat/:id', name: 'ChatRoom', component: ChatRoom, meta: { requiresAuth: true, title: 'Chat Room' } },
   { path: '/ranking', name: 'Ranking', component: Ranking, meta: { requiresAuth: true, title: 'Ranking' } },
   { path: '/odkrywaj', name: 'Odkrywaj', component: DiscoverView, meta: { requiresAuth: true, title: 'Odkrywaj' } },
   { path: '/znajomi', name: 'Znajomi', component: Friends, meta: { requiresAuth: true } },
+  { path: '/:pathMatch(.*)*', name: 'Nie-znaleziono', component: NotFound, meta: { title: 'Nie znaleziono'}}
 ]
 
 
@@ -40,17 +42,18 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem('token');
 
-  if (to.meta.requiresGuest && token) {
-    return next('/dashboard')
+  const requiresAuth = to.meta.requiresAuth;
+
+  if (requiresAuth && !token) {
+    return next({ name: 'Logowanie' });
   }
 
-  if (to.meta.requiresAuth && !token) {
-    return next('/logowanie')
+  if ((to.name === 'Logowanie' || to.name === 'Rejestracja' || to.name === 'RejestracjaUzupelnienie') && token) {
+     return next({ name: 'Dashboard' });
   }
-
-  next()
+  next();
 })
 
 router.afterEach((to) => {
