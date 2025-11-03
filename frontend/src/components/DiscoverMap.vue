@@ -72,7 +72,7 @@
                 <div class="p-2 text-center text-black">
                     <p class="font-bold text-lg mb-1">{{ otherUser.firstName }} {{ otherUser.lastName }}</p>
                     <p class="text-sm text-gray-600 mb-3">Wiek: {{ otherUser.age }}</p>
-                    <p class="text-sm text-gray-600 mb-3">Status: {{ otherUser.status || 'Dostępny' }}</p>
+                    <p class="text-sm text-gray-600 mb-3">Status: {{ statusLabel }}</p>
                     <button 
                         @click="startChat(otherUser.userId)" 
                         class="bg-secondaryGold hover:bg-tertiaryGreen text-white font-bold py-2 px-4 rounded transition-colors"
@@ -145,6 +145,7 @@ import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker, LTooltip, LPopup} from "@vue-leaflet/vue-leaflet";
 import L from 'leaflet';
 import apiClient from '@/api/api.js';
+import { statuses } from '../../../shared/statuses.js'
 
 const zoom = ref(13);
 const distanceInMeters = ref(5000);
@@ -224,6 +225,11 @@ function updateRangeProgress(value) {
     rangeInput.value.style.setProperty('--range-progress', progress);
   }
 }
+
+const statusLabel = computed(() => {
+  const current = statuses.find(s => s.value === status.value)
+  return current ? current.label : 'Nie ustawiono statusu'
+})
 
 const displayDistance = computed(() => {
   if (distanceInMeters.value < 1000) return `${distanceInMeters.value} m`;
