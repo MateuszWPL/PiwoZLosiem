@@ -7,6 +7,7 @@ export const useSocketStore = defineStore('socket', {
     onlineUsers: [],
     userData: null,
     watchingId: null, 
+    currentUserPosition: ref(null),
   }),
 
   actions: {
@@ -60,6 +61,7 @@ export const useSocketStore = defineStore('socket', {
       this.watchingId = navigator.geolocation.watchPosition(
         (position) => {
           const { latitude, longitude } = position.coords
+          this.currentUserPosition.value = { lat: latitude, lng: longitude }
           console.log(`Aktualna lokalizacja: ${latitude}, ${longitude}`)
           this.sendLocation(latitude, longitude)
         },

@@ -150,7 +150,7 @@ import { useSocketStore } from '@/stores/socketStore.js';
 
 const zoom = ref(13);
 const distanceInMeters = ref(5000);
-const currentUserPosition = ref(null);
+const currentUserPosition = computed(() => socketStore.currentUserPosition)
 const geolocationError = ref(false);
 const rangeInput = ref(null);
 const user = ref(null);
@@ -320,12 +320,13 @@ onMounted(async () => {
   console.log("⏳ Inicjalizacja mapy...");
   const token = await fetchUserData();
   console.log("✅ Dane użytkownika:", user.value);
+  /*
   if (token && user.value) {
     socketStore.initializeSocket(token)
-  }
+  }*/
   updateRangeProgress(distanceInMeters.value);
 
-
+  
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(position => {
       const { latitude, longitude } = position.coords;
