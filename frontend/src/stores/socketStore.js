@@ -8,7 +8,7 @@ export const useSocketStore = defineStore('socket', {
     onlineUsers: [],
     userData: null,
     watchingId: null, 
-    currentUserPosition: ref(null),
+    currentUserPosition: ref({ lat: 0, lng: 0 }),
   }),
 
   actions: {

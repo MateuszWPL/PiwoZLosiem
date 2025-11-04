@@ -150,7 +150,7 @@ import { useSocketStore } from '@/stores/socketStore.js';
 
 const zoom = ref(13);
 const distanceInMeters = ref(5000);
-const currentUserPosition = computed(() => socketStore.currentUserPosition)
+const currentUserPosition = computed(() => socketStore.currentUserPosition);
 const geolocationError = ref(false);
 const rangeInput = ref(null);
 const user = ref(null);
@@ -291,30 +291,19 @@ const fetchUserData = async () => {
   }
 };
 
-
+/*
 watch(latLng, (newLatLng) => {
-    // 1. Wyczyść poprzedni timer, jeśli istnieje
-    if (locationUpdateTimer) {
-        clearTimeout(locationUpdateTimer);
-    }
+    if (locationUpdateTimer) clearTimeout(locationUpdateTimer);
 
-    // 2. Ustaw nowy timer (np. 3 sekundy opóźnienia)
     locationUpdateTimer = setTimeout(() => {
         const [latitude, longitude] = newLatLng;
 
-        // 3. Wyślij dane tylko, jeśli socket jest gotowy
-        if (socketStore.socket && user.value && user.value._id) {
+        if (socketStore.socket && socketStore.userData?._id) {
             console.log(`⏱️ Wysyłam lokalizację po debouncingu: ${latitude}, ${longitude}`);
-            socketStore.sendLocation(user.value._id, latitude, longitude, {
-            name: user.value.firstName.charAt(0).toUpperCase(),
-            firstName: user.value.firstName,
-            lastName: user.value.lastName,
-            age: user.value.age,
-            status: status.value,
-          });
+            socketStore.sendLocation(latitude, longitude);
         }
-    }, 3000); // Wstrzymaj wysyłanie na 3 sekundy
-}, { deep: true }); // Opcja deep jest potrzebna, bo latLng to tablica/ref złożony
+    }, 3000);
+}, { deep: true }); */
 
 onMounted(async () => {
   console.log("⏳ Inicjalizacja mapy...");
@@ -326,7 +315,7 @@ onMounted(async () => {
   }*/
   updateRangeProgress(distanceInMeters.value);
 
-  
+  /*
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(position => {
       const { latitude, longitude } = position.coords;
@@ -344,7 +333,7 @@ onMounted(async () => {
     { enableHighAccuracy: true });
   } else {
     geolocationError.value = true;
-  } 
+  } */
 });
 
 onUnmounted(() => {
