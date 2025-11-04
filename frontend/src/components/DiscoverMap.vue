@@ -21,10 +21,10 @@
       </div>
 
       <!-- Komunikaty o błędzie -->
-      <div v-if="!currentUserPosition && geolocationError" class="map-placeholder error">
+      <div v-if="!currentUserPositionRef.value && geolocationError" class="map-placeholder error">
         <p>Nie udało się pobrać lokalizacji. Sprawdź uprawnienia w przeglądarce.</p>
       </div>
-      <div v-else-if="!currentUserPosition || !user" class="map-placeholder">
+      <div v-else-if="!currentUserPositionRef || !user" class="map-placeholder">
         <p>Pobieranie Twojej lokalizacji i danych...</p>
       </div>
 
@@ -36,7 +36,7 @@
         <l-map 
           ref="map" 
           v-model:zoom="zoom" 
-          :center="currentUserPosition" 
+          :center="currentUserPositionRef" 
           :use-global-leaflet="false"
           class="w-full h-full z-0"
         >
@@ -55,8 +55,8 @@
           />
 
           <l-marker 
-            v-if="currentUserPosition && user" 
-            :lat-lng="currentUserPosition" 
+            v-if="currentUserPositionRef && user" 
+            :lat-lng="currentUserPositionRef" 
             :icon="createCustomIcon(user.firstName)"
           >
             <l-tooltip :options="{ className: 'custom-tooltip' }">{{ user.name }} (Ty)</l-tooltip>
@@ -147,10 +147,12 @@ import L from 'leaflet';
 import apiClient from '@/api/api.js';
 import { statuses } from '../../../shared/statuses.js'
 import { useSocketStore } from '@/stores/socketStore.js';
+import { toRefs } from 'vue';
 
 const zoom = ref(13);
 const distanceInMeters = ref(5000);
 const currentUserPosition = computed(() => socketStore.currentUserPosition);
+const { currentUserPosition: currentUserPositionRef } = toRefs(socketStore);
 const geolocationError = ref(false);
 const rangeInput = ref(null);
 const user = ref(null);
