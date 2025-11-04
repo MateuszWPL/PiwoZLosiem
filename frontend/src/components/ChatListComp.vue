@@ -12,11 +12,7 @@
       @click="$emit('select', chat)"
     >
       <div class="flex items-center gap-3">
-        <img
-          :src="chat.photoUrl"
-          alt="Avatar"
-          class="w-12 h-12 rounded-full object-cover border border-primaryOrange"
-        />
+        <img :src="chat.photoUrl ? `${chat.photoUrl}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover"/>
         <div>
           <div class="font-semibold text-white">{{ chat.name }}</div>
           <div class="text-secondaryGold text-sm truncate">
