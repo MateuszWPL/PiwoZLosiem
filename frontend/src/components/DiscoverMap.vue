@@ -21,10 +21,10 @@
       </div>
 
       <!-- Komunikaty o błędzie -->
-      <div v-if="!currentUserPositionRef.value && geolocationError" class="map-placeholder error">
+      <div v-if="!currentUserPosition && geolocationError" class="map-placeholder error">
         <p>Nie udało się pobrać lokalizacji. Sprawdź uprawnienia w przeglądarce.</p>
       </div>
-      <div v-else-if="!currentUserPositionRef || !user" class="map-placeholder">
+      <div v-else-if="!currentUserPosition || !user" class="map-placeholder">
         <p>Pobieranie Twojej lokalizacji i danych...</p>
       </div>
 
@@ -36,7 +36,7 @@
         <l-map 
           ref="map" 
           v-model:zoom="zoom" 
-          :center="currentUserPositionRef" 
+          :center="currentUserPosition" 
           :use-global-leaflet="false"
           class="w-full h-full z-0"
         >
@@ -55,8 +55,8 @@
           />
 
           <l-marker 
-            v-if="currentUserPositionRef && user" 
-            :lat-lng="currentUserPositionRef" 
+            v-if="currentUserPosition && user" 
+            :lat-lng="currentUserPosition" 
             :icon="createCustomIcon(user.firstName)"
           >
             <l-tooltip :options="{ className: 'custom-tooltip' }">{{ user.name }} (Ty)</l-tooltip>
@@ -146,13 +146,11 @@ import { LMap, LTileLayer, LMarker, LTooltip, LPopup} from "@vue-leaflet/vue-lea
 import L from 'leaflet';
 import apiClient from '@/api/api.js';
 import { statuses } from '../../../shared/statuses.js'
-import { useSocketStore } from '@/stores/socketStore.js';
-import { toRefs } from 'vue';
 
 const zoom = ref(13);
 const distanceInMeters = ref(5000);
-const currentUserPosition = computed(() => socketStore.currentUserPosition);
-const { currentUserPosition: currentUserPositionRef } = toRefs(socketStore);
+const onlineUsers = ref([]);
+const currentUserPosition = ref(null);
 const geolocationError = ref(false);
 const rangeInput = ref(null);
 const user = ref(null);
@@ -160,10 +158,27 @@ const status = ref('');
 const latLng = ref([0, 0]);
 const selectedUser = ref(null);
 const router = useRouter();
+const socket = ref(null);
 let locationUpdateTimer = null;
-
-const socketStore = useSocketStore();
-const onlineUsers = computed(() => socketStore.onlineUsers);
+const initializeSocket = (token) => {
+    const VITE_SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+    const newSocket = io(VITE_SOCKET_URL, {
+        auth: {
+            token: token
+        }
+    });
+    newSocket.on("connect", () => {
+        console.log("🔌 Połączono z Socket.IO:", newSocket.id);
+    });
+    newSocket.on("disconnect", () => {
+        console.log("👋 Rozłączono z Socket.IO");
+    });
+    newSocket.on('updateUserList', (users) => {
+        console.log("📡 Odebrano listę użytkowników:", users);
+        onlineUsers.value = users;
+    });
+    return newSocket;
+};
 
 // 💡 FUNKCJA KLIKNIĘCIA
 function selectUser(user) {
@@ -293,31 +308,44 @@ const fetchUserData = async () => {
   }
 };
 
-/*
-watch(latLng, (newLatLng) => {
-    if (locationUpdateTimer) clearTimeout(locationUpdateTimer);
 
+watch(latLng, (newLatLng) => {
+    // 1. Wyczyść poprzedni timer, jeśli istnieje
+    if (locationUpdateTimer) {
+        clearTimeout(locationUpdateTimer);
+    }
+
+    // 2. Ustaw nowy timer (np. 3 sekundy opóźnienia)
     locationUpdateTimer = setTimeout(() => {
         const [latitude, longitude] = newLatLng;
 
-        if (socketStore.socket && socketStore.userData?._id) {
+        // 3. Wyślij dane tylko, jeśli socket jest gotowy
+        if (socket.value && user.value && user.value._id) {
             console.log(`⏱️ Wysyłam lokalizację po debouncingu: ${latitude}, ${longitude}`);
-            socketStore.sendLocation(latitude, longitude);
+            socket.value.emit('updateLocation', {
+                userId: user.value._id,
+                lat: latitude,
+                lng: longitude,
+                name: user.value.firstName.charAt(0).toUpperCase(),
+                firstName: user.value.firstName,
+                lastName: user.value.lastName,
+                age: user.value.age,
+                status: status.value,
+            });
         }
-    }, 3000);
-}, { deep: true }); */
+    }, 3000); // Wstrzymaj wysyłanie na 3 sekundy
+}, { deep: true }); // Opcja deep jest potrzebna, bo latLng to tablica/ref złożony
 
 onMounted(async () => {
   console.log("⏳ Inicjalizacja mapy...");
   const token = await fetchUserData();
   console.log("✅ Dane użytkownika:", user.value);
-  /*
   if (token && user.value) {
-    socketStore.initializeSocket(token)
-  }*/
+    socket.value = initializeSocket(token);
+  }
   updateRangeProgress(distanceInMeters.value);
 
-  /*
+
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(position => {
       const { latitude, longitude } = position.coords;
@@ -335,13 +363,16 @@ onMounted(async () => {
     { enableHighAccuracy: true });
   } else {
     geolocationError.value = true;
-  } */
+  }
 });
 
 onUnmounted(() => {
   console.log("👋 Rozłączono z Socket.IO");
   if (locationUpdateTimer) {
       clearTimeout(locationUpdateTimer);
+  }
+  if (socket.value) {
+    socket.value.disconnect();
   }
 });
 </script>
