@@ -4,28 +4,27 @@ import { io } from 'socket.io-client'
 export const useSocketStore = defineStore('socket', {
   state: () => ({
     socket: null,
-    onlineUsers: []
+    onlineUsers: [],
+    userData: null,
+    watchingId: null, 
   }),
-  
+
   actions: {
-    initializeSocket(token) {
-      if (this.socket && this.socket.connected) {
-        console.log("✅ Socket już jest połączony")
-        return 
-      }
-      
+    initializeSocket(token, userData) {
+      if (this.socket) return
+
       const URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000"
-      this.socket = io(URL, { 
-        auth: { token },
-        closeOnBeforeunload: false
-      })
+      this.socket = io(URL, { auth: { token } })
+      this.userData = userData
 
       this.socket.on("connect", () => {
-        console.log("✅ Połączono z Socket.IO", this.socket.id)
+        console.log("Połączono z Socket.IO:", this.socket.id)
+        this.startTrackingLocation()
       })
 
       this.socket.on("disconnect", () => {
-        console.log("❌ Rozłączono z Socket.IO")
+        console.log("Rozłączono z Socket.IO")
+        this.stopTrackingLocation()
       })
 
       this.socket.on("updateUserList", (users) => {
@@ -33,14 +32,49 @@ export const useSocketStore = defineStore('socket', {
       })
     },
 
-    sendLocation(userId, lat, lng, userData) {
-      if (!this.socket || !this.socket.connected) return
-      this.socket.emit('updateLocation', {
-        userId,
+    sendLocation(lat, lng) {
+      if (!this.socket || !this.userData?._id) return
+
+      this.socket.emit("updateLocation", {
+        userId: this.userData._id,
         lat,
         lng,
-        ...userData
+        firstName: this.userData.firstName,
+        lastName: this.userData.lastName,
+        age: this.userData.age,
+        status: this.userData.status,
       })
+    },
+
+    startTrackingLocation() {
+      if (!navigator.geolocation) {
+        console.warn("Geolokalizacja niedostępna.")
+        return
+      }
+
+      if (this.watchingId) {
+        console.log("Śledzenie już aktywne")
+        return
+      }
+
+      this.watchingId = navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords
+          console.log(`Aktualna lokalizacja: ${latitude}, ${longitude}`)
+          this.sendLocation(latitude, longitude)
+        },
+        (error) => {
+          console.error("Błąd geolokalizacji:", error)
+        },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+      )
+    },
+
+    stopTrackingLocation() {
+      if (this.watchingId) {
+        navigator.geolocation.clearWatch(this.watchingId)
+        this.watchingId = null
+      }
     },
 
     disconnect() {
@@ -48,6 +82,7 @@ export const useSocketStore = defineStore('socket', {
         this.socket.disconnect()
         this.socket = null
       }
+      this.stopTrackingLocation()
     }
   }
 })

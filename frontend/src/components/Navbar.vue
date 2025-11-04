@@ -351,12 +351,15 @@ import { ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import NotificationDropdown from './NotificationDropdown.vue'
 import SvgIcon from './svgIcons/SvgIcon.vue'
+import { useSocketStore } from '@/stores/socketStore.js'
 
 const router = useRouter()
 const menuOpen = ref(false)
+const socketStore = useSocketStore()
 
 const logout = () => {
   localStorage.removeItem('token')
+  socketStore.disconnect()
   router.push('/logowanie')
 }
 </script>

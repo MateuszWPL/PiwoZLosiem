@@ -325,7 +325,7 @@ onMounted(async () => {
   }
   updateRangeProgress(distanceInMeters.value);
 
-
+/*
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(position => {
       const { latitude, longitude } = position.coords;
@@ -343,7 +343,7 @@ onMounted(async () => {
     { enableHighAccuracy: true });
   } else {
     geolocationError.value = true;
-  }
+  } */
 });
 
 onUnmounted(() => {

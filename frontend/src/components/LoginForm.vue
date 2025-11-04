@@ -89,15 +89,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from '@/api/api.js'
 import FormHeading from '../components/FormHeading.vue'
+import { useSocketStore } from '@/stores/socketStore.js'
 
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
 const router = useRouter()
+const socketStore = useSocketStore()
 
 const submit = async () => {
   errorMessage.value = ''
@@ -107,7 +109,15 @@ const submit = async () => {
       password: password.value,
     })
 
-    localStorage.setItem('token', res.data.token)
+    const token = res.data.token
+    localStorage.setItem('token', token)
+
+    const userRes = await axios.get('/users/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const userData = userRes.data
+
+    socketStore.initializeSocket(token, userData)
 
     if (!res.data.isProfileComplete) {
       router.push('/rejestracja-uzupelnienie')
