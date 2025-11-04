@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { io } from 'socket.io-client'
+import { ref } from 'vue'
 
 export const useSocketStore = defineStore('socket', {
   state: () => ({
