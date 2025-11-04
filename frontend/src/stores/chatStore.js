@@ -98,14 +98,14 @@ const fetchChats = async () => {
 
             // budowanie pełnego URL do avatara
             if (other?.photoUrl) {
-              photoUrl = other.photoUrl.startsWith('/')
+              photoUrl = other.photoUrl
             }
             else
             {
-              other.photoUrl;
+              photUrl = defaultAvatar
             }
           }
-          console.log(photoUrl);
+          //console.log(photoUrl);
 
           const lastSender =
             typeof lastMsg?.sender === 'object'
