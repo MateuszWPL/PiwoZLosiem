@@ -21,10 +21,10 @@
       </div>
 
       <!-- Komunikaty o błędzie -->
-      <div v-if="!currentUserPosition && geolocationError" class="map-placeholder error">
+      <div v-if="!locationStore.currentUserPosition && locationStore.geolocationError" class="map-placeholder error">
         <p>Nie udało się pobrać lokalizacji. Sprawdź uprawnienia w przeglądarce.</p>
       </div>
-      <div v-else-if="!currentUserPosition || !user" class="map-placeholder">
+      <div v-else-if="!locationStore.currentUserPosition || !locationStore.user" class="map-placeholder">
         <p>Pobieranie Twojej lokalizacji i danych...</p>
       </div>
 
@@ -36,7 +36,7 @@
         <l-map 
           ref="map" 
           v-model:zoom="zoom" 
-          :center="currentUserPosition" 
+          :center="locationStore.currentUserPosition" 
           :use-global-leaflet="false"
           class="w-full h-full z-0"
         >
@@ -55,11 +55,11 @@
           />
 
           <l-marker 
-            v-if="currentUserPosition && user" 
-            :lat-lng="currentUserPosition" 
-            :icon="createCustomIcon(user.firstName)"
+            v-if="locationStore.currentUserPosition && locationStore.user" 
+            :lat-lng="locationStore.currentUserPosition" 
+            :icon="createCustomIcon(locationStore.user.firstName)"
           >
-            <l-tooltip :options="{ className: 'custom-tooltip' }">{{ user.name }} (Ty)</l-tooltip>
+            <l-tooltip :options="{ className: 'custom-tooltip' }">{{ locationStore.user.name }} (Ty)</l-tooltip>
           </l-marker>
 
           <l-marker 
@@ -72,7 +72,7 @@
                 <div class="p-2 text-center text-black">
                     <p class="font-bold text-lg mb-1">{{ otherUser.firstName }} {{ otherUser.lastName }}</p>
                     <p class="text-sm text-gray-600 mb-3">Wiek: {{ otherUser.age }}</p>
-                    <p class="text-sm text-gray-600 mb-3">Status: {{ statusLabel }}</p>
+                    <p class="text-sm text-gray-600 mb-3">Status: {{ getStatusLabel(otherUser.status) }}</p>
                     <button 
                         @click="startChat(otherUser.userId)" 
                         class="bg-secondaryGold hover:bg-tertiaryGreen text-white font-bold py-2 px-4 rounded transition-colors"
@@ -91,7 +91,7 @@
       <h4 class="text-white text-[24px] tracking-[-0.6px] font-semibold mb-3">
         Użytkownicy w promieniu {{ displayDistance }}
       </h4>
-      <ul v-if="currentUserPosition && filteredUsers.length" class="space-y-2 text-secondaryGold">
+      <ul v-if="locationStore.currentUserPosition && filteredUsers.length" class="space-y-2 text-secondaryGold">
         <li 
           v-for="user in filteredUsers" 
           :key="user.userId" 
@@ -99,11 +99,11 @@
           @click="selectUser(user)" >
           <span class="text-white font-medium">{{ user.firstName }} {{ user.lastName }}</span>
           <span class="text-secondaryGold text-sm font-light">
-            {{ calculateDistance(currentUserPosition.lat, currentUserPosition.lng, user.lat, user.lng).toFixed(2) }} km
+            {{ calculateDistance(locationStore.currentUserPosition.lat, locationStore.currentUserPosition.lng, user.lat, user.lng).toFixed(2) }} km
           </span>
         </li>
       </ul>
-      <p v-else-if="currentUserPosition" class="text-secondaryGold/70">
+      <p v-else-if="locationStore.currentUserPosition" class="text-secondaryGold/70">
         Brak aktywnych użytkowników w promieniu {{ displayDistance }}.
       </p>
       <p v-else class="text-secondaryGold/70">Oczekuję na lokalizację...</p>
@@ -113,7 +113,7 @@
     v-if="selectedUser" 
     class="fixed inset-0 bg-black/50 z-50 flex justify-center items-center" 
     @click.self="selectedUser = null"
->
+  >
     <div class="bg-white p-6 rounded-lg shadow-2xl w-full max-w-sm transform transition-all duration-300">
         <h3 class="text-xl font-bold mb-2 text-primaryGreen">{{ selectedUser.firstName }} {{ selectedUser.lastName }}</h3>
         <p class="text-gray-700">Wiek: <span class="font-medium">{{ selectedUser.age }}</span></p>
@@ -134,87 +134,56 @@
             </button>
         </div>
     </div>
-</div>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, onUnmounted, watchEffect } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { io } from "socket.io-client";
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker, LTooltip, LPopup} from "@vue-leaflet/vue-leaflet";
 import L from 'leaflet';
 import apiClient from '@/api/api.js';
-import { statuses } from '../../../shared/statuses.js'
+import { statuses } from '../../../shared/statuses.js';
+import { useLocationStore } from '@/stores/locationStore';
 
+const locationStore = useLocationStore();
 const zoom = ref(13);
 const distanceInMeters = ref(5000);
-const onlineUsers = ref([]);
-const currentUserPosition = ref(null);
-const geolocationError = ref(false);
 const rangeInput = ref(null);
-const user = ref(null);
-const status = ref('');
-const latLng = ref([0, 0]);
 const selectedUser = ref(null);
 const router = useRouter();
-const socket = ref(null);
-let locationUpdateTimer = null;
-const initializeSocket = (token) => {
-    const VITE_SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
-    const newSocket = io(VITE_SOCKET_URL, {
-        auth: {
-            token: token
-        }
-    });
-    newSocket.on("connect", () => {
-        console.log("🔌 Połączono z Socket.IO:", newSocket.id);
-    });
-    newSocket.on("disconnect", () => {
-        console.log("👋 Rozłączono z Socket.IO");
-    });
-    newSocket.on('updateUserList', (users) => {
-        console.log("📡 Odebrano listę użytkowników:", users);
-        onlineUsers.value = users;
-    });
-    return newSocket;
-};
 
 // 💡 FUNKCJA KLIKNIĘCIA
 function selectUser(user) {
-    // Ustawia wybranego użytkownika (otwiera modal/popup)
-    selectedUser.value = user;
+  selectedUser.value = user;
 }
 
 // 💡 FUNKCJA NAWIGACJI DO CHATU
 const startChat = async (friendId) => {
-    // 1. Pobierz token z localStorage - konieczne, ponieważ funkcja nie jest asynchroniczna jak onMounted
-    const token = localStorage.getItem('token');
-    if (!token) {
-        console.error("❌ Brak tokena uwierzytelniającego.");
-        // Możesz tutaj dodać przekierowanie do strony logowania, jeśli to konieczne
-        return; 
+  const token = localStorage.getItem('token');
+  if (!token) {
+    console.error("❌ Brak tokena uwierzytelniającego.");
+    return; 
+  }
+  try {
+    const res = await apiClient.post(`${import.meta.env.VITE_API_BASE_URL}/chat/conversations`, {
+      partnerId: friendId,
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    const conversation = res.data;
+    router.push({ path: `/chat/${conversation._id}` });
+    if (selectedUser.value) {
+      selectedUser.value = null;
     }
-    try {
-        // 2. Użyj apiClient i dostosuj nagłówki
-        const res = await apiClient.post(`${import.meta.env.VITE_API_BASE_URL}/chat/conversations`, {
-            partnerId: friendId, // friendId to będzie otherUser.userId
-        }, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-        const conversation = res.data;
-        // 3. Przekierowanie do odpowiedniego czatu
-        router.push({ path: `/chat/${conversation._id}` });
-        if (selectedUser.value) {
-            selectedUser.value = null;
-        }
-        
-    } catch (err) {
-        console.error("❌ Błąd otwierania czatu:", err.response?.data?.message || err.message);
-    }
+  } catch (err) {
+    console.error("❌ Błąd otwierania czatu:", err.response?.data?.message || err.message);
+  }
 };
+
 function updateRangeProgress(value) {
   const min = 100;
   const max = 10000;
@@ -224,10 +193,10 @@ function updateRangeProgress(value) {
   }
 }
 
-const statusLabel = computed(() => {
-  const current = statuses.find(s => s.value === status.value)
-  return current ? current.label : 'Nie ustawiono statusu'
-})
+const getStatusLabel = (statusValue) => {
+  const current = statuses.find(s => s.value === statusValue);
+  return current ? current.label : 'Nie ustawiono statusu';
+};
 
 const displayDistance = computed(() => {
   if (distanceInMeters.value < 1000) return `${distanceInMeters.value} m`;
@@ -245,21 +214,21 @@ watch(distanceInMeters, (newDistance) => {
 });
 
 const filteredUsers = computed(() => {
-  if (!currentUserPosition.value || !user.value || !user.value._id) return [];
-  
-  const distanceInKm = distanceInMeters.value / 1000;
-  
-  return onlineUsers.value.filter(u => {
-    const isNotMe = u.userId !== user.value._id;
+  if (!locationStore.currentUserPosition || !locationStore.user || !locationStore.user._id) return [];
+  
+  const distanceInKm = distanceInMeters.value / 1000;
+  
+  return locationStore.onlineUsers.filter(u => {
+    const isNotMe = u.userId !== locationStore.user._id;
     if (!isNotMe) return false; 
-    const dist = calculateDistance(
-      currentUserPosition.value.lat,
-      currentUserPosition.value.lng,
-      u.lat,
-      u.lng
-    );
-    return dist <= distanceInKm;
-  });
+    const dist = calculateDistance(
+      locationStore.currentUserPosition.lat,
+      locationStore.currentUserPosition.lng,
+      u.lat,
+      u.lng
+    );
+    return dist <= distanceInKm;
+  });
 });
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -285,94 +254,12 @@ function createCustomIcon(name = '') {
   });
 }
 
-const fetchUserData = async () => {
-  const token = localStorage.getItem('token');
-  if (!token) return;
-  try {
-    const res = await apiClient.get('/users/me', { 
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const userData = res.data;
-    status.value = userData.status;
-    user.value = {
-      name: `${userData.firstName} ${userData.lastName}`,
-      _id: userData._id,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      age: userData.age,
-    };
-    return token;
-  } catch (err) {
-    console.error('Błąd pobierania danych użytkownika:', err);
-    user.value = null;
-  }
-};
-
-
-watch(latLng, (newLatLng) => {
-    // 1. Wyczyść poprzedni timer, jeśli istnieje
-    if (locationUpdateTimer) {
-        clearTimeout(locationUpdateTimer);
-    }
-
-    // 2. Ustaw nowy timer (np. 3 sekundy opóźnienia)
-    locationUpdateTimer = setTimeout(() => {
-        const [latitude, longitude] = newLatLng;
-
-        // 3. Wyślij dane tylko, jeśli socket jest gotowy
-        if (socket.value && user.value && user.value._id) {
-            console.log(`⏱️ Wysyłam lokalizację po debouncingu: ${latitude}, ${longitude}`);
-            socket.value.emit('updateLocation', {
-                userId: user.value._id,
-                lat: latitude,
-                lng: longitude,
-                name: user.value.firstName.charAt(0).toUpperCase(),
-                firstName: user.value.firstName,
-                lastName: user.value.lastName,
-                age: user.value.age,
-                status: status.value,
-            });
-        }
-    }, 3000); // Wstrzymaj wysyłanie na 3 sekundy
-}, { deep: true }); // Opcja deep jest potrzebna, bo latLng to tablica/ref złożony
-
-onMounted(async () => {
-  console.log("⏳ Inicjalizacja mapy...");
-  const token = await fetchUserData();
-  console.log("✅ Dane użytkownika:", user.value);
-  if (token && user.value) {
-    socket.value = initializeSocket(token);
-  }
+onMounted(() => {
   updateRangeProgress(distanceInMeters.value);
-
-
-  if (navigator.geolocation) {
-    navigator.geolocation.watchPosition(position => {
-      const { latitude, longitude } = position.coords;
-      currentUserPosition.value = { lat: latitude, lng: longitude };
-      geolocationError.value = false;
-
-      if (user.value && user.value._id) {
-        latLng.value = [latitude, longitude];
-      }
-    }, 
-    (error) => {
-      console.error("Błąd geolokalizacji:", error);
-      geolocationError.value = true;
-    },
-    { enableHighAccuracy: true });
-  } else {
-    geolocationError.value = true;
-  }
-});
-
-onUnmounted(() => {
-  console.log("👋 Rozłączono z Socket.IO");
-  if (locationUpdateTimer) {
-      clearTimeout(locationUpdateTimer);
-  }
-  if (socket.value) {
-    socket.value.disconnect();
+  
+  if (locationStore.user && !locationStore.currentUserPosition) {
+    console.log("Uruchamiam śledzenie lokalizacji z DiscoverMap");
+    locationStore.startLocationTracking();
   }
 });
 </script>
