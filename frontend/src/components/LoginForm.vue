@@ -93,6 +93,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from '@/api/api.js'
 import FormHeading from '../components/FormHeading.vue'
+import { useLocationStore } from '@/stores/locationStore'
 
 const email = ref('')
 const password = ref('')
