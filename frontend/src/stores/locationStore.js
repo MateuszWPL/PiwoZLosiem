@@ -50,7 +50,7 @@ export const useLocationStore = defineStore('location', () => {
     })
     
     newSocket.on('updateUserList', (users) => {
-      console.log("Odebrano listę użytkowników:", users.length)
+      console.log("Odebrano listę użytkowników:", users)
       onlineUsers.value = users
     })
 
