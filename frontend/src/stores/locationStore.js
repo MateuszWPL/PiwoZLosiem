@@ -24,7 +24,7 @@ export const useLocationStore = defineStore('location', () => {
     }
 
     if (socket.value) {
-      console.log("🔄 Socket istnieje ale jest rozłączony, rozłączam przed stworzeniem nowego")
+      console.log("Socket istnieje ale jest rozłączony, rozłączam przed stworzeniem nowego")
       socket.value.disconnect()
       socket.value = null
     }
@@ -50,7 +50,7 @@ export const useLocationStore = defineStore('location', () => {
     })
     
     newSocket.on('updateUserList', (users) => {
-      console.log("Odebrano listę użytkowników:", users.length)
+      console.log("Odebrano listę użytkowników:", users)
       onlineUsers.value = users
     })
 
@@ -79,6 +79,7 @@ export const useLocationStore = defineStore('location', () => {
       watchId = navigator.geolocation.watchPosition(
         (position) => {
           const { latitude, longitude } = position.coords
+          console.log(`Nowa lokalizacja: ${latitude}, ${longitude}`)
           currentUserPosition.value = { lat: latitude, lng: longitude }
           geolocationError.value = false
 
@@ -104,12 +105,30 @@ export const useLocationStore = defineStore('location', () => {
         },
         (error) => {
           console.error("Błąd geolokalizacji:", error)
+          console.error("Kod błędu:", error.code)
+          console.error("Wiadomość:", error.message)
+          
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              console.error("Użytkownik odmówił dostępu do lokalizacji")
+              break;
+            case error.POSITION_UNAVAILABLE:
+              console.error("Informacja o lokalizacji jest niedostępna")
+              break;
+            case error.TIMEOUT:
+              console.error("Timeout podczas pobierania lokalizacji")
+              break;
+            default:
+              console.error("Nieznany błąd geolokalizacji")
+              break;
+          }
+          
           geolocationError.value = true
         },
         { 
           enableHighAccuracy: true, 
-          maximumAge: 10000, 
-          timeout: 15000 
+          maximumAge: 30000,
+          timeout: 30000
         }
       )
     } else {
@@ -158,6 +177,27 @@ export const useLocationStore = defineStore('location', () => {
     status.value = newStatus
   }
 
+  const checkGeolocationPermission = () => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve('not_supported')
+        return
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        () => resolve('granted'),
+        (error) => {
+          if (error.code === error.PERMISSION_DENIED) {
+            resolve('denied')
+          } else {
+            resolve('error')
+          }
+        },
+        { timeout: 5000 }
+      )
+    })
+  }
+
   return {
     currentUserPosition,
     geolocationError,
@@ -173,6 +213,7 @@ export const useLocationStore = defineStore('location', () => {
     reconnectSocket,
     getSocketStatus,
     setUserData,
-    setStatus
+    setStatus,
+    checkGeolocationPermission
   }
 })
