@@ -126,8 +126,8 @@ const submit = async () => {
     })
     locationStore.setStatus(userData.status)
 
-    locationStore.initializeSocket(token)
-    locationStore.startLocationTracking()
+    //locationStore.initializeSocket(token)
+    //locationStore.startLocationTracking()
 
     if (!res.data.isProfileComplete) {
       router.push('/rejestracja-uzupelnienie')

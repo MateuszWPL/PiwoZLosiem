@@ -32,7 +32,7 @@ export const handleConnection = async (io, socket, onlineUsers) => {
                 lastName: user.lastName 
             });
 
-            io.emit("updateUserList", Object.values(onlineUsers));
+            // io.emit("updateUserList", Object.values(onlineUsers));
             
             console.log(`Użytkownik ${user.firstName} ${user.lastName} dołączył do listy online`);
 
@@ -49,6 +49,7 @@ export const handleConnection = async (io, socket, onlineUsers) => {
             onlineUsers[userId].lng = locationData.lng;
             
             console.log(`Lokalizacja ${onlineUsers[userId].firstName}: ${locationData.lat}, ${locationData.lng}`);
+            
             io.emit("updateUserList", Object.values(onlineUsers));
         }
     });
