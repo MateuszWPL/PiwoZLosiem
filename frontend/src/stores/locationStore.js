@@ -37,9 +37,23 @@ export const useLocationStore = defineStore('location', () => {
       transports: ['websocket', 'polling']
     })
     
-    newSocket.on("connect", () => {
-      console.log("Połączono z Socket.IO:", newSocket.id)
-    })
+   newSocket.on("connect", () => {
+    console.log("Połączono z Socket.IO:", newSocket.id)
+    
+    if (user.value && user.value._id && currentUserPosition.value) {
+      console.log("Wysyłam lokalizację po połączeniu z socketem")
+      newSocket.emit('updateLocation', {
+        userId: user.value._id,
+        lat: currentUserPosition.value.lat,
+        lng: currentUserPosition.value.lng,
+        name: user.value.firstName?.charAt(0).toUpperCase() || 'U',
+        firstName: user.value.firstName,
+        lastName: user.value.lastName,
+        age: user.value.age,
+        status: status.value,
+      })
+    }
+  })
     
     newSocket.on("disconnect", (reason) => {
       console.log("Rozłączono z Socket.IO, powód:", reason)
@@ -63,86 +77,87 @@ export const useLocationStore = defineStore('location', () => {
   }
 
   const startLocationTracking = (userData) => {
-    if (userData) {
-      user.value = userData
-    }
-
-    if (!user.value || !user.value._id) {
-      console.error("startLocationTracking: Brak danych użytkownika!")
-      return
-    }
-
-    if (watchId) {
-      console.log("Już śledzę lokalizację, restartuję...")
-      navigator.geolocation.clearWatch(watchId)
-      watchId = null
-    }
-
-    if (navigator.geolocation) {
-      console.log("Rozpoczynam śledzenie lokalizacji dla:", user.value.firstName)
-
-      watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords
-          console.log(`Nowa lokalizacja ${user.value.firstName}: ${latitude}, ${longitude}`)
-          currentUserPosition.value = { lat: latitude, lng: longitude }
-          geolocationError.value = false
-
-          if (user.value && user.value._id && isSocketConnected.value) {
-            if (locationUpdateTimer) {
-              clearTimeout(locationUpdateTimer)
-            }
-
-            locationUpdateTimer = setTimeout(() => {
-              console.log(`Wysyłam lokalizację ${user.value.firstName}: ${latitude}, ${longitude}`)
-              socket.value.emit('updateLocation', {
-                userId: user.value._id,
-                lat: latitude,
-                lng: longitude,
-                name: user.value.firstName?.charAt(0).toUpperCase() || 'U',
-                firstName: user.value.firstName,
-                lastName: user.value.lastName,
-                age: user.value.age,
-                status: status.value,
-              })
-            }, 3000)
-          } else {
-            console.warn("Nie mogę wysłać lokalizacji - brak userId lub socket niepołączony")
-          }
-        },
-        (error) => {
-          console.error("Błąd geolokalizacji:", error)
-          console.error("Kod błędu:", error.code)
-          console.error("Wiadomość:", error.message)
-          
-          switch(error.code) {
-            case error.PERMISSION_DENIED:
-              console.error("Użytkownik odmówił dostępu do lokalizacji")
-              break;
-            case error.POSITION_UNAVAILABLE:
-              console.error("Informacja o lokalizacji jest niedostępna")
-              break;
-            case error.TIMEOUT:
-              console.error("Timeout podczas pobierania lokalizacji")
-              break;
-            default:
-              console.error("Nieznany błąd geolokalizacji")
-              break;
-          }
-          
-          geolocationError.value = true
-        },
-        { 
-          enableHighAccuracy: true, 
-          maximumAge: 30000,
-          timeout: 30000
-        }
-      )
-    } else {
-      console.error("Geolokalizacja nie jest wspierana przez przeglądarkę")
-      geolocationError.value = true
-    }
+  if (userData) {
+    user.value = userData
   }
+
+  if (!user.value || !user.value._id) {
+    console.error("startLocationTracking: Brak danych użytkownika!")
+    return
+  }
+
+  if (watchId) {
+    console.log("Już śledzę lokalizację, restartuję...")
+    navigator.geolocation.clearWatch(watchId)
+    watchId = null
+  }
+
+  if (navigator.geolocation) {
+    console.log("Rozpoczynam śledzenie lokalizacji dla:", user.value.firstName)
+
+    watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        console.log(`Nowa lokalizacja ${user.value.firstName}: ${latitude}, ${longitude}`)
+        currentUserPosition.value = { lat: latitude, lng: longitude }
+        geolocationError.value = false
+
+        if (user.value && user.value._id && isSocketConnected.value) {
+          if (locationUpdateTimer) {
+            clearTimeout(locationUpdateTimer)
+          }
+
+          console.log(`Wysyłam lokalizację ${user.value.firstName}: ${latitude}, ${longitude}`)
+          socket.value.emit('updateLocation', {
+            userId: user.value._id,
+            lat: latitude,
+            lng: longitude,
+            name: user.value.firstName?.charAt(0).toUpperCase() || 'U',
+            firstName: user.value.firstName,
+            lastName: user.value.lastName,
+            age: user.value.age,
+            status: status.value,
+          })
+
+          locationUpdateTimer = setTimeout(() => {
+          }, 3000)
+        } else {
+          console.warn("Nie mogę wysłać lokalizacji - brak userId lub socket niepołączony")
+        }
+      },
+      (error) => {
+        console.error("Błąd geolokalizacji:", error)
+        console.error("Kod błędu:", error.code)
+        console.error("Wiadomość:", error.message)
+        
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            console.error("Użytkownik odmówił dostępu do lokalizacji")
+            break;
+          case error.POSITION_UNAVAILABLE:
+            console.error("Informacja o lokalizacji jest niedostępna")
+            break;
+          case error.TIMEOUT:
+            console.error("Timeout podczas pobierania lokalizacji")
+            break;
+          default:
+            console.error("Nieznany błąd geolokalizacji")
+            break;
+        }
+        
+        geolocationError.value = true
+      },
+      { 
+        enableHighAccuracy: true, 
+        maximumAge: 30000,
+        timeout: 30000
+      }
+    )
+  } else {
+    console.error("Geolokalizacja nie jest wspierana przez przeglądarkę")
+    geolocationError.value = true
+  }
+}
 
   const stopLocationTracking = () => {
     if (watchId) {
