@@ -50,7 +50,7 @@ export const useLocationStore = defineStore('location', () => {
     })
     
     newSocket.on('updateUserList', (users) => {
-      console.log("Odebrano listę użytkowników:", users)
+      console.log("Odebrano listę użytkowników:", users.length)
       onlineUsers.value = users
     })
 
@@ -67,6 +67,11 @@ export const useLocationStore = defineStore('location', () => {
       user.value = userData
     }
 
+    if (!user.value || !user.value._id) {
+      console.error("startLocationTracking: Brak danych użytkownika!")
+      return
+    }
+
     if (watchId) {
       console.log("Już śledzę lokalizację, restartuję...")
       navigator.geolocation.clearWatch(watchId)
@@ -74,12 +79,12 @@ export const useLocationStore = defineStore('location', () => {
     }
 
     if (navigator.geolocation) {
-      console.log("Rozpoczynam śledzenie lokalizacji...")
+      console.log("Rozpoczynam śledzenie lokalizacji dla:", user.value.firstName)
 
       watchId = navigator.geolocation.watchPosition(
         (position) => {
           const { latitude, longitude } = position.coords
-          console.log(`Nowa lokalizacja: ${latitude}, ${longitude}`)
+          console.log(`Nowa lokalizacja ${user.value.firstName}: ${latitude}, ${longitude}`)
           currentUserPosition.value = { lat: latitude, lng: longitude }
           geolocationError.value = false
 
@@ -89,7 +94,7 @@ export const useLocationStore = defineStore('location', () => {
             }
 
             locationUpdateTimer = setTimeout(() => {
-              console.log(`Wysyłam lokalizację: ${latitude}, ${longitude}`)
+              console.log(`Wysyłam lokalizację ${user.value.firstName}: ${latitude}, ${longitude}`)
               socket.value.emit('updateLocation', {
                 userId: user.value._id,
                 lat: latitude,
@@ -101,6 +106,8 @@ export const useLocationStore = defineStore('location', () => {
                 status: status.value,
               })
             }, 3000)
+          } else {
+            console.warn("Nie mogę wysłać lokalizacji - brak userId lub socket niepołączony")
           }
         },
         (error) => {
@@ -132,7 +139,7 @@ export const useLocationStore = defineStore('location', () => {
         }
       )
     } else {
-      console.error("Geolokalizacja nie jest wspierana")
+      console.error("Geolokalizacja nie jest wspierana przez przeglądarkę")
       geolocationError.value = true
     }
   }

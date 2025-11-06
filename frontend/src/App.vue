@@ -4,7 +4,6 @@ import { onMounted, onUnmounted, watch } from 'vue'
 import { useLocationStore } from '@/stores/locationStore'
 import axios from '@/api/api.js'
 
-
 const locationStore = useLocationStore()
 
 const initializeApp = async () => {
@@ -30,14 +29,29 @@ const initializeApp = async () => {
     })
     locationStore.setStatus(userData.status)
 
+    console.log("Dane użytkownika załadowane:", userData.firstName)
+
+    const permission = await locationStore.checkGeolocationPermission()
+    console.log('Status uprawnień do lokalizacji:', permission)
+
+    if (permission === 'denied') {
+      console.error('Brak uprawnień do lokalizacji')
+      return
+    }
+
     if (!locationStore.isSocketConnected) {
-      console.log("nicjalizuję Socket.io...")
+      console.log("Inicjalizuję Socket.io z userId:", userData._id)
       locationStore.initializeSocket(token)
     } else {
       console.log("Socket.io już jest połączony")
     }
     
-    locationStore.startLocationTracking()
+    if (permission === 'granted') {
+      console.log("Uruchamiam śledzenie lokalizacji dla:", userData.firstName)
+      locationStore.startLocationTracking()
+    } else {
+      console.log('Oczekiwanie na uprawnienia do lokalizacji...')
+    }
 
   } catch (error) {
     console.error('Błąd inicjalizacji aplikacji:', error)
@@ -72,6 +86,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  console.log('Czyszczenie zasobów aplikacji...')
   locationStore.stopLocationTracking()
   locationStore.disconnectSocket()
 })
