@@ -93,13 +93,11 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from '@/api/api.js'
 import FormHeading from '../components/FormHeading.vue'
-import { useLocationStore } from '@/stores/locationStore'
 
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
 const router = useRouter()
-const locationStore = useLocationStore()
 
 const submit = async () => {
   errorMessage.value = ''
@@ -109,25 +107,7 @@ const submit = async () => {
       password: password.value,
     })
 
-    const token = res.data.token
     localStorage.setItem('token', res.data.token)
-
-    const resUser = await axios.get('/users/me', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-
-    const userData = resUser.data
-    locationStore.setUserData({
-      _id: userData._id,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      age: userData.age,
-      name: `${userData.firstName} ${userData.lastName}`
-    })
-    locationStore.setStatus(userData.status)
-
-    //locationStore.initializeSocket(token)
-    //locationStore.startLocationTracking()
 
     if (!res.data.isProfileComplete) {
       router.push('/rejestracja-uzupelnienie')
