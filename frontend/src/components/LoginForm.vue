@@ -98,6 +98,7 @@ const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
 const router = useRouter()
+const locationStore = useLocationStore()
 
 const submit = async () => {
   errorMessage.value = ''
@@ -109,9 +110,6 @@ const submit = async () => {
 
     const token = res.data.token
     localStorage.setItem('token', res.data.token)
-
-    const locationStore = useLocationStore()
-  
 
     const resUser = await axios.get('/users/me', {
       headers: { Authorization: `Bearer ${token}` }
