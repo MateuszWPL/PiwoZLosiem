@@ -2,7 +2,23 @@
   <div class="pb-16">
     <!-- Główna karta z mapą -->
     <div class="bg-tertiaryGreen/50 rounded-[10px] p-5 w-full shadow-md shadow-black/20">
-      
+      <!-- Przyciski nawigacji -->
+      <div class="flex justify-between mb-4">
+        <button 
+          @click="locateMe"
+          class="bg-secondaryGold text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-tertiaryGreen transition"
+        >
+          📍 Zlokalizuj mnie
+        </button>
+
+        <button 
+          @click="router.push('/ustaw-lokalizacje')"
+          class="bg-primaryGreen text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-tertiaryGreen transition"
+        >
+          ✏️ Wpisz lokalizację ręcznie
+        </button>
+      </div>
+
       <!-- Suwak zasięgu -->
       <div class="controls mb-6">
         <label for="distance" class="text-secondaryGold mb-2 block text-sm font-semibold">
@@ -185,6 +201,29 @@ function selectUser(user) {
     // Ustawia wybranego użytkownika (otwiera modal/popup)
     selectedUser.value = user;
 }
+
+const locateMe = () => {
+  if (!navigator.geolocation) {
+    alert("Twoja przeglądarka nie obsługuje geolokalizacji.");
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude, longitude } = pos.coords;
+      currentUserPosition.value = { lat: latitude, lng: longitude };
+      latLng.value = [latitude, longitude];
+      geolocationError.value = false;
+      console.log("📍 Zaktualizowano pozycję:", latitude, longitude);
+    },
+    (err) => {
+      geolocationError.value = true;
+      console.error("❌ Błąd geolokalizacji:", err);
+      alert("Nie udało się pobrać lokalizacji. Sprawdź uprawnienia.");
+    },
+    { enableHighAccuracy: true }
+  );
+};
+
 
 // 💡 FUNKCJA NAWIGACJI DO CHATU
 const startChat = async (friendId) => {

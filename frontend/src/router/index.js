@@ -14,6 +14,7 @@ import ChatRoom from '@/pages/ChatRoom.vue'
 import DiscoverView from '@/pages/DiscoverView.vue'
 import ResetPassword from '@/pages/ResetPassword.vue'
 import Friends from '@/pages/Friends.vue'
+import SetLocationView from '@/pages/SetLocationView.vue'
 import NotFound from '@/pages/NotFound.vue'
 
 const routes = [
@@ -32,6 +33,12 @@ const routes = [
   { path: '/ranking', name: 'Ranking', component: Ranking, meta: { requiresAuth: true, title: 'Ranking' } },
   { path: '/odkrywaj', name: 'Odkrywaj', component: DiscoverView, meta: { requiresAuth: true, title: 'Odkrywaj' } },
   { path: '/znajomi', name: 'Znajomi', component: Friends, meta: { requiresAuth: true } },
+    { 
+    path: '/ustaw-lokalizacje', 
+    name: 'UstawLokalizacje', 
+    component: SetLocationView, 
+    meta: { requiresAuth: true, title: 'Ustaw lokalizację' } 
+  },
   { path: '/:pathMatch(.*)*', name: 'Nie-znaleziono', component: NotFound, meta: { title: 'Nie znaleziono'}}
 ]
 

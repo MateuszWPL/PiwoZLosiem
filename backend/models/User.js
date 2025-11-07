@@ -9,6 +9,11 @@ const userSchema = new mongoose.Schema({
   miasto: { type: String },
   plec: { type: String },
   isProfileComplete: { type: Boolean, default: false },
+  location: {
+    latitude: { type: Number, default: null },
+    longitude: { type: Number, default: null },
+    address: { type: String, default: '' }
+  },
   status: { type: String, default: "available" },
   bio: { type: String, default: '' },
   photoUrl: { type: String, default: null },
