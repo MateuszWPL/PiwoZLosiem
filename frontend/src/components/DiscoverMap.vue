@@ -160,6 +160,7 @@ const latLng = ref([0, 0]);
 const selectedUser = ref(null);
 const router = useRouter();
 let locationUpdateTimer = null;
+let locationWatchId = null;
 
 function selectUser(user) {
     selectedUser.value = user;
@@ -319,7 +320,7 @@ onMounted(async () => {
     updateRangeProgress(distanceInMeters.value);
 
     if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(position => {
+        locationWatchId = navigator.geolocation.watchPosition(position => {
             const { latitude, longitude } = position.coords;
             currentUserPosition.value = { lat: latitude, lng: longitude };
             geolocationError.value = false;
@@ -342,9 +343,13 @@ onUnmounted(() => {
     if (locationUpdateTimer) {
         clearTimeout(locationUpdateTimer);
     }
+    
+    if (locationWatchId) {
+        navigator.geolocation.clearWatch(locationWatchId);
+        console.log("🛰️ Zatrzymano śledzenie lokalizacji.");
+    }
 });
 </script>
-
 <style>
 .custom-marker-icon {
   background-color: #f97316;
