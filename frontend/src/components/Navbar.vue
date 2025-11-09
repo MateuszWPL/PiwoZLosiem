@@ -351,13 +351,22 @@ import { ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import NotificationDropdown from './NotificationDropdown.vue'
 import SvgIcon from './svgIcons/SvgIcon.vue'
+import { useSocket } from '@/composables/socketService.js' 
 
 const router = useRouter()
 const menuOpen = ref(false)
 
+
+const { disconnectSocket } = useSocket()
+
 const logout = () => {
-  localStorage.removeItem('token')
-  router.push('/logowanie')
+  console.log("Wylogowywanie i rozłączanie socketa...");
+
+
+  disconnectSocket()
+
+  localStorage.removeItem('token')
+  router.push('/logowanie')
 }
 </script>
 
