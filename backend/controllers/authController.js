@@ -56,6 +56,7 @@ export const loginUser = async (req, res) => {
       email: user.email,
       imie: user.imie, // ✅ dodaj imię
       nazwisko: user.nazwisko, // ✅ dodaj nazwisko
+      photoUrl: user.photoUrl || '/images/defaultAvatar.png',
       isProfileComplete: user.isProfileComplete,
       token,
     });

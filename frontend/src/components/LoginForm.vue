@@ -93,11 +93,13 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from '@/api/api.js'
 import FormHeading from '../components/FormHeading.vue'
+import { useChatStore } from '@/stores/chatStore.js'
 
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
 const router = useRouter()
+const chatStore = useChatStore()
 
 const submit = async () => {
   errorMessage.value = ''
@@ -108,6 +110,7 @@ const submit = async () => {
     })
 
     localStorage.setItem('token', res.data.token)
+    chatStore.setMyAvatar(res.data.photoUrl)
 
     if (!res.data.isProfileComplete) {
       router.push('/rejestracja-uzupelnienie')

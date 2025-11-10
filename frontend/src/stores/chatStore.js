@@ -7,6 +7,12 @@ export const useChatStore = defineStore('chat', () => {
     const chats = ref([]);
     const loading = ref(false);
     const error = ref(null);
+    const myAvatar = ref(localStorage.getItem('photoUrl') || '/images/defaultAvatar.png');
+
+    const setMyAvatar = (url) => {
+    myAvatar.value = url || '/images/defaultAvatar.png';
+    localStorage.setItem('photoUrl', myAvatar.value);
+  };
 
     // 🔍 Odczyt userId z tokena JWT
     const getUserIdFromToken = (token) => {
@@ -162,7 +168,7 @@ const fetchChats = async () => {
           typeof other === 'object'
             ? `${other.imie || ''} ${other.nazwisko || ''}`.trim() || 'Nowa rozmowa'
             : 'Nowa rozmowa',
-        photoUrl: (other && other.photoUrl) || 'https://placehold.co/50x50',
+        photoUrl: (other && other.photoUrl) || defaultAvatar,
         lastMessage: '',
         time: '',
         participants: conv.participants || [],
@@ -286,5 +292,7 @@ const fetchChats = async () => {
         getCurrentUserId,
         setupSocketListeners,
         getCurrentUserImie, 
+        myAvatar,
+        setMyAvatar,
       };
 });
