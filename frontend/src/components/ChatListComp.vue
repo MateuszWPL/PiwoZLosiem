@@ -13,7 +13,7 @@
     >
       <div class="flex items-center gap-3">
         <img :src="chat.photoUrl ? `${chat.photoUrl}` : '/images/defaultAvatar.png'" class="w-12 h-12 rounded-full object-cover"/>
-        <div>
+        <div class="flex flex-col min-w-0">
           <div class="font-semibold text-white">{{ chat.name }}</div>
           <div class="text-secondaryGold text-sm truncate">
             {{ chat.lastMessage }}
