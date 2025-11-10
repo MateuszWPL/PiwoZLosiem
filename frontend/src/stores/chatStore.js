@@ -102,7 +102,7 @@ const fetchChats = async () => {
             }
             else
             {
-              photUrl = defaultAvatar
+              photoUrl = defaultAvatar
             }
           }
           //console.log(photoUrl);
