@@ -283,10 +283,12 @@ function sendMessage() {
   }
 
   .safe-area-top {
-    padding-top: env(safe-area-inset-top);
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-top: max(1rem, constant(safe-area-inset-top));
   }
 
   .safe-area-bottom {
-    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-bottom: max(1rem, constant(safe-area-inset-bottom));
   }
 </style>
