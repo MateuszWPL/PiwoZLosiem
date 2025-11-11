@@ -138,12 +138,15 @@ const submit = async () => {
       password: password.value,
     })
 
+    console.log('odp z api:', res.data)
     localStorage.setItem('token', res.data.token)
 
     if (!res.data.isProfileComplete) {
       router.push('/rejestracja-uzupelnienie')
+      console.log("Pushowanie do uzupełnienia")
     } else {
       router.push('/dashboard')
+      console.log("Pushowanie do dashboard")
     }
   } catch (error) {
     errorMessage.value = error.response?.data?.message || 'Wystąpił błąd przy rejestracji.'

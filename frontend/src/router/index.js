@@ -50,7 +50,7 @@ router.beforeEach((to, from, next) => {
     return next({ name: 'Logowanie' });
   }
 
-  if ((to.name === 'Logowanie' || to.name === 'Rejestracja' || to.name === 'RejestracjaUzupelnienie') && token) {
+  if ((to.name === 'Logowanie' || to.name === 'Rejestracja') && token) {
      return next({ name: 'Dashboard' });
   }
   next();
