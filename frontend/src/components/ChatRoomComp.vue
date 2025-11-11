@@ -1,7 +1,8 @@
 <template>
-  <div class="flex flex-col h-full w-full min-w-0"
+  <div class="flex flex-col h-screen w-full min-w-0 mobile-container"
   :class="isMobile ? 'bg-gradient-to-b from-primaryGreen/0 to-primaryGreen/50' : ''"  v-if="chat">
-    <div class="flex items-center gap-3 p-4 border-b border-secondaryGreen flex-shrink-0 min-w-0">
+    
+    <div class="flex items-center gap-3 p-4 border-b border-secondaryGreen flex-shrink-0 safe-area-top">
       <button @click="$emit('back')" class="p-2 rounded-full hover:bg-primaryGreen/50 xl:hidden">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -17,11 +18,11 @@
 
     <div
       ref="messagesContainer"
-      class="flex-1 overflow-y-auto p-4 space-y-3 min-w-0 scrollbar-thin scrollbar-thumb-primaryOrange scrollbar-track-tertiaryGreen"
-      style="scroll-behavior: smooth; max-height: calc(100vh - 240px);"
+      class="flex-1 min-h-0 overflow-y-auto p-4 space-y-3 min-w-0 scrollbar-thin scrollbar-thumb-primaryOrange scrollbar-track-tertiaryGreen"
+      style="scroll-behavior: smooth;"
     >
 
-     <div v-if="!chat.messages || chat.messages.length === 0" class="flex flex-col items-center justify-center h-full text-center py-8">
+      <div v-if="!chat.messages || chat.messages.length === 0" class="flex flex-col items-center justify-center h-full text-center py-8">
         <div class="text-secondaryGold text-xl mb-2">🍻</div>
         <div class="text-secondaryGold text-lg font-semibold">
             Nie ma lepszego początku rozmowy niż "Idziemy na piwo?" 🍺
@@ -68,7 +69,7 @@
       </div>
     </div>
 
-    <div class="p-4 flex items-center gap-2 border-t border-secondaryGreen flex-shrink-0 min-w-0">
+    <div class="p-4 flex items-center gap-2 border-t border-secondaryGreen flex-shrink-0 min-w-0 safe-area-bottom">
       <input
         v-model="newMessage"
         type="text"
@@ -199,7 +200,6 @@ onMounted(() => {
 
 // wyczyszczenie listenerów i opcjonalne "leave"
 onUnmounted(() => {
-  window.removeEventListener('resize', checkIsMobile)
   if (!socket) return
   socket.off('new_message', onNewMessage)
   socket.off('joined_conversation', onJoinedConversation)
@@ -210,6 +210,8 @@ onUnmounted(() => {
   if (convId) {
     socket.emit('leave_conversation', { conversationId: convId })
   }
+
+  window.removeEventListener('resize', checkIsMobile)
 })
 
 // obserwuj zmiany chat.messages i przewijaj na dół
@@ -275,6 +277,21 @@ function sendMessage() {
 
 }
 </script>
-<style scoped>
 
+<style scoped>
+.mobile-container {
+  height: 100vh;
+  height: 100dvh;
+  height: -webkit-fill-available;
+}
+
+.safe-area-top {
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-top: max(16px, constant(safe-area-inset-top));
+}
+
+.safe-area-bottom {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  padding-bottom: max(16px, constant(safe-area-inset-bottom));
+}
 </style>
