@@ -1,7 +1,7 @@
 <template>
-  <div class="flex flex-col h-full w-full min-w-0"
+  <div class="flex flex-col h-full w-full min-w-0 mobile-container"
   :class="isMobile ? 'bg-gradient-to-b from-primaryGreen/0 to-primaryGreen/50' : ''"  v-if="chat">
-    <div class="flex items-center gap-3 p-4 border-b border-secondaryGreen flex-shrink-0">
+    <div class="flex items-center gap-3 p-4 border-b border-secondaryGreen flex-shrink-0 min-w-0 safe-area-top">
       <button @click="$emit('back')" class="p-2 rounded-full hover:bg-primaryGreen/50 xl:hidden">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -68,7 +68,7 @@
       </div>
     </div>
 
-    <div class="mt-auto p-4 flex items-center gap-2 border-t border-secondaryGreen flex-shrink-0 min-w-0">
+    <div class="mt-auto p-4 flex items-center gap-2 border-t border-secondaryGreen flex-shrink-0 min-w-0 safe-area-bottom">
       <input
         v-model="newMessage"
         type="text"
@@ -199,6 +199,7 @@ onMounted(() => {
 
 // wyczyszczenie listenerów i opcjonalne "leave"
 onUnmounted(() => {
+  window.removeEventListener('resize', checkIsMobile)
   if (!socket) return
   socket.off('new_message', onNewMessage)
   socket.off('joined_conversation', onJoinedConversation)
@@ -274,3 +275,18 @@ function sendMessage() {
 
 }
 </script>
+<style scoped>
+  .mobile-container {
+    height: 100vh;
+    height: 100dvh;
+    height: -webkit-fill-available;
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+</style>
