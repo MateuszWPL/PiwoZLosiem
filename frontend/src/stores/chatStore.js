@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { getSocket, initSocket } from '../plugins/socket';
 import axios from '@/api/api.js'
 
@@ -10,9 +10,9 @@ export const useChatStore = defineStore('chat', () => {
     const myAvatar = ref(localStorage.getItem('photoUrl') || '/images/defaultAvatar.png');
 
     const setMyAvatar = (url) => {
-    myAvatar.value = url || '/images/defaultAvatar.png';
-    localStorage.setItem('photoUrl', myAvatar.value);
-  };
+        myAvatar.value = url || '/images/defaultAvatar.png';
+        localStorage.setItem('photoUrl', myAvatar.value);
+    };
 
     // 🔍 Odczyt userId z tokena JWT
     const getUserIdFromToken = (token) => {
@@ -32,7 +32,6 @@ export const useChatStore = defineStore('chat', () => {
     // Funkcja do pobierania lokalnego imienia (do wyświetlania "Ty")
     const getCurrentUserImie = () => localStorage.getItem('imie') || 'Ty';
 
-
     // 🧠 Połączenie z Socket.IO i nasłuchiwanie na nowe wiadomości
     const setupSocketListeners = () => {
         const socket = getSocket() || initSocket();
@@ -40,11 +39,9 @@ export const useChatStore = defineStore('chat', () => {
         socket.on('newMessage', (message) => {
             console.log('📩 Nowa wiadomość:', message);
 
-            // Socket.IO message musi mieć chat.id w message.chatId/conversationId
             const chat = chats.value.find(c => String(c.id) === String(message.chatId || message.conversationId));
             
             if (chat) {
-                // Konwertujemy Socket.IO message na lokalną strukturę dla addMessage
                 const msg = {
                     id: message._id || Date.now(),
                     userId: String(message.sender?._id || message.senderId),
@@ -54,135 +51,122 @@ export const useChatStore = defineStore('chat', () => {
                 };
                 
                 addMessage(chat.id, msg);
-
-                // 🔸 Jeśli wiadomość nie jest od nas — oznacz jako nieprzeczytaną
-                const myId = getCurrentUserId();
-                if (msg.userId !== myId) {
-                    chat.unread = true;
-                }
-
-                // 🔼 Przenieś czat na górę listy
-                chats.value = [chat, ...chats.value.filter(c => c.id !== chat.id)];
             } else {
                 console.warn('⚠️ Otrzymano wiadomość do nieznanego czatu:', message.chatId);
             }
         });
     };
 
-// const BASE_URL = 'http://localhost:5000'; // lub z .env
-const defaultAvatar = '/images/defaultAvatar.png';
+    const defaultAvatar = '/images/defaultAvatar.png';
 
-const fetchChats = async () => {
-  loading.value = true;
-  error.value = null;
+    const fetchChats = async () => {
+        loading.value = true;
+        error.value = null;
 
-  try {
-    const token = localStorage.getItem('token');
-    const res = await axios.get(`/chat/conversations`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`/chat/conversations`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
-    const meId = getUserIdFromToken(token);
+            const meId = getUserIdFromToken(token);
 
-    chats.value = Array.isArray(res.data)
-      ? res.data.map((conv) => {
-          const participants = conv.participants || [];
-          const lastMsg = conv.lastMessage || null;
+            chats.value = Array.isArray(res.data)
+                ? res.data.map((conv) => {
+                    const participants = conv.participants || [];
+                    const lastMsg = conv.lastMessage || null;
 
-          let name = '';
-          let photoUrl = defaultAvatar;
+                    let name = '';
+                    let photoUrl = defaultAvatar;
 
-          if (conv.isGroup) {
-            name = conv.groupName || 'Grupa';
-            photoUrl = 'https://placehold.co/50x50?text=GR';
-          } else {
-            const other = participants.find((p) => String(p._id) !== String(meId));
-            name =
-              other && (other.imie || other.nazwisko)
-                ? `${other.imie || ''} ${other.nazwisko || ''}`.trim()
-                : 'Nieznajomy';
+                    if (conv.isGroup) {
+                        name = conv.groupName || 'Grupa';
+                        photoUrl = 'https://placehold.co/50x50?text=GR';
+                    } else {
+                        const other = participants.find((p) => String(p._id) !== String(meId));
+                        name =
+                            other && (other.imie || other.nazwisko)
+                                ? `${other.imie || ''} ${other.nazwisko || ''}`.trim()
+                                : 'Nieznajomy';
+                        // budowanie pełnego URL do avatara
+                        if (other?.photoUrl) {
+                            photoUrl = other.photoUrl;
+                        } else {
+                            photoUrl = defaultAvatar;
+                        }
+                    }
 
-            // budowanie pełnego URL do avatara
-            if (other?.photoUrl) {
-              photoUrl = other.photoUrl
-            }
-            else
-            {
-              photoUrl = defaultAvatar
-            }
-          }
-          //console.log(photoUrl);
+                    const lastSender =
+                        typeof lastMsg?.sender === 'object'
+                            ? `${lastMsg.sender.imie || ''} ${lastMsg.sender.nazwisko || ''}`.trim()
+                            : 'Ktoś';
 
-          const lastSender =
-            typeof lastMsg?.sender === 'object'
-              ? `${lastMsg.sender.imie || ''} ${lastMsg.sender.nazwisko || ''}`.trim()
-              : 'Ktoś';
-
-          return {
-            id: conv._id || conv.id || String(Date.now()),
-            name,
-            photoUrl,
-            lastMessage: lastMsg
-              ? `${lastSender}: ${lastMsg.text ?? ''}`
-              : 'Brak wiadomości',
-            time: conv.updatedAt
-              ? new Date(conv.updatedAt).toLocaleTimeString('pl-PL', {
-                  hour: '2-digit',
-                  minute: '2-digit',
+                    return {
+                        id: conv._id || conv.id || String(Date.now()),
+                        name,
+                        photoUrl,
+                        lastMessage: lastMsg
+                            ? `${lastSender}: ${lastMsg.text ?? ''}`
+                            : 'Brak wiadomości',
+                        time: conv.updatedAt
+                            ? new Date(conv.updatedAt).toLocaleTimeString('pl-PL', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                            })
+                            : '',
+                        participants,
+                        messages: [],
+                        isGroup: conv.isGroup || false,
+                        groupName: conv.groupName || null,
+                        unread: conv.hasUnread || conv.unreadCount > 0,
+                        unreadCount: conv.unreadCount || 0,
+                    };
                 })
-              : '',
-            participants,
-            messages: [],
-            isGroup: conv.isGroup || false,
-            groupName: conv.groupName || null,
-          };
-        })
-      : [];
-  } catch (err) {
-    console.error('❌ Błąd pobierania czatów:', err);
-    error.value =
-      err?.response?.data?.error || err?.message || 'Nie udało się pobrać rozmów';
-  } finally {
-    loading.value = false;
-  }
-};
+                : [];
 
+        } catch (err) {
+            console.error('❌ Błąd pobierania czatów:', err);
+            error.value = err?.response?.data?.error || err?.message || 'Nie udało się pobrać rozmów';
+        } finally {
+            loading.value = false;
+        }
+    };
 
     // 🆕 Tworzenie nowej rozmowy
     const createConversation = async (partnerId) => {
         try {
-      const token = localStorage.getItem('token');
-      const res = await axios.post(
-        '/chat/conversations',
-        { partnerId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+            const token = localStorage.getItem('token');
+            const res = await axios.post(
+                '/chat/conversations',
+                { partnerId },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
 
-      const conv = res.data;
-      const meId = getUserIdFromToken(token);
-      const other = (conv.participants || []).find((p) => String(p._id || p) !== String(meId));
+            const conv = res.data;
+            const meId = getUserIdFromToken(token);
+            const other = (conv.participants || []).find((p) => String(p._id || p) !== String(meId));
 
-      const newChat = {
-        id: conv._id,
-        name:
-          typeof other === 'object'
-            ? `${other.imie || ''} ${other.nazwisko || ''}`.trim() || 'Nowa rozmowa'
-            : 'Nowa rozmowa',
-        photoUrl: (other && other.photoUrl) || defaultAvatar,
-        lastMessage: '',
-        time: '',
-        participants: conv.participants || [],
-        messages: [],
-        isGroup: conv.isGroup || false,
-        groupName: conv.groupName || null,
-      };
+            const newChat = {
+                id: conv._id,
+                name: typeof other === 'object'
+                    ? `${other.imie || ''} ${other.nazwisko || ''}`.trim() || 'Nowa rozmowa'
+                    : 'Nowa rozmowa',
+                photoUrl: (other && other.photoUrl) || defaultAvatar,
+                lastMessage: '',
+                time: '',
+                participants: conv.participants || [],
+                messages: [],
+                isGroup: conv.isGroup || false,
+                groupName: conv.groupName || null,
+                unread: false,
+            };
 
-      chats.value.unshift(newChat);
-      return conv;
-    } catch (err) {
-      console.error('❌ Błąd tworzenia rozmowy:', err);
-      throw err;
-    }
+            chats.value.unshift(newChat);
+            return conv;
+        } catch (err) {
+            console.error('❌ Błąd tworzenia rozmowy:', err);
+            throw err;
+        }
     };
 
     // 🔎 Znajdź czat po ID
@@ -202,30 +186,32 @@ const fetchChats = async () => {
         
         let senderName = 'Ktoś';
 
-        // 1. Określenie nazwy nadawcy dla lastMessage
+        // Określenie nazwy nadawcy dla lastMessage
         if (String(message.userId) === String(myId)) {
-            // To jest nasza wiadomość (local echo)
             senderName = getCurrentUserImie(); 
         } else {
-            // Szukamy danych nadawcy w liście uczestników rozmowy, by ustalić imię/nazwisko
             const participant = chat.participants.find(p => String(p._id) === String(message.userId));
             if (participant) {
-                 senderName = `${participant.imie || ''} ${participant.nazwisko || ''}`.trim() || 'Ktoś';
+                senderName = `${participant.imie || ''} ${participant.nazwisko || ''}`.trim() || 'Ktoś';
             }
         }
         
-        // 2. Dodanie wiadomości do listy (używa już poprawnie userId)
+        // Dodanie wiadomości do listy
         chat.messages.push(message);
         
-        // 3. Aktualizacja lastMessage
+        // Aktualizacja lastMessage
         const prefix = (String(message.userId) === String(myId)) ? 'Ty' : senderName;
         chat.lastMessage = `${prefix}: ${message.text || ''}`;
 
-        chat.time =
-            message.time ||
-            new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
-            
-        // 4. Przenieś na górę
+        chat.time = message.time || new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+        
+        // Jeśli wiadomość nie jest od nas oznacz konwersację jako nieprzeczytaną
+        if (String(message.userId) !== String(myId)) {
+            chat.unread = true;
+            chat.unreadCount = (chat.unreadCount || 0) + 1;
+        }
+        
+        // Przenieś na górę
         chats.value = [chat, ...chats.value.filter(c => c.id !== chat.id)];
     };
 
@@ -244,17 +230,17 @@ const fetchChats = async () => {
             const chat = getChatById(conversationId);
             const myId = getCurrentUserId();
             if (chat) {
-              const chatPhotoUrl = chat.photoUrl;
+                const chatPhotoUrl = chat.photoUrl;
                 chat.messages = messages.map((m) => {
                     const senderId = String(m.sender._id);
                     let messageAvatarUrl = undefined;
                     if (senderId !== myId) {
-                      messageAvatarUrl = chatPhotoUrl;
-                      
-                      if (chat.isGroup) {
-                          const senderParticipant = chat.participants.find(p => String(p._id) === senderId);
-                          messageAvatarUrl = senderParticipant?.photoUrl || chatPhotoUrl;
-                      }
+                        messageAvatarUrl = chatPhotoUrl;
+                        
+                        if (chat.isGroup) {
+                            const senderParticipant = chat.participants.find(p => String(p._id) === senderId);
+                            messageAvatarUrl = senderParticipant?.photoUrl || chatPhotoUrl;
+                        }
                     }
                     return{
                         id: m._id,
@@ -275,10 +261,58 @@ const fetchChats = async () => {
             return [];
         }
     };
+E
+    const markConversationAsRead = async (conversationId) => {
+  try {
+      const token = localStorage.getItem('token');
+      
+      const response = await axios.post(`/chat/conversations/${conversationId}/read`, {}, {
+          headers: { Authorization: `Bearer ${token}` },
+      });
+
+
+      const chat = chats.value.find(c => String(c.id) === String(conversationId));
+      if (chat) {
+          chat.unread = false;
+          chat.unreadCount = 0;
+      } else {
+          console.log('❌ Nie znaleziono czatu o ID:', conversationId);
+      }
+  } catch (err) {
+      console.error('❌ Błąd oznaczania jako przeczytane:', err);
+      const chat = chats.value.find(c => String(c.id) === String(conversationId));
+      if (chat) {
+          chat.unread = false;
+          chat.unreadCount = 0;
+      }
+  }
+};
+
 
     const setChats = (arr) => {
         chats.value = Array.isArray(arr) ? arr : [];
     };
+
+    const unreadConversationsCount = computed(() => {
+        return chats.value.filter(chat => chat.unread).length;
+    });
+
+    const totalUnreadMessagesCount = computed(() => {
+        return chats.value.reduce((total, chat) => {
+            return total + (chat.unreadCount || (chat.unread ? 1 : 0));
+        }, 0);
+    });
+
+    const updateUnreadStatus = (conversationId, hasUnread) => {
+        const chat = chats.value.find(c => String(c.id) === String(conversationId));
+        if (chat) {
+            chat.unread = hasUnread;
+            if (hasUnread) {
+                chat.unreadCount = (chat.unreadCount || 0) + 1;
+            }
+        }
+    };
+
     return {
         chats,
         loading,
@@ -294,5 +328,9 @@ const fetchChats = async () => {
         getCurrentUserImie, 
         myAvatar,
         setMyAvatar,
-      };
+        unreadConversationsCount,
+        totalUnreadMessagesCount, 
+        markConversationAsRead,
+        updateUnreadStatus,
+    };
 });

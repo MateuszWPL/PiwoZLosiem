@@ -22,6 +22,16 @@ const ConversationSchema = new mongoose.Schema(
       ref: "Message",
       default: null,
     },
+    lastRead: {
+    type: Map,
+    of: Date,
+    default: {}
+  },
+  unreadCounts: {
+    type: Map,
+    of: Number,
+    default: {}
+  }
   },
   { timestamps: true }
 );

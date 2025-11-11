@@ -101,15 +101,21 @@ onMounted(async () => {
   // Jeśli jest /chat/:id → otwórz czat
   if (route.params.id) {
     const chat = chats.value.find(c => c.id === route.params.id || c._id === route.params.id);
-    if (chat) selectedChat.value = chat;
+    if (chat) {
+      selectedChat.value = chat;
+      await chatStore.markConversationAsRead(chat.id || chat._id);
+    }
   }
 });
 
 // Obserwuj zmianę adresu (np. z /chat → /chat/:id)
-watch(() => route.params.id, (newId) => {
+watch(() => route.params.id, async (newId) => {
   if (newId) {
     const chat = chats.value.find(c => c.id === newId || c._id === newId);
-    if (chat) selectedChat.value = chat;
+    if (chat) {
+      selectedChat.value = chat;
+      await chatStore.markConversationAsRead(chat.id || chat._id);
+    }
   } else {
     selectedChat.value = null;
   }
@@ -123,8 +129,11 @@ const filteredChats = computed(() => {
   );
 });
 
-function goToChatRoom(chat) {
+async function goToChatRoom(chat) {
+  
   const isDesktop = window.innerWidth >= 1280;
+
+  await chatStore.markConversationAsRead(chat.id || chat._id);
 
   if (isDesktop) {
     // Desktop → zostajemy na /chat, tylko otwieramy czat po prawej
