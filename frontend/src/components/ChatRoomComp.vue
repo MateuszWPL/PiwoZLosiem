@@ -68,7 +68,7 @@
       </div>
     </div>
 
-    <div class="mt-auto p-4 flex items-center gap-2 border-t border-secondaryGreen flex-shrink-0 min-w-0">
+    <div class="p-4 flex items-center gap-2 border-t border-secondaryGreen flex-shrink-0 min-w-0">
       <input
         v-model="newMessage"
         type="text"
