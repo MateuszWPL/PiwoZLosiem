@@ -261,7 +261,7 @@ export const useChatStore = defineStore('chat', () => {
             return [];
         }
     };
-E
+
     const markConversationAsRead = async (conversationId) => {
   try {
       const token = localStorage.getItem('token');
