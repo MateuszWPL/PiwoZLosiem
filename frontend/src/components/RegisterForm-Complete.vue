@@ -103,13 +103,21 @@ const errorMessage = ref('')
 const { getLocation } = useCurrentLocation()
 
 const validateForm = () => {
-  if (!imie.value.trim()) return 'Podaj imię.'
-  if (!nazwisko.value.trim()) return 'Podaj nazwisko.'
-  if (!wiek.value || isNaN(wiek.value)) return 'Podaj wiek.'
-  if (wiek.value < 18) return 'Musisz mieć co najmniej 18 lat.'
-  if (wiek.value > 120) return 'Podaj realistyczny wiek (max 120 lat).'
-  if (!miasto.value.trim()) return 'Podaj miasto.'
-  if (!plec.value) return 'Wybierz płeć.'
+  const nameRegex = /^[a-zA-ZĄĆĘŁŃÓŚŹŻą ćęłńóśźż]+(?:[ -][a-zA-ZĄĆĘŁŃÓŚŹŻą ćęłńóśźż]+)*$/;
+  const trimmedImie = imie.value.trim();
+  if (!trimmedImie) return 'Podaj imię.';
+  if (trimmedImie.length < 3) return 'Imię musi mieć co najmniej 3 znaki.';
+  if (!nameRegex.test(trimmedImie)) return 'Imię może zawierać tylko litery, spacje i myślniki.';
+  const trimmedNazwisko = nazwisko.value.trim();
+  if (!trimmedNazwisko) return 'Podaj nazwisko.';
+  if (trimmedNazwisko.length < 3) return 'Nazwisko musi mieć co najmniej 3 znaki.';
+  if (!nameRegex.test(trimmedNazwisko)) return 'Nazwisko może zawierać tylko litery, spacje i myślniki.';
+  if (!wiek.value || isNaN(wiek.value)) return 'Podaj wiek.';
+  if (wiek.value < 18) return 'Musisz mieć co najmniej 18 lat.';
+  if (wiek.value > 120) return 'Podaj realistyczny wiek (max 120 lat).';
+  if (!miasto.value.trim()) return 'Podaj miasto.';
+  if (!plec.value) return 'Wybierz płeć.';
+  
   return null
 }
 
