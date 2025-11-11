@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 
 // 🔒 Token zawiera tylko ID użytkownika
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "2h" });
 };
 
 // 🧩 Rejestracja użytkownika
