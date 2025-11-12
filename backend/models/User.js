@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
   plec: { type: String },
   isProfileComplete: { type: Boolean, default: false },
   status: { type: String, default: "available" },
+  prevStatus: { type: String, default: "available" },
   bio: { type: String, default: '' },
   photoUrl: { type: String, default: null },
   favoriteBeers: { type: [String], default: [] },

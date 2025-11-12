@@ -16,8 +16,14 @@ export const handleConnection = (io, socket, onlineUsers) => { // 💡 onlineUse
         // Wykonujemy raz przy połączeniu
         (async () => {
             try {
+                const user = await User.findById(userId);
+
+                const prevStatus = user.prevStatus || "available";
+
                 // Ustawiamy isOnline: true przy każdym pomyślnym połączeniu
-                await User.findByIdAndUpdate(userId, { isOnline: true }); 
+                await User.findByIdAndUpdate(userId, { isOnline: true, status: prevStatus }); 
+
+                socket.emit("user_status", { status: prevStatus });
                 
                 // Emitujemy globalny event user_online
                 io.emit("user_online", { userId: userId, username: socket.user.username });

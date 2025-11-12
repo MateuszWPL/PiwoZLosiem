@@ -1,8 +1,10 @@
 import { ref } from 'vue';
 import { io } from "socket.io-client";
+import { user } from './fetchUserData';
 
 const socket = ref(null);
 const onlineUsers = ref([]); 
+const userStatus = ref(null);
 
 const VITE_SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
 
@@ -27,6 +29,9 @@ const initializeSocket = (token) => {
 
         newSocket.on('updateUserList', (users) => {
             onlineUsers.value = users;
+        });
+        newSocket.on("user_status", (data) => {
+            userStatus.value = data.status;
         });
 
     } else {
@@ -56,6 +61,7 @@ export function useSocket() {
         onlineUsers,
         initializeSocket,
         disconnectSocket,
-        updateLocation
+        updateLocation,
+        userStatus,
     };
 }

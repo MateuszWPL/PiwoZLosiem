@@ -127,7 +127,7 @@
 
 <script setup>
 import Navbar from '@/components/Navbar.vue'
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import axios from '@/api/api.js'
 import { useNotifications } from '@/composables/useNotifications'
 import StatusPopup from '@/components/ChangeStatusPopup.vue'
@@ -138,6 +138,7 @@ import { userRanking, fetchUserRanking } from '@/composables/fetchUserRanking.js
 import { user, fetchUserData } from '@/composables/fetchUserData'
 import { beerStats, fetchBeerStats } from '@/composables/fetchBeerStats'
 import { friendsCount, fetchFriendsCount } from '@/composables/fetchFriendsCount'
+import { useSocket } from '@/composables/socketService.js';
 
 const { addNotification } = useNotifications()
 const status = ref('')
@@ -145,6 +146,7 @@ const firstName = ref('')
 const lastName = ref('')
 const isStatusPopupVisible = ref(false)
 const token = localStorage.getItem('token')
+const { socket, userStatus, initializeSocket } = useSocket()
 
 const statusLabel = computed(() => {
   const current = statuses.find(s => s.value === status.value)
@@ -169,16 +171,23 @@ const updateStatus = async (newStatusValue) => {
 }
 
 onMounted(async () => {
+  initializeSocket(token);
+
   await Promise.all([
     fetchUserData(),
     fetchBeerStats(),
     fetchUserRanking('all')
   ])
 
-  status.value = user.value.status || ''
   await fetchUserData()
   await fetchBeerStats()
   await fetchUserRanking(user, userRanking, 'all')
   await fetchFriendsCount()
+
+  watch(userStatus, (newStatus) => {
+  if (newStatus) {
+    status.value = newStatus;
+  }
+}, { immediate: true });
 })
 </script>
