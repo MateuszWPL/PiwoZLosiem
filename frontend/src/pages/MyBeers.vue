@@ -223,38 +223,31 @@ const addBeer = async () => {
 
   beerDateError.value = ''
 
+  let date
   if (beerDate.value) {
-  const date = new Date(beerDate.value);
-  if (beerTime.value) {
-    const [hours, minutes] = beerTime.value.split(':');
-    date.setHours(hours, minutes, 0, 0);
+    date = new Date(beerDate.value)
+    if (beerTime.value) {
+      const [hours, minutes] = beerTime.value.split(':')
+      date.setHours(hours, minutes, 0, 0)
+    } else {
+      const now = new Date()
+      date.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds())
+    }
   } else {
-    const now = new Date();
-    date.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+    date = new Date()
+    if (beerTime.value) {
+      const [hours, minutes] = beerTime.value.split(':')
+      date.setHours(hours, minutes, 0, 0)
+    } 
   }
-  
-  const now = new Date();
 
+  const now = new Date()
   if (date > now) {
-    beerDateError.value = 'Data wypitego piwka nie może być z przyszłości 🍻';
-    return;
+    beerDateError.value = 'Data wypitego piwka nie może być z przyszłości 🍻'
+    return
   }
-}
-  let createdAt;
 
-  if (beerDate.value) {
-  const date = new Date(beerDate.value);
-  if (beerTime.value) {
-    const [hours, minutes] = beerTime.value.split(':');
-    date.setHours(hours, minutes, 0, 0);
-  } else {
-    const now = new Date();
-    date.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
-  }
-  createdAt = date.toISOString();
-} else {
-  createdAt = new Date().toISOString();
-}
+  const createdAt = date.toISOString()
 
   try {
     const token = localStorage.getItem('token')
