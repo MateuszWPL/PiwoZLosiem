@@ -52,14 +52,19 @@
                       required />
                   </div>
                   <div class="mb-5">
-  <label class="block text-sm text-white mb-1" for="beerDate">Data</label>
-  <input id="beerDate" v-model="beerDate" type="date"
-    class="w-full rounded px-3 py-2 bg-neutral-800 text-white border border-neutral-700 focus:outline-none focus:border-primaryOrange" />
-  <p class="text-xs text-gray-400 mt-1">Jeśli nie podasz daty, zostanie użyta dzisiejsza.</p>
-  <p v-if="beerDateError" class="text-xs text-red-500 mt-1">
-    {{ beerDateError }}
-  </p>
-</div>
+                    <label class="block text-sm text-white mb-1" for="beerDate">Data i godzina</label>
+                    <div class="flex gap-2">
+                      <input id="beerDate" v-model="beerDate" type="date"
+                        class="w-1/2 rounded px-3 py-2 bg-neutral-800 text-white border border-neutral-700 focus:outline-none focus:border-primaryOrange" />
+                      <input id="beerTime" v-model="beerTime" type="time"
+                        class="w-1/2 rounded px-3 py-2 bg-neutral-800 text-white border border-neutral-700 focus:outline-none focus:border-primaryOrange" />
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Jeśli nie podasz daty, zostanie użyta dzisiejsza i obecna
+                      godzina.</p>
+                    <p v-if="beerDateError" class="text-xs text-red-500 mt-1">
+                      {{ beerDateError }}
+                    </p>
+                  </div>
 
                   <button type="submit"
                     class="w-full bg-primaryOrange hover:bg-primaryOrange/80 text-white font-semibold py-2 rounded transition">
@@ -209,23 +214,47 @@ const beerAmount = ref('')
 const beerType = ref('')
 const beerPlace = ref('')
 const beerDate = ref('')
+const beerTime = ref('')
 const beerDateError = ref('');
 const activeTab = ref('all')
 const showModal = ref(false)
 
 const addBeer = async () => {
-  
-  beerDateError.value = '' 
+
+  beerDateError.value = ''
 
   if (beerDate.value) {
-    const selectedDate = new Date(beerDate.value)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    if (selectedDate > today) {
-      beerDateError.value = 'Data wypitego piwka nie może być z przyszłości 🍻'
-      return
-    }
+  const date = new Date(beerDate.value);
+  if (beerTime.value) {
+    const [hours, minutes] = beerTime.value.split(':');
+    date.setHours(hours, minutes, 0, 0);
+  } else {
+    const now = new Date();
+    date.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
   }
+  
+  const now = new Date();
+
+  if (date > now) {
+    beerDateError.value = 'Data wypitego piwka nie może być z przyszłości 🍻';
+    return;
+  }
+}
+  let createdAt;
+
+  if (beerDate.value) {
+  const date = new Date(beerDate.value);
+  if (beerTime.value) {
+    const [hours, minutes] = beerTime.value.split(':');
+    date.setHours(hours, minutes, 0, 0);
+  } else {
+    const now = new Date();
+    date.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+  }
+  createdAt = date.toISOString();
+} else {
+  createdAt = new Date().toISOString();
+}
 
   try {
     const token = localStorage.getItem('token')
@@ -235,7 +264,7 @@ const addBeer = async () => {
         amount: beerAmount.value,
         type: beerType.value,
         place: beerPlace.value,
-        createdAt: beerDate.value || undefined,
+        createdAt,
       },
       {
         headers: {
@@ -250,6 +279,7 @@ const addBeer = async () => {
     beerType.value = ''
     beerPlace.value = ''
     beerDate.value = ''
+    beerTime.value = ''
     beerDateError.value = ''
 
     await fetchBeers()
