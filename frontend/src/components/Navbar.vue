@@ -376,7 +376,6 @@ const unreadConversationsCount = computed(() => {
 const { disconnectSocket } = useSocket()
 
 const logout = () => {
-  console.log("Wylogowywanie i rozłączanie socketa...");
   disconnectSocket()
   localStorage.removeItem('token')
   router.push('/logowanie')

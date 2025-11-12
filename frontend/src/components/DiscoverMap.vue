@@ -169,7 +169,6 @@ function selectUser(user) {
 const startChat = async (friendId) => {
     const token = localStorage.getItem('token');
     if (!token) {
-        console.error("❌ Brak tokena uwierzytelniającego.");
         return;
     }
     try {
@@ -279,7 +278,6 @@ const fetchUserData = async () => {
         };
         return token;
     } catch (err) {
-        console.error('Błąd pobierania danych użytkownika:', err);
         user.value = null;
     }
 };
@@ -294,7 +292,6 @@ watch(latLng, (newLatLng) => {
         const [latitude, longitude] = newLatLng;
 
         if (user.value && user.value._id) {
-            console.log(`⏱️ Wysyłam lokalizację po debouncingu: ${latitude}, ${longitude}`);
             updateLocation({
                 userId: user.value._id,
                 lat: latitude,
@@ -310,9 +307,7 @@ watch(latLng, (newLatLng) => {
 }, { deep: true }); 
 
 onMounted(async () => {
-    console.log("⏳ Inicjalizacja mapy...");
     const token = await fetchUserData();
-    console.log("✅ Dane użytkownika:", user.value);
 
     if (token && user.value) {
         initializeSocket(token);
@@ -346,7 +341,6 @@ onUnmounted(() => {
     
     if (locationWatchId) {
         navigator.geolocation.clearWatch(locationWatchId);
-        console.log("🛰️ Zatrzymano śledzenie lokalizacji.");
     }
 });
 </script>

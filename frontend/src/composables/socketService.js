@@ -8,29 +8,24 @@ const VITE_SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:500
 
 const initializeSocket = (token) => {
     if (socket.value && socket.value.connected) {
-        console.log("🔌 (Global) Socket już połączony.");
         return;
     }
 
     if (token) {
-        console.log("🔌 (Global) Tworzę nowe połączenie socket...");
         const newSocket = io(VITE_SOCKET_URL, {
             auth: { token }
         });
 
         newSocket.on("connect", () => {
-            console.log("🔌 (Global) Połączono z Socket.IO:", newSocket.id);
             socket.value = newSocket; 
         });
 
         newSocket.on("disconnect", () => {
-            console.log("👋 (Global) Rozłączono z Socket.IO");
             socket.value = null; 
             onlineUsers.value = []; 
         });
 
         newSocket.on('updateUserList', (users) => {
-            console.log("📡 (Global) Odebrano listę użytkowników:", users);
             onlineUsers.value = users;
         });
 
@@ -41,7 +36,6 @@ const initializeSocket = (token) => {
 
 const disconnectSocket = () => {
     if (socket.value) {
-        console.log("👋 (Global) Wymuszam rozłączenie socketa.");
         socket.value.disconnect();
         socket.value = null;
         onlineUsers.value = [];

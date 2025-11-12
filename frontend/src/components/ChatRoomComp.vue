@@ -137,7 +137,6 @@ const tryJoinConversation = () => {
   }
   const convId = chat.value?.id
   if (convId) {
-    console.log('🔗 dołączam do rozmowy', convId)
     socket.emit('join_conversation', { conversationId: convId })
   }
 }
@@ -155,7 +154,6 @@ const onNewMessage = (message) => {
   );
 
   if (senderId === currentUserId) {
-    console.log('Ignoruję własną wiadomość (local echo):', message.text);
     return
   }
   // dostosuj strukturę wiadomości do lokalnego modelu
@@ -193,7 +191,6 @@ onMounted(() => {
     socket.on('joined_conversation', onJoinedConversation)
     socket.on('eUrlrror_message', onErrorMessage)
   } else {
-    console.warn('Socket nie dostępny w ChatRoomComp')
   }
 })
 
@@ -226,7 +223,6 @@ watch(
   () => props.chatData?.id,
   (newId, oldId) => {
     if (newId && newId !== oldId) {
-      console.log('📩 Zmieniono czat — pobieram wiadomości dla:', newId)
       chatStore.fetchMessages(newId)
       tryJoinConversation() // dołącz do nowego pokoju socketowego
     }

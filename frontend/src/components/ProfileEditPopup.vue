@@ -289,7 +289,6 @@ async function onImageUpload(e) {
     if (res.ok && data.photo) {
       localForm.photo = data.photo
       previewImage.value = data.photo
-      console.log('Zdjęcie zapisane')
     } else {
       alert('Błąd: ' + (data.error || 'Nie udało się zapisać zdjęcia'))
     }
