@@ -51,7 +51,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import axios from "axios";
+import axios from '@/api/api.js'
 import FormHeading from "../components/FormHeading.vue";
 
 const route = useRoute();
@@ -85,7 +85,7 @@ const resetPassword = async () => {
 
   try {
     const response = await axios.post(
-      "http://localhost:5000/api/auth/reset-password",
+      "/auth/reset-password",
       {
         token: token.value,
         newPassword: password.value,
