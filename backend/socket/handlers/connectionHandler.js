@@ -20,10 +20,19 @@ export const handleConnection = (io, socket, onlineUsers) => { // 💡 onlineUse
 
                 const prevStatus = user.prevStatus || "available";
 
-                // Ustawiamy isOnline: true przy każdym pomyślnym połączeniu
-                await User.findByIdAndUpdate(userId, { isOnline: true, status: prevStatus }); 
+                const now = new Date();
+                const lastSeen = user.lastSeen ? new Date(user.lastSeen) : null;
+                const timeDiff = lastSeen ? now - lastSeen : null;
 
-                socket.emit("user_status", { status: prevStatus });
+                if (timeDiff > 5000) {
+                    await User.findByIdAndUpdate(userId, { prevStatus: user.status });
+                }
+                else{
+                    // Ustawiamy isOnline: true przy każdym pomyślnym połączeniu
+                    await User.findByIdAndUpdate(userId, { isOnline: true}); 
+                }   
+
+                socket.emit("user_status", { status: prevStatus  });
                 
                 // Emitujemy globalny event user_online
                 io.emit("user_online", { userId: userId, username: socket.user.username });

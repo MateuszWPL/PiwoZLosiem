@@ -176,13 +176,14 @@ onMounted(async () => {
   await Promise.all([
     fetchUserData(),
     fetchBeerStats(),
-    fetchUserRanking('all')
+    fetchUserRanking('all'),
+    fetchFriendsCount()
   ])
 
-  await fetchUserData()
-  await fetchBeerStats()
-  await fetchUserRanking(user, userRanking, 'all')
-  await fetchFriendsCount()
+  // await fetchUserData()
+  // await fetchBeerStats()
+  // await fetchUserRanking(user, userRanking, 'all')
+  // await fetchFriendsCount()
 
   watch(userStatus, (newStatus) => {
   if (newStatus) {
