@@ -179,9 +179,9 @@ onMounted(async () => {
     fetchUserRanking('all')
   ])
 
-  // await fetchUserData()
-  // await fetchBeerStats()
-  // await fetchUserRanking(user, userRanking, 'all')
+  await fetchUserData()
+  await fetchBeerStats()
+  await fetchUserRanking(user, userRanking, 'all')
   await fetchFriendsCount()
 
   watch(userStatus, (newStatus) => {
