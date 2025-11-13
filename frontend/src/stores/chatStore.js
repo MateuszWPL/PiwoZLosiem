@@ -14,7 +14,6 @@ export const useChatStore = defineStore('chat', () => {
         localStorage.setItem('photoUrl', myAvatar.value);
     };
 
-    // 🔍 Odczyt userId z tokena JWT
     const getUserIdFromToken = (token) => {
         if (!token) return null;
         try {
@@ -29,15 +28,13 @@ export const useChatStore = defineStore('chat', () => {
         return getUserIdFromToken(localStorage.getItem('token'));
     };
     
-    // Funkcja do pobierania lokalnego imienia (do wyświetlania "Ty")
     const getCurrentUserImie = () => localStorage.getItem('imie') || 'Ty';
 
-    // 🧠 Połączenie z Socket.IO i nasłuchiwanie na nowe wiadomości
     const setupSocketListeners = () => {
         const socket = getSocket() || initSocket();
 
         socket.on('newMessage', (message) => {
-            console.log('📩 Nowa wiadomość:', message);
+            console.log('Nowa wiadomość:', message);
 
             const chat = chats.value.find(c => String(c.id) === String(message.chatId || message.conversationId));
             
@@ -52,7 +49,7 @@ export const useChatStore = defineStore('chat', () => {
                 
                 addMessage(chat.id, msg);
             } else {
-                console.warn('⚠️ Otrzymano wiadomość do nieznanego czatu:', message.chatId);
+                console.warn('Otrzymano wiadomość do nieznanego czatu:', message.chatId);
             }
         });
     };
@@ -88,7 +85,7 @@ export const useChatStore = defineStore('chat', () => {
                             other && (other.imie || other.nazwisko)
                                 ? `${other.imie || ''} ${other.nazwisko || ''}`.trim()
                                 : 'Nieznajomy';
-                        // budowanie pełnego URL do avatara
+                        
                         if (other?.photoUrl) {
                             photoUrl = other.photoUrl;
                         } else {
@@ -125,14 +122,13 @@ export const useChatStore = defineStore('chat', () => {
                 : [];
 
         } catch (err) {
-            console.error('❌ Błąd pobierania czatów:', err);
+            console.error('Błąd pobierania czatów:', err);
             error.value = err?.response?.data?.error || err?.message || 'Nie udało się pobrać rozmów';
         } finally {
             loading.value = false;
         }
     };
 
-    // 🆕 Tworzenie nowej rozmowy
     const createConversation = async (partnerId) => {
         try {
             const token = localStorage.getItem('token');
@@ -164,18 +160,16 @@ export const useChatStore = defineStore('chat', () => {
             chats.value.unshift(newChat);
             return conv;
         } catch (err) {
-            console.error('❌ Błąd tworzenia rozmowy:', err);
+            console.error('Błąd tworzenia rozmowy:', err);
             throw err;
         }
     };
 
-    // 🔎 Znajdź czat po ID
     const getChatById = (id) => {
         if (!id) return null;
         return chats.value.find((c) => String(c.id) === String(id) || String(c._id) === String(id)) || null;
     };
 
-    // 💬 Dodanie wiadomości lokalnie
     const addMessage = (chatId, message) => {
         const chat = getChatById(chatId);
         if (!chat) return;
@@ -186,7 +180,6 @@ export const useChatStore = defineStore('chat', () => {
         
         let senderName = 'Ktoś';
 
-        // Określenie nazwy nadawcy dla lastMessage
         if (String(message.userId) === String(myId)) {
             senderName = getCurrentUserImie(); 
         } else {
@@ -196,22 +189,18 @@ export const useChatStore = defineStore('chat', () => {
             }
         }
         
-        // Dodanie wiadomości do listy
         chat.messages.push(message);
         
-        // Aktualizacja lastMessage
         const prefix = (String(message.userId) === String(myId)) ? 'Ty' : senderName;
         chat.lastMessage = `${prefix}: ${message.text || ''}`;
 
         chat.time = message.time || new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
         
-        // Jeśli wiadomość nie jest od nas oznacz konwersację jako nieprzeczytaną
         if (String(message.userId) !== String(myId)) {
             chat.unread = true;
             chat.unreadCount = (chat.unreadCount || 0) + 1;
         }
         
-        // Przenieś na górę
         chats.value = [chat, ...chats.value.filter(c => c.id !== chat.id)];
     };
 
@@ -225,7 +214,7 @@ export const useChatStore = defineStore('chat', () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            const messages = (res.data?.messages || []).reverse(); // od najstarszej do najnowszej
+            const messages = (res.data?.messages || []).reverse();
 
             const chat = getChatById(conversationId);
             const myId = getCurrentUserId();
@@ -257,36 +246,36 @@ export const useChatStore = defineStore('chat', () => {
 
             return messages;
         } catch (err) {
-            console.error('❌ Błąd pobierania wiadomości:', err);
+            console.error('Błąd pobierania wiadomości:', err);
             return [];
         }
     };
 
     const markConversationAsRead = async (conversationId) => {
-  try {
-      const token = localStorage.getItem('token');
-      
-      const response = await axios.post(`/chat/conversations/${conversationId}/read`, {}, {
-          headers: { Authorization: `Bearer ${token}` },
-      });
+        try {
+            const token = localStorage.getItem('token');
+            
+            const response = await axios.post(`/chat/conversations/${conversationId}/read`, {}, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
 
-      const chat = chats.value.find(c => String(c.id) === String(conversationId));
-      if (chat) {
-          chat.unread = false;
-          chat.unreadCount = 0;
-      } else {
-          console.log('❌ Nie znaleziono czatu o ID:', conversationId);
-      }
-  } catch (err) {
-      console.error('❌ Błąd oznaczania jako przeczytane:', err);
-      const chat = chats.value.find(c => String(c.id) === String(conversationId));
-      if (chat) {
-          chat.unread = false;
-          chat.unreadCount = 0;
-      }
-  }
-};
+            const chat = chats.value.find(c => String(c.id) === String(conversationId));
+            if (chat) {
+                chat.unread = false;
+                chat.unreadCount = 0;
+            } else {
+                console.log('Nie znaleziono czatu o ID:', conversationId);
+            }
+        } catch (err) {
+            console.error('Błąd oznaczania jako przeczytane:', err);
+            const chat = chats.value.find(c => String(c.id) === String(conversationId));
+            if (chat) {
+                chat.unread = false;
+                chat.unreadCount = 0;
+            }
+        }
+    };
 
 
     const setChats = (arr) => {

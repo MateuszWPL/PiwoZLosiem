@@ -98,16 +98,14 @@ import { ref, nextTick, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useChatStore } from '../stores/chatStore'
 import { getSocket } from '../plugins/socket'
 
-// stałe
 const defaultAvatar = '/images/defaultAvatar.png'
 const yourAvatarUrl = computed(() => chatStore.myAvatar || '/images/defaultAvatar.png')
 const isMobile = ref(false)
 
 const checkIsMobile = () => {
-  isMobile.value = window.innerWidth < 1280 // xl
+  isMobile.value = window.innerWidth < 1280 
 }
 
-// socket (może być null jeśli nie zainicjalizowany)
 const socket = getSocket && typeof getSocket === 'function' ? getSocket() : null
 
 const props = defineProps({
@@ -117,22 +115,19 @@ const emit = defineEmits(['back'])
 
 const chatStore = useChatStore()
 
-// pobieramy userId i username z localStorage (musisz zapisywać przy logowaniu)
 const currentUserId = chatStore.getCurrentUserId()
 
 const newMessage = ref('')
 const messagesContainer = ref(null)
 
-// bezpieczne computed: chat może być null
 const chat = computed(() => {
   if (!props.chatData?.id) return null
   return chatStore.getChatById(props.chatData.id)
 })
 
-// Join room kiedy chat pojawi się
 const tryJoinConversation = () => {
   if (!socket) {
-    console.warn('⚠️ Socket nie zainicjalizowany — nie można join_conversation')
+    console.warn('Socket nie zainicjalizowany — nie można join_conversation')
     return
   }
   const convId = chat.value?.id
@@ -141,7 +136,6 @@ const tryJoinConversation = () => {
   }
 }
 
-// Nasłuchiwacze
 const onNewMessage = (message) => {
   const convId = message?.conversationId || message?.conversation || chat.value?.id
   if (!convId) {
@@ -156,7 +150,6 @@ const onNewMessage = (message) => {
   if (senderId === currentUserId) {
     return
   }
-  // dostosuj strukturę wiadomości do lokalnego modelu
   const msg = {
     id: message._id || Date.now(),
     userId: senderId,
@@ -169,11 +162,11 @@ const onNewMessage = (message) => {
 }
 
 const onJoinedConversation = (data) => {
-  console.log('✅ joined_conversation:', data)
+  console.log('joined_conversation:', data)
 }
 
 const onErrorMessage = (err) => {
-  console.warn('❗️ server error_message:', err)
+  console.warn('server error_message:', err)
 }
 
 onMounted(() => {
@@ -183,7 +176,6 @@ onMounted(() => {
   if (props.chatData?.id) {
   chatStore.fetchMessages(props.chatData.id)
   }
-  // jeżeli chat istnieje od razu - dołącz do pokoju
   tryJoinConversation()
 
   if (socket) {
@@ -194,7 +186,6 @@ onMounted(() => {
   }
 })
 
-// wyczyszczenie listenerów i opcjonalne "leave"
 onUnmounted(() => {
   window.removeEventListener('resize', checkIsMobile)
   if (!socket) return
@@ -202,14 +193,12 @@ onUnmounted(() => {
   socket.off('joined_conversation', onJoinedConversation)
   socket.off('error_message', onErrorMessage)
 
-  // opcjonalnie: jeśli implementujesz leave po stronie serwera
   const convId = chat.value?.id
   if (convId) {
     socket.emit('leave_conversation', { conversationId: convId })
   }
 })
 
-// obserwuj zmiany chat.messages i przewijaj na dół
 watch(
   () => chat.value && chat.value?.messages && chat.value?.messages?.length,
   async () => {
@@ -224,13 +213,12 @@ watch(
   (newId, oldId) => {
     if (newId && newId !== oldId) {
       chatStore.fetchMessages(newId)
-      tryJoinConversation() // dołącz do nowego pokoju socketowego
+      tryJoinConversation() 
     }
   },
-  { immediate: true } // od razu odpala fetch przy pierwszym renderze
+  { immediate: true } 
 )
 
-// wysyłanie wiadomości
 function sendMessage() {
   if (!newMessage.value.trim() || !chat.value) return
 
@@ -242,7 +230,6 @@ function sendMessage() {
 
   const convId = chat.value.id
 
-  // lokalny echo
   const localMsg = {
     id: Date.now(),
     userId: currentUserId,
@@ -252,7 +239,6 @@ function sendMessage() {
   }
   chatStore.addMessage(convId, localMsg)
 
-  // przygotuj payload dla backendu
   const payload = {
     conversationId: convId,
     text: newMessage.value,
@@ -261,7 +247,7 @@ function sendMessage() {
   if (socket) {
     socket.emit('send_message', payload)
   } else {
-    console.warn('⚠️ Socket nie dostępny, wiadomość nie została wysłana na serwer')
+    console.warn('Socket nie dostępny, wiadomość nie została wysłana na serwer')
   }
   
   newMessage.value = ''

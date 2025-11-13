@@ -15,7 +15,6 @@ import ChatRoomComp from '../components/ChatRoomComp.vue';
 const route = useRoute();
 const router = useRouter();
 
-// Pobierz czat z chatStore na podstawie ID z parametru
 import { useChatStore } from '../stores/chatStore';
 import { computed } from 'vue';
 

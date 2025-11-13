@@ -30,12 +30,10 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ MongoDB
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ Połączono z bazą:", mongoose.connection.name))
-  .catch((err) => console.error("❌ Błąd połączenia z MongoDB:", err));
+    .then(() => console.log(" Połączono z bazą:", mongoose.connection.name))
+    .catch((err) => console.error(" Błąd połączenia z MongoDB:", err));
 
-// ✅ Trasy API
 app.use("/api/auth", authRoutes);
 app.use("/api/beers", beerRoutes);
 app.use("/api", rankingRoutes);
@@ -50,5 +48,4 @@ const ioInstance = initSocket(server);
 let onlineUsers = getOnlineUsers()
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`🚀 Serwer z Socket.IO działa na porcie ${PORT}`));
-
+server.listen(PORT, () => console.log(` Serwer z Socket.IO działa na porcie ${PORT}`));

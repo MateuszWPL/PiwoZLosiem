@@ -1,13 +1,6 @@
-// socket/utils/socketAuth.js
 import jwt from "jsonwebtoken";
 import User from "../../models/User.js";
 
-/**
- * verifySocketAuth(socket, next)
- * - czyta token z socket.handshake.auth.token
- * - weryfikuje JWT
- * - ładuje użytkownika z bazy i ustawia socket.userId oraz socket.user
- */
 export const verifySocketAuth = async (socket, next) => {
   try {
     const token = socket.handshake.auth?.token;

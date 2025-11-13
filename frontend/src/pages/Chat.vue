@@ -2,7 +2,6 @@
   <div class="flex h-screen w-full bg-gradient-to-b from-primaryGreen/0 to-primaryGreen/50 xl:flex-row overflow-hidden">
     <Navbar />
 
-    <!-- MOBILE VIEW -->
     <div class="flex-1 xl:hidden flex flex-col min-h-0 min-w-0 overflow-hidden">
       <div class="pt-20 px-4 pb-2 flex-shrink-0">
         <h1 class="font-semibold text-2xl text-white pt-10">Wiadomości</h1>
@@ -25,7 +24,6 @@
         </div>
       </div>
 
-      <!-- Scrollowana lista czatów -->
       <div class="flex-1 min-h-0 min-w-0 overflow-hidden ">
         <ChatListComp
         class="h-full w-full min-w-0"
@@ -36,7 +34,6 @@
     </div>
     
 
-    <!-- DESKTOP VIEW -->
     <div class="hidden xl:flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden">
       <div class="p-4 flex items-center gap-4 border-b border-secondaryGreen flex-shrink-0 min-w-0">
         <div class="relative flex-1 min-w-0">
@@ -56,12 +53,10 @@
       </div>
 
       <div class="flex flex-1 min-h-0 min-w-0 overflow-hidden">
-        <!-- Lista czatów -->
         <div class="w-1/3 border-r border-secondaryGreen overflow-hidden min-w-0">
-          <ChatListComp  class="h-full w-full min-w-0" :chats="filteredChats" @select="goToChatRoom" />
+          <ChatListComp  class="h-full w-full min-w-0" :chats="filteredChats" @select="goToChatRoom" />
         </div>
 
-        <!-- Okno czatu -->
         <div class="flex-1 min-w-0 overflow-hidden">
           <ChatRoomComp
             v-if="selectedChat"
@@ -95,58 +90,54 @@ const search = ref('');
 const selectedChat = ref(null);
 
 onMounted(async () => {
-  await chatStore.fetchChats();
-  chatStore.setupSocketListeners();
+    await chatStore.fetchChats();
+    chatStore.setupSocketListeners();
 
-  // Jeśli jest /chat/:id → otwórz czat
-  if (route.params.id) {
-    const chat = chats.value.find(c => c.id === route.params.id || c._id === route.params.id);
-    if (chat) {
-      selectedChat.value = chat;
-      await chatStore.markConversationAsRead(chat.id || chat._id);
+    if (route.params.id) {
+        const chat = chats.value.find(c => c.id === route.params.id || c._id === route.params.id);
+        if (chat) {
+            selectedChat.value = chat;
+            await chatStore.markConversationAsRead(chat.id || chat._id);
+        }
     }
-  }
 });
 
-// Obserwuj zmianę adresu (np. z /chat → /chat/:id)
 watch(() => route.params.id, async (newId) => {
-  if (newId) {
-    const chat = chats.value.find(c => c.id === newId || c._id === newId);
-    if (chat) {
-      selectedChat.value = chat;
-      await chatStore.markConversationAsRead(chat.id || chat._id);
+    if (newId) {
+        const chat = chats.value.find(c => c.id === newId || c._id === newId);
+        if (chat) {
+            selectedChat.value = chat;
+            await chatStore.markConversationAsRead(chat.id || chat._id);
+        }
+    } else {
+        selectedChat.value = null;
     }
-  } else {
-    selectedChat.value = null;
-  }
 });
 
 const filteredChats = computed(() => {
-  if (!search.value.trim()) return chats.value;
-  return chats.value.filter(chat =>
-    chat.name?.toLowerCase().includes(search.value.toLowerCase()) ||
-    chat.lastMessage?.toLowerCase().includes(search.value.toLowerCase())
-  );
+    if (!search.value.trim()) return chats.value;
+    return chats.value.filter(chat =>
+        chat.name?.toLowerCase().includes(search.value.toLowerCase()) ||
+        chat.lastMessage?.toLowerCase().includes(search.value.toLowerCase())
+    );
 });
 
 async function goToChatRoom(chat) {
-  
-  const isDesktop = window.innerWidth >= 1280;
+    
+    const isDesktop = window.innerWidth >= 1280;
 
-  await chatStore.markConversationAsRead(chat.id || chat._id);
+    await chatStore.markConversationAsRead(chat.id || chat._id);
 
-  if (isDesktop) {
-    // Desktop → zostajemy na /chat, tylko otwieramy czat po prawej
-    selectedChat.value = chat;
-  } else {
-    // Mobile → przenosimy na osobny widok /chat/:id
-    router.push(`/chat/${chat.id || chat._id}`);
-  }
+    if (isDesktop) {
+        selectedChat.value = chat;
+    } else {
+        router.push(`/chat/${chat.id || chat._id}`);
+    }
 }
 
 function handleBack() {
-  selectedChat.value = null;
-  router.push('/chat');
+    selectedChat.value = null;
+    router.push('/chat');
 }
 
 </script>

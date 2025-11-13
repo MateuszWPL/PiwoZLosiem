@@ -1,9 +1,7 @@
 <template>
   <div class="pb-16">
-    <!-- Główna karta z mapą -->
     <div class="bg-tertiaryGreen/50 rounded-[10px] p-5 w-full shadow-md shadow-black/20">
       
-      <!-- Suwak zasięgu -->
       <div class="controls mb-6">
         <label for="distance" class="text-secondaryGold mb-2 block text-sm font-semibold">
           Zasięg mapy: {{ displayDistance }}
@@ -20,7 +18,6 @@
         />
       </div>
 
-      <!-- Komunikaty o błędzie -->
       <div v-if="!currentUserPosition && geolocationError" class="map-placeholder error">
         <p>Nie udało się pobrać lokalizacji. Sprawdź uprawnienia w przeglądarce.</p>
       </div>
@@ -28,7 +25,6 @@
         <p>Pobieranie Twojej lokalizacji i danych...</p>
       </div>
 
-      <!-- MAPA -->
       <div 
         v-else 
         class="relative w-full h-[500px] overflow-hidden rounded-xl shadow-md z-0 map-wrapper"
@@ -77,7 +73,7 @@
                         @click="startChat(otherUser.userId)" 
                         class="bg-secondaryGold hover:bg-tertiaryGreen text-white font-bold py-2 px-4 rounded transition-colors"
                     >
-                        Rozpocznij Chat 💬
+                        Rozpocznij Chat 
                     </button>
                 </div>
              </l-popup>
@@ -86,7 +82,6 @@
       </div>
     </div>
 
-    <!-- Lista użytkowników -->
     <div class="user-list mt-8 bg-tertiaryGreen/50 rounded-[10px] p-5 shadow-md shadow-black/20">
       <h4 class="text-white text-[24px] tracking-[-0.6px] font-semibold mb-3">
         Użytkownicy w promieniu {{ displayDistance }}
@@ -124,7 +119,7 @@
                 @click="startChat(selectedUser.userId)" 
                 class="bg-primaryGreen hover:bg-tertiaryGreen text-white font-bold py-2 px-4 rounded transition-colors"
             >
-                Rozpocznij Chat 💬
+                Rozpocznij Chat 
             </button>
             <button 
                 @click="selectedUser = null" 
@@ -186,7 +181,7 @@ const startChat = async (friendId) => {
         }
         
     } catch (err) {
-        console.error("❌ Błąd otwierania czatu:", err.response?.data?.message || err.message);
+        console.error(" Błąd otwierania czatu:", err.response?.data?.message || err.message);
     }
 };
 
@@ -346,89 +341,89 @@ onUnmounted(() => {
 </script>
 <style>
 .custom-marker-icon {
-  background-color: #f97316;
-  border-radius: 50%;
-  border: 2px solid white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    background-color: #f97316;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .custom-marker-icon span {
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-  font-family: sans-serif;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: sans-serif;
 }
 
 .custom-tooltip {
-  background-color: rgba(0, 0, 0, 0.8);
-  border-radius: 4px;
-  color: white;
-  padding: 6px 10px;
-  font-size: 14px;
-  white-space: nowrap;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 4px;
+    color: white;
+    padding: 6px 10px;
+    font-size: 14px;
+    white-space: nowrap;
 }
 
 .custom-range-slider {
-  --range-fill-color: #1C3A27;
-  --range-empty-color: #D35226;
-  background: none;
-  height: 8px;
+    --range-fill-color: #1C3A27;
+    --range-empty-color: #D35226;
+    background: none;
+    height: 8px;
 }
 
 .custom-range-slider::-webkit-slider-runnable-track {
-  background: linear-gradient(to right,
-    var(--range-fill-color) calc(var(--range-progress) * 100%),
-    var(--range-empty-color) calc(var(--range-progress) * 100%));
-  height: 8px;
-  border-radius: 4px;
+    background: linear-gradient(to right,
+        var(--range-fill-color) calc(var(--range-progress) * 100%),
+        var(--range-empty-color) calc(var(--range-progress) * 100%));
+    height: 8px;
+    border-radius: 4px;
 }
 
 .custom-range-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 22px;
-  height: 20px;
-  margin-top: -6px;
-  background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMiIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIyIDIwIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMTEuMDUxOCAwLjVDMTYuNDUxOSAwLjUwMDIyNCAyMC44MDc2IDQuNzY1MjkgMjAuODA3NiAxMEMyMC44MDc2IDE1LjIzNDcgMTYuNDUxOSAxOS40OTk4IDExLjA1MTggMTkuNUM1LjY1MTQzIDE5LjUgMS4yOTQ5MiAxNS4yMzQ4IDEuMjk0OTIgMTBDMS4yOTQ5MiA0Ljc2NTE1IDUuNjUxNDMgMC41IDExLjA1MTggMC41WiIgZmlsbD0iIzBFMEUwRSIgc3Ryb2tlPSIjMUMzQTI3Ii8+PC9zdmc+") center / contain no-repeat;
-  border: none;
-  cursor: grab;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 20px;
+    margin-top: -6px;
+    background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMiIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIyIDIwIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMTEuMDUxOCAwLjVDMTYuNDUxOSAwLjUwMDIyNCAyMC44MDc2IDQuNzY1MjkgMjAuODA3NiAxMEMyMC44MDc2IDE1LjIzNDcgMTYuNDUxOSAxOS40OTk4IDExLjA1MTggMTkuNUM1LjY1MTQzIDE5LjUgMS4yOTQ5MiAxNS4yMzQ4IDEuMjk0OTIgMTBDMS4yOTQ5MiA0Ljc2NTE1IDUuNjUxNDMgMC41IDExLjA1MTggMC41WiIgZmlsbD0iIzBFMEUwRSIgc3Ryb2tlPSIjMUMzQTI3Ii8+PC9zdmc+") center / contain no-repeat;
+    border: none;
+    cursor: grab;
 }
 
 .map-wrapper {
-  position: relative;
-  z-index: 0;
+    position: relative;
+    z-index: 0;
 }
 .leaflet-container,
 .leaflet-pane,
 .leaflet-top,
 .leaflet-bottom {
-  z-index: 0 !important;
+    z-index: 0 !important;
 }
 
 .navbar, .nav-menu, .header {
-  position: relative;
-  z-index: 1000;
+    position: relative;
+    z-index: 1000;
 }
 
 @media (max-width: 768px) {
-  .map-wrapper {
-    height: 500px !important;
-  }
+    .map-wrapper {
+        height: 500px !important;
+    }
 }
 
 .map-placeholder {
-  height: 500px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #333;
-  border-radius: 8px;
-  color: #ccc;
+    height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #333;
+    border-radius: 8px;
+    color: #ccc;
 }
 .map-placeholder.error {
-  background-color: #442222;
-  color: #ff8888;
+    background-color: #442222;
+    color: #ff8888;
 }
 </style>
