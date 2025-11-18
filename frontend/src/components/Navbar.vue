@@ -268,11 +268,23 @@
               Moje piwa
             </p>
           </RouterLink>
-          <RouterLink to="/znajomi" class="flex items-center gap-4 py-3 group">
-            <SvgIcon name="friends" width="24" height="24" class="text-secondaryGold group-hover:scale-110 transition-all duration-300 group-hover:stroke-primaryOrange" />
-            <p
-              class="text-secondaryGold group-hover:translate-x-1 transition-all duration-300 group-hover:text-primaryOrange"
-            >
+          <RouterLink to="/znajomi" class="flex items-center gap-4 py-3 group relative">
+            <div class="relative">
+              <SvgIcon
+                name="friends"
+                width="24"
+                height="24"
+                class="text-secondaryGold group-hover:scale-110 transition-all duration-300 group-hover:stroke-primaryOrange"
+              />
+              <!-- BADGE Z LICZBĄ OTRZYMANYCH ZAPROSZEŃ -->
+              <span
+                v-if="incomingRequestsCount > 0"
+                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium shadow-md"
+              >
+                {{ incomingRequestsCount > 9 ? '9+' : incomingRequestsCount }}
+              </span>
+            </div>
+            <p class="text-secondaryGold group-hover:translate-x-1 transition-all duration-300 group-hover:text-primaryOrange">
               Znajomi
             </p>
           </RouterLink>
@@ -358,19 +370,23 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import NotificationDropdown from './NotificationDropdown.vue'
 import SvgIcon from './svgIcons/SvgIcon.vue'
 import { useSocket } from '@/composables/socketService.js' 
 import { useChatStore } from '@/stores/chatStore.js'
+import { useFriendsStore } from '@/stores/friendsStore.js'
 
 const router = useRouter()
 const menuOpen = ref(false)
 const chatStore = useChatStore()
+const friendsStore = useFriendsStore()
 
-const unreadConversationsCount = computed(() => {
-  return chatStore.unreadConversationsCount || 0
+const unreadConversationsCount = computed(() => chatStore.unreadConversationsCount);
+
+const incomingRequestsCount = computed(() => {
+  return friendsStore.incomingRequestsCount || 0
 })
 
 const { disconnectSocket } = useSocket()
@@ -380,6 +396,11 @@ const logout = () => {
   localStorage.removeItem('token')
   router.push('/logowanie')
 }
+
+onMounted(() => {
+  friendsStore.fetchIncomingRequestsCount();
+});
+
 </script>
 
 <style scoped>

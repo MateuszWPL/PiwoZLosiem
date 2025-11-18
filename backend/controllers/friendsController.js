@@ -56,6 +56,19 @@ export const getFriendRequests = async (req, res) => {
   }
 };
 
+export const getFriendRequestsCount = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    const receivedRequestsCount = await FriendRequest.countDocuments({ owner: userId });
+
+    res.json({ receivedRequestsCount });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Błąd serwera' });
+  }
+};
+
 export const getAllUsers = async (req, res) => {
   try {
     const userId = req.user._id;
