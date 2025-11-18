@@ -14,7 +14,6 @@ export const useChatStore = defineStore('chat', () => {
         localStorage.setItem('photoUrl', myAvatar.value);
     };
 
-    // 🔍 Odczyt userId z tokena JWT
     const getUserIdFromToken = (token) => {
         if (!token) return null;
         try {
@@ -29,10 +28,8 @@ export const useChatStore = defineStore('chat', () => {
         return getUserIdFromToken(localStorage.getItem('token'));
     };
     
-    // Funkcja do pobierania lokalnego imienia (do wyświetlania "Ty")
     const getCurrentUserImie = () => localStorage.getItem('imie') || 'Ty';
 
-    // 🧠 Połączenie z Socket.IO i nasłuchiwanie na nowe wiadomości
     const setupSocketListeners = () => {
         const socket = getSocket() || initSocket();
 
@@ -132,7 +129,7 @@ export const useChatStore = defineStore('chat', () => {
         }
     };
 
-    // 🆕 Tworzenie nowej rozmowy
+    // Tworzenie nowej rozmowy
     const createConversation = async (partnerId) => {
         try {
             const token = localStorage.getItem('token');
@@ -169,13 +166,12 @@ export const useChatStore = defineStore('chat', () => {
         }
     };
 
-    // 🔎 Znajdź czat po ID
     const getChatById = (id) => {
         if (!id) return null;
         return chats.value.find((c) => String(c.id) === String(id) || String(c._id) === String(id)) || null;
     };
 
-    // 💬 Dodanie wiadomości lokalnie
+    // Dodanie wiadomości lokalnie
     const addMessage = (chatId, message) => {
         const chat = getChatById(chatId);
         if (!chat) return;

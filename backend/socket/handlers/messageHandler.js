@@ -1,13 +1,7 @@
-// socket/handlers/messageHandler.js
 import Conversation from "../../models/Conversation.js";
 import Message from "../../models/Message.js";
 import { joinRoomOnce } from "../utils/roomsManager.js";
 
-/**
- * handleMessages(io, socket)
- * - join_conversation: dołącza do pokoju (jeśli jest uczestnikiem)
- * - send_message: sprawdza członkostwo, zapisuje Message i emituje tylko do pokoju
- */
 export const handleMessages = (io, socket) => {
   socket.on("join_conversation", async ({ conversationId }) => {
     try {
@@ -24,8 +18,7 @@ export const handleMessages = (io, socket) => {
             }
         });
 
-        // Wreszcie dołączamy do nowego pokoju
-        socket.join(conversationId); // Można użyć joinRoomOnce, ale to jest jaśniejsze
+        socket.join(conversationId);
         socket.emit("joined_conversation", { conversationId });
         console.log(`📥 ${socket.userId} joined ${conversationId}`);
 
@@ -43,7 +36,6 @@ export const handleMessages = (io, socket) => {
       const isParticipant = conversation.participants.some((p) => p.toString() === socket.userId);
       if (!isParticipant) return socket.emit("error_message", { error: "Brak dostępu do rozmowy." });
 
-      // create message
       const message = await Message.create({
         conversation: conversationId,
         sender: socket.userId,

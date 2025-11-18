@@ -180,19 +180,20 @@ import SvgIcon from '@/components/svgIcons/SvgIcon.vue'
 import { statuses } from '../../../shared/statuses'
 import { useNotifications } from '@/composables/useNotifications'
 import { useRouter } from 'vue-router'
+import { useFriendsStore } from '@/stores/friendsStore'
 const { addNotification } = useNotifications()
 
 const router = useRouter()
-
-
+const friendsStore = useFriendsStore()
 const token = localStorage.getItem("token");
 
+/*
 const axiosInstance = axios.create({
   baseURL: `${import.meta.env.VITE_API_BASE_URL}/friends`,
   headers: {
     Authorization: `Bearer ${token}`
   }
-})
+}) */
 
 
 const tabs = ['Znajomi', 'Zaproszenia', 'Znajdź']
@@ -201,13 +202,13 @@ const selectedTab = ref(0)
 const subTabs = ['Otrzymane', 'Wysłane']
 const selectedSubTab = ref(0)
 
-const friends = ref([])
-const receivedRequests = ref([])
-const sentRequests = ref([])
-const allUsers = ref([])
-const searchQuery = ref('')
 
-const incomingRequestsCount = computed(() => receivedRequests.value.length)
+const friends = computed(() => friendsStore.friends)
+const receivedRequests = computed(() => friendsStore.receivedRequests)
+const sentRequests = computed(() => friendsStore.sentRequests)
+const incomingRequestsCount = computed(() => friendsStore.incomingRequestsCount)
+const allUsers = computed(() => friendsStore.allUsers)
+const searchQuery = ref('')
 
 const getTabName = (tabName, index) => {
   if (index === 1 && incomingRequestsCount.value > 0) {
@@ -241,6 +242,8 @@ const formatDate = (dateString) => {
   });
 }
 
+// Przeniesione od friendsStore.js
+/* 
 const fetchData = async () => {
   try {
     const [friendsRes, requestsRes, usersRes] = await Promise.all([
@@ -258,36 +261,36 @@ const fetchData = async () => {
   } catch (err) {
     console.error('Błąd pobierania danych:', err.response?.data || err.message)
   }
-}
+} */
 
 const removeFriend = async (id) => {
   try {
-    await axiosInstance.delete(`/${id}`)
-    friends.value = friends.value.filter(f => f.id !== id)
+    await axios.delete(`/friends/${id}`, { headers: { Authorization: `Bearer ${token}` }});
+    friendsStore.friends = friendsStore.friends.filter(f => f.id !== id)
   } catch (err) { console.error(err) }
 }
-
+// axios.get('/friends', { headers: { Authorization: `Bearer ${token}` } })
 const acceptRequest = async (requestId) => {
   try {
     const userName = receivedRequests.value.find(r => r.requestId === requestId)?.name || 'Użytkownik'
-    await axiosInstance.post(`/requests/${requestId}/accept`)
-    receivedRequests.value = receivedRequests.value.filter(r => r.requestId !== requestId)
+    await axios.post(`/friends/requests/${requestId}/accept`, {}, { headers: { Authorization: `Bearer ${token}` } });
+    friendsStore.receivedRequests = friendsStore.receivedRequests.filter(r => r.requestId !== requestId)
     addNotification('request_accepted', `Zaakceptowałeś zaproszenie od ${userName} 🍻`)
-    await fetchData()
+    await friendsStore.fetchData()
   } catch (err) { console.error(err) }
 }
 
 const rejectRequest = async (requestId) => {
   try {
-    await axiosInstance.post(`/requests/${requestId}/reject`)
-    receivedRequests.value = receivedRequests.value.filter(r => r.requestId !== requestId)
+    await axios.post(`/friends/requests/${requestId}/reject`, {}, { headers: { Authorization: `Bearer ${token}` } });
+    friendsStore.receivedRequests = friendsStore.receivedRequests.filter(r => r.requestId !== requestId)
   } catch (err) { console.error(err) }
 }
 
 const cancelRequest = async (requestId) => {
   try {
-    await axiosInstance.post(`/requests/${requestId}/reject`)``
-    sentRequests.value = sentRequests.value.filter(r => r.requestId !== requestId)
+    await axios.post(`/friends/${userId}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+    friendsStore.sentRequests = friendsStore.sentRequests.filter(r => r.requestId !== requestId)
   } catch (err) { console.error(err) }
 }
 
@@ -296,22 +299,16 @@ const sendRequest = async (userId) => {
     const invitedUser = allUsers.value.find(u => u.id === userId)
     const userName = invitedUser ? invitedUser.name : 'Użytkownik'
 
-    await axiosInstance.post(`/${userId}`)
-    allUsers.value = allUsers.value.filter(u => u.id !== userId)
+    await axios.post(`/friends/${userId}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+    friendsStore.allUsers = friendsStore.allUsers.filter(u => u.id !== userId)
 
     addNotification('invite_sent', `Wysłałeś zaproszenie do ${userName} 🍻`)
-    await fetchData()
+    await friendsStore.fetchData()
   } catch (err) { console.error(err) }
 }
 const openChat = async (friendId) => {
   try {
-    const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/chat/conversations`, {
-      partnerId: friendId,
-    }, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
+    const res = await axios.post(`/chat/conversations`, { partnerId: friendId }, { headers: { Authorization: `Bearer ${token}` } });
 
     const conversation = res.data;
     router.push({ path: `/chat/${conversation._id}` });
@@ -321,6 +318,6 @@ const openChat = async (friendId) => {
 };
 
 onMounted(() => {
-  fetchData()
+  friendsStore.fetchData()
 })
 </script>
